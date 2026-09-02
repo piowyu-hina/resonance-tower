@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>爬塔掛機 原型</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="header">
+    <div class="headerLeft">
+      <span id="floorLabel">森林</span>
+      <span id="goldLabel"></span>
+    </div>
+    <div class="headerActions">
+      <button id="townShopBtn"><img src="assets/ui/shop.png" alt="">商店</button>
+      <button id="bagBtn" aria-label="開啟背包"><img src="assets/ui/bag.png" alt="">背包</button>
+      <button id="resetBtn">重新開始整局</button>
+    </div>
+  </div>
+
+  <!-- 進場 UI：家（選擇附身靈魂、整補、出發），見 worldview_design_v2.md -->
+  <div class="panel" id="prepView">
+    <div class="prepHeading" id="prepHeading"></div>
+    <div class="prepMsg" id="prepMsg"></div>
+    <div id="prepRoster"></div>
+    <div id="actionArea"></div>
+  </div>
+
+  <!-- 戰鬥 UI：桌面版左右分欄，窄畫面才回到上下排列。 -->
+  <div id="combatView">
+    <div class="combatColumns">
+      <section class="panel battleColumn enemyColumn">
+        <div class="columnHeading">敵方</div>
+        <div id="monsterSide"></div>
+        <div id="bossArena"></div>
+      </section>
+
+      <section class="panel battleColumn partyColumn">
+        <div class="columnHeading">我方</div>
+        <div id="partySide"></div>
+        <div id="combatActionBar"></div>
+      </section>
+    </div>
+  </div>
+
+  <div id="log"></div>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="combatItemPicker" aria-hidden="true">
+  <div class="pickerTitle">選擇戰鬥道具</div>
+  <div id="combatItemPickerList"></div>
+</div>
+
+<div id="characterDetailOverlay" aria-hidden="true">
+  <div id="characterDetailModal" role="dialog" aria-modal="true" aria-labelledby="characterDetailName">
+    <button id="characterDetailCloseBtn" type="button" aria-label="關閉角色詳情">×</button>
+    <div id="characterDetailContent"></div>
+  </div>
+</div>
+
+<div id="shopOverlay" aria-hidden="true">
+  <div id="shopModal" role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+    <div class="shopHeader">
+      <span id="shopTitle">地城商店</span>
+      <span id="shopCountdown"></span>
+    </div>
+    <div class="shopSection">
+      <div class="shopSectionTitle">出售素材</div>
+      <div class="shopSellRow">
+        <img src="assets/item/stone.png" alt="魔物結晶">
+        <span>魔物結晶</span>
+        <span id="shopStoneQty"></span>
+        <div class="shopSellActions">
+          <button id="shopSellOneBtn" type="button">賣 1 顆</button>
+          <button id="shopSellAllBtn" type="button"></button>
+        </div>
+      </div>
+    </div>
+    <div class="shopSection">
+      <div class="shopSectionTitle">購買藥水</div>
+      <div id="shopBuyList"></div>
+    </div>
+    <div class="shopFooter">
+      <button id="shopAutoLeaveBtn" type="button"></button>
+      <button id="shopLeaveBtn" type="button">離開商店</button>
+    </div>
+  </div>
+</div>
+
+<div id="inventoryOverlay" aria-hidden="true">
+  <div id="inventoryModal" role="dialog" aria-modal="true" aria-labelledby="inventoryTitle">
+    <div class="inventoryHeader">
+      <span id="inventoryTitle">背包</span>
+      <button id="inventoryCloseBtn" aria-label="關閉背包">×</button>
+    </div>
+    <div id="inventoryGrid"></div>
+    <div class="inventoryNote">拖曳物品可以整理位置；藥水可在出戰前裝備，能力書與技能書可在角色詳情中使用。</div>
+  </div>
+</div>
+
+<!-- 對話系統：靈魂任務等劇情橋段用，見 worldview_design.md -->
+<div id="dialogueOverlay" aria-hidden="true">
+  <div id="dialogueModal" role="dialog" aria-modal="true" aria-labelledby="dialogueSpeakerName">
+    <div id="dialoguePortraitFrame">
+      <img id="dialoguePortraitImg" alt="">
+      <div class="dialogueMissingArt" id="dialoguePortraitMissing">缺少立繪</div>
+    </div>
+    <div id="dialogueBox">
+      <div id="dialogueSpeakerName"></div>
+      <div id="dialogueText"></div>
+      <button id="dialogueNextBtn" type="button">繼續 ▶</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/constants.js"></script>
+<script src="js/state.js"></script>
+<script src="js/goo.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/story.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
