@@ -160,7 +160,9 @@ function monsterTooltipHTML(m) {
 }
 
 function positionTooltip(e) {
-  const gap = 14;
+  // Game-style cursor tooltip: keep the panel close enough to read as attached
+  // to the pointer, with only a small gap so it never sits under the cursor.
+  const gap = 5;
   const edge = 8;
   const width = tooltipEl.offsetWidth;
   const height = tooltipEl.offsetHeight;
