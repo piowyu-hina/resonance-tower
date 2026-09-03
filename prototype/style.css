@@ -343,11 +343,10 @@ body {
   border-radius: 10px;
   border: 1px solid #3d4149;
   background: #262931;
-  width: 190px;
+  width: 150px;
   border-color: #46585a;
   box-shadow: 0 10px 22px rgba(0,0,0,.18);
 }
-.charCard .portrait { width: 154px; height: 184px; }
 .charCard.down { opacity: 0.4; }
 .charCard .body { width: 100%; display: flex; flex-direction: column; gap: 4px; }
 .charCard .topRow { display: flex; align-items: center; gap: 6px; font-size: 13px; }
@@ -456,8 +455,7 @@ body {
 }
 .monsterCard .name { font-weight: bold; font-size: 14px; }
 .monsterCard.boss .name { color: #ef5b5b; }
-.monsterCard.boss { width: 190px; border-color: #62464b; box-shadow: 0 10px 24px rgba(0,0,0,.2), 0 0 18px rgba(170,65,65,.08); }
-.monsterCard.boss .portrait.big { width: 154px; height: 184px; }
+.monsterCard.boss { border-color: #62464b; box-shadow: 0 10px 24px rgba(0,0,0,.2), 0 0 18px rgba(170,65,65,.08); }
 .monsterCard .monsterTopRow { width: 100%; display: flex; align-items: center; gap: 6px; }
 .monsterCard .monsterTopRow .name { flex: 1; }
 .monsterCard .monsterTopRow .lvlTag { color: #999; font-size: 11px; white-space: nowrap; }
@@ -476,7 +474,7 @@ body {
   overflow: hidden;
 }
 #bossArena.active { display: block; }
-#bossArena.active::after { content: '共鳴干涉區 · 點擊擴散中的黏液'; position: absolute; right: 7px; bottom: 5px; color: #66777b; font-size: 8px; letter-spacing: .08em; pointer-events: none; }
+#bossArena.active::after { content: '共鳴干涉區 · 點擊黏液'; position: absolute; z-index: 1; top: 7px; right: 7px; padding: 4px 7px; border: 1px solid #53696e; border-radius: 10px; background: rgba(19,29,32,.9); color: #b8d4d7; font-size: 10px; font-weight: 700; letter-spacing: .04em; box-shadow: 0 2px 8px rgba(0,0,0,.35); pointer-events: none; }
 #bossArena .gooHint {
   position: absolute;
   top: 4px;
@@ -1729,8 +1727,6 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   #debugToggleBtn::after { content: 'DEV'; font-size: 9px; }
   .combatActive #bagBtn { width: 34px; justify-content: center; overflow: hidden; font-size: 0; }
   .combatActive #bagBtn img { width: 20px; height: 20px; }
-  .combatActive .charCard, .combatActive .monsterCard.boss { width: 176px; }
-  .combatActive .charCard .portrait, .combatActive .monsterCard.boss .portrait.big { width: 144px; height: 172px; }
   #villageView { padding: 12px; }
   .villageIntro { margin-bottom: 14px; }
   .villageLocations { grid-template-columns: 1fr; }
