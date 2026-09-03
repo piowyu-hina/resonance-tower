@@ -42,6 +42,22 @@ function initDebugTools() {
     showDefeatOverlay();
   }
   if (requestedView === 'dialogue') queueDialogue('xiaochu_first_possession');
+  if (requestedView === 'go-home' || requestedView === 'go-home-flow') {
+    phase = 'prepFloor';
+    partyLocked = false;
+    prepLocation = 'village';
+    resonanceState.xiaochu = 'goHome';
+    setTimeout(() => {
+      const button = document.getElementById('homeLocationBtn');
+      const rect = button.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      if (hit && (hit === button || button.contains(hit))) button.click();
+    }, 350);
+    if (requestedView === 'go-home-flow') {
+      setTimeout(() => document.getElementById('dialogueOverlay').click(), 600);
+      setTimeout(() => document.getElementById('dialogueOverlay').click(), 850);
+    }
+  }
   if (requestedView === 'boss') debugStartBossFight();
 }
 

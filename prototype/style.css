@@ -50,7 +50,7 @@ body {
   border-bottom: 1px solid #454a4d;
   margin-bottom: 8px;
 }
-body.storyOperationLock::after { content: ''; position: fixed; z-index: 8990; inset: 0; background: rgba(4,6,8,.72); }
+body.storyOperationLock::after { content: ''; position: fixed; z-index: 8990; inset: 0; background: rgba(4,6,8,.72); pointer-events: none; }
 .storyFocusTarget { position: relative !important; z-index: 9000 !important; overflow: visible !important; opacity: 1 !important; filter: none !important; box-shadow: 0 0 0 3px rgba(240,191,85,.5), 0 0 34px rgba(240,191,85,.48); }
 #homeLocationBtn.storyFocusTarget { animation: homeFocusRingPulse 2.2s ease-in-out infinite; }
 @keyframes homeFocusRingPulse { 0%, 100% { box-shadow: 0 0 0 2px rgba(240,191,85,.2), 0 0 14px rgba(240,191,85,.16); } 50% { box-shadow: 0 0 0 4px rgba(255,214,119,.88), 0 0 42px rgba(240,191,85,.7); } }
@@ -2107,7 +2107,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .runResultEmpty { grid-column: 1 / -1; padding: 16px; border: 1px dashed rgba(255,255,255,.1); border-radius: 8px; color: #858991; font-size: 12px; text-align: center; }
 .runResultFoot { margin: -7px 0 20px; color: #83868e; font-size: 11px; }
 @keyframes contentFadeIn { from { opacity: .45; } to { opacity: 1; } }
-.surfaceEntering { animation: surfaceFadeIn .2s ease-out both; will-change: opacity, transform; }
+.surfaceEntering { animation: surfaceFadeIn .2s ease-out both; }
 @keyframes surfaceFadeIn {
   from { opacity: .45; transform: translateY(4px); }
   to { opacity: 1; transform: none; }

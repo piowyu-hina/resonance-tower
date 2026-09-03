@@ -35,8 +35,18 @@ function closeOtherOverlays(nextId) {
 function animateSurfaceChange(surface, key) {
   if (!surface || key === lastRenderedSurface) return;
   lastRenderedSurface = key;
+  if (surface.surfaceEnterEnd) {
+    surface.removeEventListener('animationend', surface.surfaceEnterEnd);
+  }
   surface.classList.remove('surfaceEntering');
   void surface.offsetWidth;
+  surface.surfaceEnterEnd = event => {
+    if (event.animationName !== 'surfaceFadeIn') return;
+    surface.classList.remove('surfaceEntering');
+    surface.removeEventListener('animationend', surface.surfaceEnterEnd);
+    surface.surfaceEnterEnd = null;
+  };
+  surface.addEventListener('animationend', surface.surfaceEnterEnd);
   surface.classList.add('surfaceEntering');
 }
 
