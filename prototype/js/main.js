@@ -17,21 +17,13 @@ function initGame() {
   enterPrepFloor();
 }
 
-document.getElementById('resetBtn').addEventListener('click', () => {
-  endRun(false);
-  render();
-});
-
-document.getElementById('bossIntroTestBtn').addEventListener('click', () => {
-  showBossIntro(() => {});
-});
-
 // Game surface: suppress the browser context menu so right-clicks during
 // dragging/combat interaction do not interrupt play.
 document.addEventListener('contextmenu', event => event.preventDefault());
 
 initGame();
 buildUI();
+initDebugTools();
 render();
 runContractPreviewFromUrl();
 setInterval(tick, MASTER_TICK_MS);

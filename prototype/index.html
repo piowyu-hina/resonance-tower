@@ -15,10 +15,24 @@
     </div>
     <div class="headerActions">
       <button id="bagBtn" aria-label="開啟背包"><img src="assets/ui/bag.png" alt="">背包</button>
-      <button id="bossIntroTestBtn" hidden>測試首領演出</button>
-      <button id="resetBtn" hidden>重新開始整局</button>
+      <button id="debugToggleBtn" type="button" hidden aria-expanded="false" aria-controls="debugPanel">開發工具</button>
     </div>
   </div>
+
+  <section id="debugPanel" hidden aria-label="開發工具">
+    <div class="debugPanelHeader">
+      <strong>開發工具</strong>
+      <span id="debugStatus"></span>
+    </div>
+    <div class="debugActions">
+      <button type="button" data-debug-action="resources">補充測試資源</button>
+      <button type="button" data-debug-action="unlock">解鎖全部角色</button>
+      <button type="button" data-debug-action="level">出戰角色升至 10 級</button>
+      <button type="button" data-debug-action="boss">直接挑戰首領</button>
+      <button type="button" data-debug-action="intro">播放首領演出</button>
+      <button type="button" class="danger" data-debug-action="reset">重載乾淨進度</button>
+    </div>
+  </section>
 
   <!-- 進場 UI：村莊、家與遠征流程，見 design.md「世界觀與敘事基準」 -->
   <div class="panel" id="prepView">
@@ -242,6 +256,7 @@
 <script src="js/combat.js"></script>
 <script src="js/story.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/debug.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

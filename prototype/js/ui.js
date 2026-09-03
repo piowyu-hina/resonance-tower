@@ -1301,8 +1301,6 @@ function render() {
   document.getElementById('goldLabel').innerHTML = inFreeVillage
     ? `金幣 ${bankedGold}`
     : `金幣 ${bankedGold}（本局 <span class="runGold">+${runGold}</span> 未入袋）`;
-  document.getElementById('resetBtn').hidden = !DEBUG_MODE;
-  document.getElementById('bossIntroTestBtn').hidden = !DEBUG_MODE;
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();
