@@ -53,7 +53,13 @@ function setLocale(locale) {
   return currentLocale;
 }
 
-function initI18n(locale = document.documentElement.lang || DEFAULT_LOCALE) {
+function requestedLocaleFromUrl() {
+  const search = globalThis.location?.search;
+  if (!search) return null;
+  return new URLSearchParams(search).get('lang');
+}
+
+function initI18n(locale = requestedLocaleFromUrl() || document.documentElement.lang || DEFAULT_LOCALE) {
   currentLocale = resolveLocale(locale);
   applyTranslations();
 }

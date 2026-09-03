@@ -143,6 +143,16 @@ const ITEM_DEFS = {
     desc: '消耗後可為角色某一個自動技能的效果永久 +1 級（最高 100 級，滿級為基礎值的 2 倍）。',
   },
 };
+function localizedItemDef(itemId) {
+  const item = ITEM_DEFS[itemId];
+  if (!item) return item;
+  return {
+    ...item,
+    name: t(`item.${itemId}.name`),
+    desc: t(`item.${itemId}.desc`),
+    rarity: item.rarity === '普通' ? t('rarity.common') : item.rarity,
+  };
+}
 const INVENTORY_SLOT_COUNT = 16;
 const STORAGE_SLOT_COUNT = 16;
 const SLIME_MONSTER_CRYSTAL_DROP_CHANCE = 0.35;
@@ -269,17 +279,33 @@ const MAX_IMPLEMENTED_FLOOR = 1; // raise this when floor 2 content is ready
 // regionName() falls back to the raw floor number for anything not yet named.
 const REGION_DEFS = {
   1: {
+    localeKey: 'region.slimeForest',
     name: '史萊姆叢林',
     description: '史萊姆棲息的近郊叢林',
     image: 'slime_forest',
     recommendedLevel: 1,
     threats: ['緩速', '睡眠', '魅惑'],
+    threatLocaleIds: ['slow', 'sleep', 'charm'],
     drops: ['魔物結晶', '能力書', '技能書'],
+    dropLocaleIds: ['crystal', 'statBook', 'skillBook'],
     boss: '史萊姆王',
+    bossLocaleKey: 'monster.slimeBoss',
   },
 };
 function regionDef(f) { return REGION_DEFS[f] || { name: `樓層 ${f}`, description: '未知區域', image: '', recommendedLevel: 1, threats: ['未知'], drops: ['未知'], boss: '未知' }; }
-function regionName(f) { return regionDef(f).name; }
+function localizedRegionDef(f) {
+  const region = regionDef(f);
+  if (!region.localeKey) return region;
+  return {
+    ...region,
+    name: t(`${region.localeKey}.name`),
+    description: t(`${region.localeKey}.description`),
+    threats: region.threatLocaleIds.map(id => t(`${region.localeKey}.threat.${id}`)),
+    drops: region.dropLocaleIds.map(id => t(`${region.localeKey}.drop.${id}`)),
+    boss: t(region.bossLocaleKey),
+  };
+}
+function regionName(f) { return localizedRegionDef(f).name; }
 const MOBS_PER_FLOOR = 2;   // clear this many mob WAVES (each wave = 2~3 mobs) before the boss shows up
 // mob XP share got cut from 0.25 to 0.1 when mobs went from 1-at-a-time to
 // 2~3-at-a-time - otherwise a floor's total mob XP would balloon to roughly

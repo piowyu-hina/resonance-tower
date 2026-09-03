@@ -2041,6 +2041,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 }
 .expeditionStepLabel { display: flex; align-items: center; gap: 7px; margin: 0 0 7px; color: #b8bec5; font-size: 12px; font-weight: 700; letter-spacing: .06em; }
 .expeditionStepLabel > span { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #6b7d77; border-radius: 50%; background: #26312e; color: #b8d6ca; font-size: 11px; }
+.expeditionStepLabel > b { min-width: 0; color: inherit; font: inherit; white-space: nowrap; }
 #expeditionRegionBrief { display: grid; grid-template-columns: 100px minmax(150px,1fr) minmax(320px,1.4fr); align-items: center; gap: 14px; margin-bottom: 12px; padding: 10px 13px; border: 1px solid #4a5158; border-radius: 11px; background: linear-gradient(110deg, #20282a, #20242a 52%, #25282c); }
 #expeditionRegionImage { width: 100px; height: 78px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.45)); }
 .expeditionRegionMain { min-width: 0; display: grid; gap: 3px; }

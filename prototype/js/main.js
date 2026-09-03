@@ -23,6 +23,7 @@ document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('localechange', () => {
   render();
   if (activeOverlay === 'journal') renderJournalPage();
+  if (activeOverlay === 'inventory') renderInventory();
 });
 
 initI18n();

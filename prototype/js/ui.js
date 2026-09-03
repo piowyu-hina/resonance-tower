@@ -40,10 +40,13 @@ function animateSurfaceChange(surface, key) {
 
 function renderRunResultSummary(targetId, gold) {
   const rewards = [];
-  if (gold > 0) rewards.push({ name: ITEM_DEFS.coin.name, img: ITEM_DEFS.coin.img, qty: gold });
+  if (gold > 0) {
+    const coin = localizedItemDef('coin');
+    rewards.push({ name: coin.name, img: coin.img, qty: gold });
+  }
 
   Object.entries(runInventoryGains).forEach(([itemId, qty]) => {
-    const item = ITEM_DEFS[itemId];
+    const item = localizedItemDef(itemId);
     if (!item || itemId === 'coin' || qty <= 0) return;
     rewards.push({ name: item.name, img: item.img, qty });
   });
@@ -116,7 +119,7 @@ function showDungeonEntry(onCovered) {
     return;
   }
 
-  const region = regionDef(floor);
+  const region = localizedRegionDef(floor);
   const art = document.getElementById('dungeonEntryArt');
   art.src = `assets/ui/${region.image}.png`;
   art.alt = region.name;
@@ -288,8 +291,8 @@ function attachStatusTooltip(el, status, character) {
 function itemTooltipHTML(item, entry) {
   return `
     <div class="ttName">${item.name}</div>
-    <div class="ttStat">稀有度：${item.rarity}</div>
-    ${entry ? `<div class="ttStat">持有數量：${entry.qty}</div>` : ''}
+    <div class="ttStat">${t('tooltip.rarity', { rarity: item.rarity })}</div>
+    ${entry ? `<div class="ttStat">${t('tooltip.owned', { quantity: formatLocaleNumber(entry.qty) })}</div>` : ''}
     <div class="ttStat">${item.desc}</div>
   `;
 }
@@ -303,10 +306,10 @@ function attachItemTooltip(el, item, entry) {
 function attachCombatActionTooltip(el, getItemId) {
   el.addEventListener('mouseenter', e => {
     const itemId = getItemId();
-    const item = ITEM_DEFS[itemId];
+    const item = localizedItemDef(itemId);
     const html = item
       ? itemTooltipHTML(item, { qty: inventoryItemCount(itemId) })
-      : '<div class="ttName">藥水槽</div><div class="ttStat">目前沒有放入藥水</div>';
+      : `<div class="ttName">${t('loadout.potionSlot')}</div><div class="ttStat">${t('loadout.emptyPotion')}</div>`;
     showTooltipContent(html, e);
   });
   el.addEventListener('mousemove', positionTooltip);
@@ -315,10 +318,10 @@ function attachCombatActionTooltip(el, getItemId) {
 
 function attachActiveRelicTooltip(el, character) {
   el.addEventListener('mouseenter', e => {
-    const item = ITEM_DEFS[character.loadout.activeItemId];
+    const item = localizedItemDef(character.loadout.activeItemId);
     const html = item
       ? itemTooltipHTML(item, null)
-      : '<div class="ttName">護符槽</div><div class="ttStat">目前沒有裝備護符</div>';
+      : `<div class="ttName">${t('loadout.charmSlot')}</div><div class="ttStat">${t('loadout.emptyCharm')}</div>`;
     showTooltipContent(html, e);
   });
   el.addEventListener('mousemove', positionTooltip);
@@ -332,7 +335,7 @@ function inventoryItemCount(itemId) {
 }
 
 function loadoutItemHTML(itemId, fallbackIcon, fallbackLabel) {
-  const item = itemId && ITEM_DEFS[itemId];
+  const item = itemId && localizedItemDef(itemId);
   if (!item) return `<span class="quickFallback">${fallbackIcon}</span><span class="quickLabel">${fallbackLabel}</span>`;
   const qty = item.equipSlot === 'potion' ? inventoryItemCount(itemId) : null;
   return `
@@ -344,7 +347,7 @@ function loadoutItemHTML(itemId, fallbackIcon, fallbackLabel) {
 
 function renderActiveRelicSlot(slot, character) {
   const itemId = character.loadout.activeItemId;
-  slot.innerHTML = loadoutItemHTML(itemId, '◇', '護符槽');
+  slot.innerHTML = loadoutItemHTML(itemId, '◇', t('loadout.charmSlot'));
   slot.classList.toggle('equipped', !!itemId);
 }
 
@@ -353,7 +356,7 @@ function renderCharmPicker(character) {
   list.innerHTML = '';
   inventory.forEach(entry => {
     if (!entry) return;
-    const item = ITEM_DEFS[entry.itemId];
+    const item = localizedItemDef(entry.itemId);
     if (!item || item.equipSlot !== 'charm') return;
     const option = document.createElement('button');
     option.type = 'button';
@@ -371,7 +374,7 @@ function renderCharmPicker(character) {
   const empty = document.createElement('button');
   empty.type = 'button';
   empty.className = 'pickerItem unequip';
-  empty.innerHTML = '<span class="pickerEmptyIcon">◇</span><span>不裝備護符</span>';
+  empty.innerHTML = `<span class="pickerEmptyIcon">◇</span><span>${t('picker.noneCharm')}</span>`;
   empty.addEventListener('click', event => {
     event.stopPropagation();
     character.loadout.activeItemId = null;
@@ -417,26 +420,26 @@ function renderExpeditionSelectedSummary() {
   if (!summary) return;
   const character = roster.find(member => party.includes(member.id));
   if (!character) {
-    summary.innerHTML = '<div class="expeditionEmptySelection">尚未選擇附身角色</div>';
+    summary.innerHTML = `<div class="expeditionEmptySelection">${t('loadout.notSelected')}</div>`;
     return;
   }
   const def = CHAR_DEFS[character.id];
   const bossIdentity = phase === 'prepBoss' ? `
     <div class="expeditionSelectedIdentity bossSelectedIdentity">
       <img src="${characterPortraitPath(character.id)}" alt="${def.name}">
-      <div><small>${character.id === 'wuming' ? '目前出戰' : '目前附身'}</small><b>${def.name}</b><span>Lv.${character.level}</span></div>
+      <div><small>${t(character.id === 'wuming' ? 'loadout.currentDeployment' : 'loadout.currentPossession')}</small><b>${def.name}</b><span>${t('format.level', { level: formatLocaleNumber(character.level) })}</span></div>
     </div>` : '';
   summary.innerHTML = `
     ${bossIdentity}
     <div class="expeditionLoadoutBlock">
-      <div class="expeditionStepLabel"><span>3</span>遠征裝備</div>
+      <div class="expeditionStepLabel"><span>3</span>${t('loadout.equipment')}</div>
       <div class="expeditionLoadout">
-        <div><small>藥水</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
-        <div><small>護符</small><div class="quickSlot activeQuickSlot"></div></div>
+        <div><small>${t('loadout.potion')}</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
+        <div><small>${t('loadout.charm')}</small><div class="quickSlot activeQuickSlot"></div></div>
       </div>
     </div>`;
   const combatSlot = summary.querySelector('.combatItemQuickSlot');
-  combatSlot.innerHTML = loadoutItemHTML(equippedCombatItemId, '＋', '選擇藥水');
+  combatSlot.innerHTML = loadoutItemHTML(equippedCombatItemId, '＋', t('picker.potion'));
   combatSlot.classList.toggle('equipped', !!equippedCombatItemId);
   combatSlot.classList.toggle('locked', phase === 'combat');
   attachCombatActionTooltip(combatSlot, () => equippedCombatItemId);
@@ -480,7 +483,8 @@ function renderExpeditionSelectedSummary() {
 function renderCombatItemPicker() {
   const list = document.getElementById('combatItemPickerList');
   list.innerHTML = '';
-  Object.entries(ITEM_DEFS).forEach(([itemId, item]) => {
+  Object.keys(ITEM_DEFS).forEach(itemId => {
+    const item = localizedItemDef(itemId);
     if (!item.combatAction) return;
     const qty = inventoryItemCount(itemId);
     const option = document.createElement('button');
@@ -505,7 +509,7 @@ function renderCombatItemPicker() {
   const emptyOption = document.createElement('button');
   emptyOption.type = 'button';
   emptyOption.className = 'pickerItem unequip';
-  emptyOption.innerHTML = '<span class="pickerEmptyIcon">◇</span><span>不攜帶道具</span>';
+  emptyOption.innerHTML = `<span class="pickerEmptyIcon">◇</span><span>${t('picker.nonePotion')}</span>`;
   emptyOption.addEventListener('click', event => {
     event.stopPropagation();
     equippedCombatItemId = null;
@@ -827,17 +831,9 @@ let shopTab = 'buy';
 let lastShopTabMode = null;
 let wasShopOpen = false;
 
-const SHOP_DIALOGUE = {
-  town: [
-    '歡迎。需要補給，還是有漂亮的結晶要賣？',
-    '藥水都整理好了，出發前記得檢查行囊。',
-    '魔物結晶很受歡迎，我會給你公道的價格。'
-  ],
-  dungeon: [
-    '能在這裡碰見也算緣分，要補給就趁現在。',
-    '地城裡可沒有下一間店，別省過頭了。',
-    '時間不等人。想慢慢挑的話，可以先關掉倒數。'
-  ]
+const SHOP_DIALOGUE_KEYS = {
+  town: ['shop.dialogue.town.0', 'shop.dialogue.town.1', 'shop.dialogue.town.2'],
+  dungeon: ['shop.dialogue.dungeon.0', 'shop.dialogue.dungeon.1', 'shop.dialogue.dungeon.2'],
 };
 
 function renderShopDialogue() {
@@ -845,14 +841,14 @@ function renderShopDialogue() {
     shopDialogueIndex = 0;
     lastShopDialogueMode = shopMode;
   }
-  const lines = SHOP_DIALOGUE[shopMode] || SHOP_DIALOGUE.town;
-  document.getElementById('shopDialogueText').textContent = lines[shopDialogueIndex % lines.length];
+  const lines = SHOP_DIALOGUE_KEYS[shopMode] || SHOP_DIALOGUE_KEYS.town;
+  document.getElementById('shopDialogueText').textContent = t(lines[shopDialogueIndex % lines.length]);
 }
 
 function buildShopUI() {
   const buyList = document.getElementById('shopBuyList');
   SHOP_ITEMS.forEach(offer => {
-    const item = ITEM_DEFS[offer.itemId];
+    const item = localizedItemDef(offer.itemId);
     const row = document.createElement('div');
     row.className = 'shopBuyRow';
     row.dataset.itemId = offer.itemId;
@@ -938,6 +934,10 @@ function renderShopView() {
   autoLeaveBtn.textContent = t(shopAutoLeave ? 'shop.disableCountdown' : 'shop.enableCountdown');
   SHOP_ITEMS.forEach(offer => {
     const row = document.querySelector(`.shopBuyRow[data-item-id="${offer.itemId}"]`);
+    const item = localizedItemDef(offer.itemId);
+    row.querySelector('img').alt = item.name;
+    row.querySelector('.shopItemName').textContent = item.name;
+    row.querySelector('.shopItemCopy small').textContent = item.desc;
     row.querySelector('.shopOwned').textContent = t('shop.owned', {
       quantity: formatLocaleNumber(inventoryItemCount(offer.itemId)),
     });
@@ -1020,7 +1020,7 @@ function renderItemGrid(grid, collection, collectionName) {
     attachInventoryDrag(slot, collectionName, index);
 
     if (!entry) return;
-    const item = ITEM_DEFS[entry.itemId];
+    const item = localizedItemDef(entry.itemId);
     if (!item || entry.qty <= 0) return;
     slot.innerHTML = `
       <img src="assets/item/${item.img}.png" alt="${item.name}" draggable="false">
@@ -1054,17 +1054,19 @@ function syncCoinItem() {
 
 function renderInventory() {
   syncCoinItem();
+  const warehouseOpen = document.getElementById('inventoryModal').classList.contains('warehouseOpen');
+  document.getElementById('inventoryTitle').textContent = t(warehouseOpen ? 'inventory.storage' : 'inventory.title');
   renderItemGrid(document.getElementById('inventoryGrid'), inventory, 'inventory');
   renderItemGrid(document.getElementById('storageGrid'), storage, 'storage');
 }
 
-function setInventoryOpen(open, title = '背包') {
+function setInventoryOpen(open, mode = 'bag') {
   if (open) closeOtherOverlays('inventory');
   activeOverlay = open ? 'inventory' : (activeOverlay === 'inventory' ? null : activeOverlay);
   if (open) {
     selectedTransferSlot = null;
-    const warehouseOpen = title === '倉庫';
-    document.getElementById('inventoryTitle').textContent = title;
+    const warehouseOpen = mode === 'storage';
+    document.getElementById('inventoryTitle').textContent = t(warehouseOpen ? 'inventory.storage' : 'inventory.title');
     document.getElementById('inventoryModal').classList.toggle('warehouseOpen', warehouseOpen);
     document.getElementById('storagePane').hidden = !warehouseOpen;
     document.getElementById('inventoryTransferHint').style.display = warehouseOpen ? '' : 'none';
@@ -1106,7 +1108,7 @@ function buildUI() {
     render();
   });
   document.getElementById('homeStorageBtn').addEventListener('click', () => {
-    if (!contractStoryLocked()) setInventoryOpen(true, '倉庫');
+    if (!contractStoryLocked()) setInventoryOpen(true, 'storage');
   });
   document.getElementById('homeGrowthBtn').addEventListener('click', () => {
     if (contractStoryLocked()) return;
@@ -1511,14 +1513,20 @@ function buildMonsterCards() {
 function floorLabelText() {
   const region = regionName(floor);
   if (phase === 'prepFloor' && !partyLocked) {
-    if (prepLocation === 'village') return '村莊';
-    if (prepLocation === 'home') return '家';
-    if (prepLocation === 'regions') return '遠征入口';
-    return '史萊姆叢林';
+    if (prepLocation === 'village') return t('village.title');
+    if (prepLocation === 'home') return t('home.title');
+    if (prepLocation === 'regions') return t('region.title');
+    return region;
   }
   if (phase === 'combat' && monsters.length > 0) {
     const boss = monsters.find(m => m.isBoss);
-    return boss ? `${region}　首領戰` : `${region}　小怪 ${mobsCleared + 1}/${MOBS_PER_FLOOR}`;
+    return boss
+      ? t('combat.bossBattle', { region })
+      : t('combat.mobProgress', {
+        region,
+        current: formatLocaleNumber(mobsCleared + 1),
+        total: formatLocaleNumber(MOBS_PER_FLOOR),
+      });
   }
   return region;
 }
@@ -1623,22 +1631,22 @@ function renderPrepView() {
   if (atVillage || atHome || atRegions) return;
 
   if (phase === 'prepFloor') {
-    headingEl.textContent = `${regionName(floor)}・遠征準備`;
+    headingEl.textContent = t('expedition.preparation', { region: regionName(floor) });
     if (partyLocked) {
-      msgEl.textContent = `已選定附身的靈魂，前往${regionName(floor)}，直到死亡或通關前無法更換`;
-      startBtnEl.textContent = '繼續前進';
+      msgEl.textContent = t('expedition.lockedParty', { region: regionName(floor) });
+      startBtnEl.textContent = t('expedition.continue');
     } else if (party.length === 0) {
-      msgEl.textContent = `請先選擇要讓哪個靈魂附身出發（單機模式一次僅能附身 ${SOLO_PARTY_LIMIT} 位，未來開放多人連線後會有更多可能）`;
-      startBtnEl.textContent = '開始出擊';
+      msgEl.textContent = t('expedition.chooseSoul', { limit: formatLocaleNumber(SOLO_PARTY_LIMIT) });
+      startBtnEl.textContent = t('expedition.start');
     } else {
       msgEl.textContent = ''; // party already picked - the highlighted card already shows that, no need to say it again
-      startBtnEl.textContent = '開始出擊';
+      startBtnEl.textContent = t('expedition.start');
     }
     retreatBtnEl.style.display = partyLocked ? '' : 'none';
   } else {
-    headingEl.textContent = '首領戰前確認';
-    msgEl.textContent = '小怪已清空。確認藥水與護符後，選擇撤退或挑戰首領。';
-    startBtnEl.textContent = '挑戰首領';
+    headingEl.textContent = t('expedition.bossPrep');
+    msgEl.textContent = t('expedition.bossPrepDesc');
+    startBtnEl.textContent = t('expedition.challengeBoss');
     retreatBtnEl.style.display = '';
   }
   startBtnEl.disabled = (party.length === 0);
@@ -1665,10 +1673,12 @@ function renderPrepView() {
 }
 
 function renderRegionContext() {
-  const region = regionDef(floor);
+  const region = localizedRegionDef(floor);
   const tagHTML = values => values.map(value => `<span>${value}</span>`).join('');
   document.getElementById('forestRegionName').textContent = region.name;
-  document.getElementById('forestRegionLevel').textContent = `推薦 Lv.${region.recommendedLevel}`;
+  document.getElementById('forestRegionLevel').textContent = t('format.recommendedLevel', {
+    level: formatLocaleNumber(region.recommendedLevel),
+  });
   document.getElementById('forestRegionDescription').textContent = region.description;
   document.getElementById('forestRegionThreats').innerHTML = tagHTML(region.threats);
   document.getElementById('forestRegionDrops').textContent = region.drops.join('・');
@@ -1678,7 +1688,9 @@ function renderRegionContext() {
   image.alt = region.name;
   document.getElementById('expeditionRegionName').textContent = region.name;
   document.getElementById('expeditionRegionDescription').textContent = region.description;
-  document.getElementById('expeditionRegionLevel').textContent = `Lv.${region.recommendedLevel}`;
+  document.getElementById('expeditionRegionLevel').textContent = t('format.level', {
+    level: formatLocaleNumber(region.recommendedLevel),
+  });
   document.getElementById('expeditionRegionBoss').textContent = region.boss;
   document.getElementById('expeditionRegionThreats').textContent = region.threats.join('・');
 }
