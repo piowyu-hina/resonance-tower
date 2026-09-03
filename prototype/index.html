@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-62">
+<link rel="stylesheet" href="style.css?v=20260903-63">
 </head>
 <body>
 
@@ -329,16 +329,39 @@
 
 <div id="contractOverlay" class="storyPanelOverlay" aria-hidden="true">
   <section class="contractPanel" role="dialog" aria-modal="true" aria-labelledby="contractPanelTitle">
-    <header><div><small>選擇等待回應的靈魂</small><h2 id="contractPanelTitle">締結誓約</h2></div><button id="contractCloseBtn" type="button" aria-label="關閉締結誓約">×</button></header>
-    <button id="xiaochuSoulBtn" class="soulChoice" type="button">
-      <img src="assets/story/xiaochu_resonance_orb.png" alt="小初的靈魂球">
-      <span><b>小初</b><small>正在等待妳的回應</small></span>
-    </button>
-    <div id="contractEmpty" class="contractEmpty" hidden>目前沒有等待締結誓約的靈魂。</div>
-    <div id="contractConfirm" class="contractConfirm" hidden>
-      <p>是否要與「小初」締結誓約？</p>
-      <div><button id="contractCancelBtn" type="button">再等一下</button><button id="contractConfirmBtn" type="button">締結誓約</button></div>
+    <div class="contractBackdrop" aria-hidden="true"><span></span></div>
+    <header class="contractHeader">
+      <div><small>RESONANCE COVENANT</small><h2 id="contractPanelTitle">締結誓約</h2><p>回應跨越生死而來的靈魂頻率</p></div>
+      <button id="contractCloseBtn" type="button" aria-label="關閉締結誓約">×</button>
+    </header>
+    <div class="contractStage">
+      <button id="xiaochuSoulBtn" class="soulChoice" type="button">
+        <span class="contractOrbStage">
+          <img class="contractMagicCircle" src="assets/rarity/rare_magic_circle.png" alt="">
+          <img class="contractSoulOrb" src="assets/story/xiaochu_resonance_orb.png" alt="小初的靈魂球">
+          <i aria-hidden="true"></i>
+        </span>
+        <span class="contractSoulInfo">
+          <small class="contractSignal">RESONANCE DETECTED</small>
+          <b>小初</b>
+          <em>稀有 · 劍士之魂</em>
+          <span class="contractSoulMessage">「我聽見妳的聲音了。<br>這一次，換我回應妳。」</span>
+          <span class="contractRespond">回應這道共鳴 <i aria-hidden="true">›</i></span>
+        </span>
+      </button>
+      <div id="contractConfirm" class="contractConfirm" hidden>
+        <small>COVENANT CONFIRMATION</small>
+        <h3>讓彼此的靈魂產生共鳴</h3>
+        <p>誓約一旦締結，小初將成為可附身的靈魂夥伴，與妳一同踏上之後的遠征。</p>
+        <div><button id="contractCancelBtn" type="button">再想一下</button><button id="contractConfirmBtn" type="button">締結誓約</button></div>
+      </div>
+      <div id="contractEmpty" class="contractEmpty" hidden>
+        <img src="assets/story/resonance_orb.png" alt="">
+        <b>此刻沒有等待回應的靈魂</b>
+        <span>新的頻率出現時，誓約之間會再次亮起。</span>
+      </div>
     </div>
+    <footer class="contractFooter"><span>靈魂的回應出自彼此意志</span><i aria-hidden="true"></i></footer>
   </section>
 </div>
 
@@ -378,7 +401,7 @@
 <script src="js/state.js?v=20260903-37"></script>
 <script src="js/goo.js?v=20260903-1"></script>
 <script src="js/combat.js?v=20260903-35"></script>
-<script src="js/story.js?v=20260903-10"></script>
+<script src="js/story.js?v=20260903-11"></script>
 <script src="js/ui.js?v=20260903-40"></script>
 <script src="js/debug.js?v=20260903-6"></script>
 <script src="js/save.js?v=20260903-1"></script>

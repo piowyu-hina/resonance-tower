@@ -264,8 +264,12 @@ function openContractPanel() {
   if (!hasPendingSoul && resonanceState.xiaochu !== 'contracted') return;
   closeOtherOverlays('contract');
   activeOverlay = 'contract';
+  const panel = document.querySelector('#contractOverlay .contractPanel');
+  panel.classList.remove('confirming');
   document.getElementById('contractConfirm').hidden = true;
-  document.getElementById('xiaochuSoulBtn').hidden = !hasPendingSoul;
+  const soulButton = document.getElementById('xiaochuSoulBtn');
+  soulButton.hidden = !hasPendingSoul;
+  soulButton.disabled = false;
   document.getElementById('contractEmpty').hidden = hasPendingSoul;
   const overlay = document.getElementById('contractOverlay');
   overlay.classList.add('open');
@@ -387,10 +391,14 @@ function bindDialogueUI() {
   document.getElementById('contractFacilityBtn').addEventListener('click', beginContractPreparation);
   document.getElementById('contractCloseBtn').addEventListener('click', closeContractPanel);
   document.getElementById('xiaochuSoulBtn').addEventListener('click', () => {
+    document.querySelector('#contractOverlay .contractPanel').classList.add('confirming');
+    document.getElementById('xiaochuSoulBtn').disabled = true;
     document.getElementById('contractConfirm').hidden = false;
     document.getElementById('contractConfirmBtn').focus();
   });
   document.getElementById('contractCancelBtn').addEventListener('click', () => {
+    document.querySelector('#contractOverlay .contractPanel').classList.remove('confirming');
+    document.getElementById('xiaochuSoulBtn').disabled = false;
     document.getElementById('contractConfirm').hidden = true;
     document.getElementById('xiaochuSoulBtn').focus();
   });

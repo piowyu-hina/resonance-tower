@@ -1856,31 +1856,79 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 
 .storyPanelOverlay { position: fixed; z-index: 9150; inset: 0; display: flex; align-items: center; justify-content: center; padding: 22px; background: rgba(6,8,11,.84); backdrop-filter: blur(2px); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .18s ease-out, visibility 0s linear .2s; }
 .storyPanelOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
-.journalPanel, .contractPanel { width: min(760px, calc(100vw - 28px)); max-height: calc(100vh - 36px); overflow: auto; border: 1px solid #766345; border-radius: 12px; background: linear-gradient(145deg,#2c2923,#1f2226); box-shadow: 0 20px 52px rgba(0,0,0,.7); opacity: 0; transform: translateY(8px) scale(.992); transition: opacity .2s ease-out, transform .2s ease-out; }
+.journalPanel { width: min(760px, calc(100vw - 28px)); max-height: calc(100vh - 36px); overflow: auto; border: 1px solid #766345; border-radius: 12px; background: linear-gradient(145deg,#2c2923,#1f2226); box-shadow: 0 20px 52px rgba(0,0,0,.7); opacity: 0; transform: translateY(8px) scale(.992); transition: opacity .2s ease-out, transform .2s ease-out; }
 .storyPanelOverlay.open > .journalPanel, .storyPanelOverlay.open > .contractPanel { opacity: 1; transform: translateY(0) scale(1); }
-.journalPanel > header, .contractPanel > header { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 20px 13px; border-bottom: 1px solid #5f513b; background: rgba(40,37,32,.97); }
-.journalPanel header small, .contractPanel header small { color: #a79778; font-size: 13px; }
-.journalPanel h2, .contractPanel h2 { margin: 2px 0 0; color: #e5c77f; font-size: 26px; }
-.journalPanel header button, .contractPanel header button { width: 36px; height: 36px; padding: 0; border: 1px solid #766f64; border-radius: 6px; background: #36383b; color: #ddd; font-size: 24px; cursor: pointer; }
+.journalPanel > header { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 20px 13px; border-bottom: 1px solid #5f513b; background: rgba(40,37,32,.97); }
+.journalPanel header small { color: #a79778; font-size: 13px; }
+.journalPanel h2 { margin: 2px 0 0; color: #e5c77f; font-size: 26px; }
+.journalPanel header button { width: 36px; height: 36px; padding: 0; border: 1px solid #766f64; border-radius: 6px; background: #36383b; color: #ddd; font-size: 24px; cursor: pointer; }
 .journalChapter { margin: 18px 22px 0; color: #d9bd78; font-size: 19px; font-weight: 700; }
 .journalPageText { min-height: 390px; margin: 12px 22px; padding: 23px 26px; border: 1px solid #aa9366; background: #d8c99f; color: #30291f; font-family: serif; font-size: 17px; line-height: 1.85; white-space: pre-wrap; box-shadow: inset 0 0 24px rgba(83,57,23,.14); }
 .journalPageText.pageTurning { animation: pageContentFade .14s ease-out; }
 .journalPanel footer { display: flex; align-items: center; justify-content: space-between; padding: 0 22px 20px; color: #a99e8b; }
-.journalPanel footer button, .contractConfirm button { padding: 9px 15px; border: 1px solid #806b45; border-radius: 7px; background: #51442e; color: #f0d797; cursor: pointer; }
-.soulChoice { width: calc(100% - 44px); display: flex; align-items: center; gap: 20px; margin: 22px; padding: 18px 22px; border: 1px solid #596b79; border-radius: 11px; background: radial-gradient(circle at 12% 50%,rgba(85,185,225,.18),transparent 26%),#252b31; color: #ddd; text-align: left; cursor: pointer; }
+.journalPanel footer button { padding: 9px 15px; border: 1px solid #806b45; border-radius: 7px; background: #51442e; color: #f0d797; cursor: pointer; }
+
+/* The covenant room is a full ritual stage rather than a generic list modal. */
+#contractOverlay { background: radial-gradient(circle at 50% 45%, rgba(65,93,132,.24), transparent 42%), rgba(3,6,10,.94); backdrop-filter: blur(5px); }
+.contractPanel { position: relative; isolation: isolate; width: min(980px, calc(100vw - 40px)); min-height: min(620px, calc(100vh - 40px)); max-height: calc(100vh - 36px); display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(135,169,210,.45); border-radius: 18px; background: radial-gradient(circle at 30% 54%, rgba(60,100,145,.16), transparent 32%), linear-gradient(145deg,#151b24,#0c1017 70%); box-shadow: 0 28px 90px rgba(0,0,0,.82), inset 0 0 60px rgba(71,112,160,.06); color: #e8edf4; opacity: 0; transform: translateY(8px) scale(.992); transition: opacity .2s ease-out, transform .2s ease-out; }
+.contractBackdrop { position: absolute; z-index: -1; inset: 0; overflow: hidden; pointer-events: none; }
+.contractBackdrop::before, .contractBackdrop::after { content: ''; position: absolute; width: 520px; height: 520px; border: 1px solid rgba(106,173,232,.1); border-radius: 50%; }
+.contractBackdrop::before { left: -260px; top: -280px; box-shadow: 0 0 80px rgba(73,142,205,.08); }
+.contractBackdrop::after { right: -290px; bottom: -320px; }
+.contractBackdrop span { position: absolute; inset: 0; opacity: .2; background-image: linear-gradient(rgba(141,177,210,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(141,177,210,.08) 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(to bottom, transparent, #000 24%, #000 76%, transparent); }
+.contractHeader { position: relative; z-index: 3; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 24px 28px 18px; border-bottom: 1px solid rgba(132,166,203,.18); background: linear-gradient(90deg, rgba(31,43,58,.88), rgba(13,18,25,.65)); }
+.contractHeader > div { display: grid; gap: 3px; }
+.contractHeader small { color: #7fa8c7; font-family: Georgia, serif; font-size: 10px; font-weight: 700; letter-spacing: .28em; }
+.contractHeader h2 { margin: 0; color: #f2dca5; font-size: 28px; letter-spacing: .12em; }
+.contractHeader p { margin: 2px 0 0; color: #8995a1; font-size: 12px; }
+#contractCloseBtn { width: 38px; height: 38px; flex: 0 0 38px; padding: 0; border: 1px solid #526274; border-radius: 50%; background: rgba(31,40,51,.88); color: #aebbc8; font-size: 24px; line-height: 34px; cursor: pointer; transition: border-color .15s, background .15s, color .15s, transform .15s; }
+#contractCloseBtn:hover { border-color: #a99062; background: #34302b; color: #f0d594; transform: rotate(4deg); }
+.contractStage { position: relative; z-index: 1; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: stretch; }
+.soulChoice { grid-column: 1 / -1; width: 100%; min-width: 0; display: grid; grid-template-columns: minmax(340px,.9fr) minmax(320px,1.1fr); align-items: center; gap: 14px; padding: 24px 58px 22px; border: 0; background: transparent; color: #e7edf3; text-align: left; cursor: pointer; }
 .soulChoice[hidden] { display: none; }
-.soulChoice img { width: 105px; height: 105px; object-fit: contain; filter: drop-shadow(0 0 15px rgba(104,210,255,.62)); }
-.soulChoice span { display: grid; gap: 7px; }
-.soulChoice b { color: #d9f3ff; font-size: 23px; }
-.soulChoice small { color: #98aab2; font-size: 14px; }
-.contractConfirm { margin: 0 22px 22px; padding: 18px; border: 1px solid #725966; border-radius: 10px; background: #30282d; text-align: center; }
+.contractOrbStage { position: relative; min-height: 370px; display: grid; place-items: center; transition: transform .25s ease; }
+.contractOrbStage::before { content: ''; position: absolute; width: 330px; height: 330px; border-radius: 50%; background: radial-gradient(circle, rgba(250,194,83,.22), rgba(68,140,211,.08) 45%, transparent 70%); filter: blur(4px); transition: transform .3s ease, opacity .3s ease; }
+.contractMagicCircle { position: absolute; width: 350px; height: 350px; object-fit: contain; opacity: .42; filter: drop-shadow(0 0 14px rgba(71,174,255,.48)); animation: contractCircleTurn 24s linear infinite; }
+.contractSoulOrb { position: relative; z-index: 2; width: 260px; height: 260px; object-fit: contain; filter: drop-shadow(0 0 18px rgba(255,193,64,.5)); animation: contractOrbHover 2.8s ease-in-out infinite alternate; transition: filter .25s ease; }
+.contractOrbStage > i { position: absolute; z-index: 3; width: 286px; height: 286px; border: 1px solid rgba(255,225,143,.18); border-radius: 50%; box-shadow: 0 0 28px rgba(255,192,70,.14), inset 0 0 24px rgba(87,169,234,.1); }
+.contractSoulInfo { min-width: 0; display: grid; align-content: center; justify-items: start; gap: 8px; padding: 30px 20px 30px 30px; border-left: 1px solid rgba(140,168,198,.18); }
+.contractSignal { padding: 4px 8px; border: 1px solid rgba(102,190,231,.32); border-radius: 12px; background: rgba(54,128,168,.12); color: #8dcce9; font-size: 9px; font-weight: 800; letter-spacing: .18em; }
+.contractSoulInfo > b { margin-top: 4px; color: #fff0c3; font-size: 40px; letter-spacing: .12em; text-shadow: 0 0 20px rgba(244,187,72,.18); }
+.contractSoulInfo > em { color: #9daabd; font-size: 12px; font-style: normal; letter-spacing: .12em; }
+.contractSoulMessage { margin: 12px 0 17px; color: #c9cfd5; font-family: serif; font-size: 16px; line-height: 1.9; }
+.contractRespond { display: flex; align-items: center; gap: 14px; padding: 11px 16px; border: 1px solid #987846; border-radius: 7px; background: linear-gradient(180deg, rgba(104,76,35,.7), rgba(61,48,30,.82)); color: #f3d99a; font-size: 13px; font-weight: 800; letter-spacing: .08em; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+.contractRespond i { color: #fff0bd; font-size: 22px; font-style: normal; transition: transform .18s ease; }
+.soulChoice:not(:disabled):hover .contractOrbStage { transform: scale(1.025); }
+.soulChoice:not(:disabled):hover .contractSoulOrb { filter: brightness(1.09) drop-shadow(0 0 28px rgba(255,193,64,.72)); }
+.soulChoice:not(:disabled):hover .contractOrbStage::before { opacity: 1.2; transform: scale(1.08); }
+.soulChoice:not(:disabled):hover .contractRespond { border-color: #d0a85f; background: linear-gradient(180deg, rgba(127,91,38,.82), rgba(75,56,31,.9)); }
+.soulChoice:not(:disabled):hover .contractRespond i { transform: translateX(3px); }
+.soulChoice:disabled { cursor: default; }
+.contractPanel.confirming .soulChoice { grid-column: 1; grid-template-columns: 1fr; padding: 20px 28px; border-right: 1px solid rgba(132,166,203,.18); }
+.contractPanel.confirming .contractSoulInfo { display: none; }
+.contractPanel.confirming .contractOrbStage { min-height: 390px; }
+.contractPanel.confirming .contractSoulOrb { width: 235px; height: 235px; }
+.contractPanel.confirming .contractMagicCircle { width: 320px; height: 320px; }
+.contractConfirm { grid-column: 2; align-self: center; display: grid; justify-items: start; gap: 10px; margin: 28px; padding: 30px; border: 1px solid rgba(158,125,72,.48); border-radius: 13px; background: linear-gradient(145deg,rgba(56,47,36,.92),rgba(24,27,34,.94)); box-shadow: 0 18px 40px rgba(0,0,0,.36), inset 3px 0 rgba(218,175,92,.56); text-align: left; animation: contractConfirmIn .24s ease-out both; }
 .contractConfirm[hidden] { display: none; }
-.contractConfirm p { margin: 0 0 14px; color: #eee; font-size: 18px; }
-.contractConfirm > div { display: flex; justify-content: center; gap: 10px; }
-.contractEmpty { margin: 22px; padding: 42px 18px; border: 1px dashed #59616a; border-radius: 10px; color: #8f979f; font-size: 16px; text-align: center; }
+.contractConfirm > small { color: #b99352; font-family: Georgia, serif; font-size: 9px; font-weight: 700; letter-spacing: .22em; }
+.contractConfirm h3 { margin: 3px 0 4px; color: #f2dfb0; font-size: 23px; line-height: 1.4; }
+.contractConfirm p { margin: 0 0 14px; color: #aeb5bd; font-size: 13px; line-height: 1.8; }
+.contractConfirm > div { width: 100%; display: grid; grid-template-columns: .8fr 1.2fr; gap: 9px; }
+.contractConfirm button { min-height: 43px; padding: 9px 15px; border: 1px solid #65707c; border-radius: 7px; background: #303741; color: #cbd2d9; font-weight: 700; cursor: pointer; }
+.contractConfirm button:hover { border-color: #8997a6; background: #3a424d; }
+#contractConfirmBtn { border-color: #ad8244; background: linear-gradient(180deg,#825c28,#62441f); color: #fff0c4; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+#contractConfirmBtn:hover { border-color: #d4aa62; background: linear-gradient(180deg,#987035,#745226); }
+.contractEmpty { grid-column: 1 / -1; align-self: center; justify-self: center; display: grid; justify-items: center; gap: 10px; padding: 45px; color: #8d99a5; text-align: center; }
 .contractEmpty[hidden] { display: none; }
-.soulChoice:not([hidden]), .contractConfirm:not([hidden]), .contractEmpty:not([hidden]) { animation: contentFadeIn .15s ease-out; }
-#contractConfirmBtn { border-color: #a27a8d; background: #694456; color: #fff; }
+.contractEmpty img { width: 110px; height: 110px; object-fit: contain; opacity: .24; filter: grayscale(.6); }
+.contractEmpty b { color: #b1bac3; font-size: 18px; }
+.contractEmpty span { font-size: 12px; }
+.contractFooter { position: relative; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 10px 28px 13px; color: #65717d; font-size: 10px; letter-spacing: .12em; }
+.contractFooter i { flex: 1; height: 1px; background: linear-gradient(90deg,rgba(116,143,170,.25),transparent); }
+@keyframes contractCircleTurn { to { transform: rotate(360deg); } }
+@keyframes contractOrbHover { from { transform: translateY(-3px); } to { transform: translateY(5px); } }
+@keyframes contractConfirmIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes storyRequiredPulse { from { box-shadow:0 0 0 1px rgba(225,184,85,.12),0 0 12px rgba(225,184,85,.15); } to { box-shadow:0 0 0 2px rgba(225,184,85,.25),0 0 28px rgba(225,184,85,.38); } }
 @keyframes pageContentFade { from { opacity:.35; } to { opacity:1; } }
 
@@ -1889,8 +1937,16 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .journalPageText { min-height: 0; margin: 10px 12px; padding: 17px; font-size: 15px; }
   .journalChapter { margin: 14px 13px 0; }
   .journalPanel footer { padding: 0 13px 14px; }
-  .soulChoice { width: calc(100% - 24px); margin: 12px; padding: 13px; }
-  .soulChoice img { width: 78px; height: 78px; }
+  .contractPanel { width: calc(100vw - 16px); min-height: calc(100vh - 16px); }
+  .contractHeader { padding: 18px; }
+  .contractStage, .contractPanel.confirming .contractStage { grid-template-columns: 1fr; }
+  .soulChoice, .contractPanel.confirming .soulChoice { grid-column: 1; grid-template-columns: 1fr; padding: 14px 18px; border-right: 0; }
+  .contractOrbStage, .contractPanel.confirming .contractOrbStage { min-height: 255px; }
+  .contractMagicCircle, .contractPanel.confirming .contractMagicCircle { width: 240px; height: 240px; }
+  .contractSoulOrb, .contractPanel.confirming .contractSoulOrb { width: 180px; height: 180px; }
+  .contractSoulInfo { padding: 12px 4px 24px; border-left: 0; text-align: center; justify-items: center; }
+  .contractPanel.confirming .soulChoice { display: none; }
+  .contractConfirm { grid-column: 1; margin: 18px; }
 }
 #homeGrowthView > .navBackBtn { margin-bottom: 12px; }
 #homeView.showingGrowth > .homeTopbar { display: none; }
