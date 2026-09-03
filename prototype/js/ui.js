@@ -806,7 +806,11 @@ function renderShopView() {
   overlay.setAttribute('aria-hidden', String(!shopOpen));
   if (!shopOpen) return;
   document.getElementById('shopTitle').textContent = shopMode === 'town' ? '城外商店' : '地城商店';
-  document.getElementById('shopWallet').textContent = `${shopMode === 'town' ? '安全金幣' : '本局金幣'} ${shopGold()}`;
+  const shopWallet = document.getElementById('shopWallet');
+  shopWallet.innerHTML = `<img src="assets/item/coin.png" alt="">${shopGold()}`;
+  shopWallet.title = shopMode === 'town'
+    ? '目前持有、可以在村莊使用的金幣'
+    : '本次遠征途中取得、目前可以使用的金幣';
   renderShopDialogue();
   document.getElementById('shopCountdown').textContent = shopMode === 'town'
     ? `安全金幣：${bankedGold}`
@@ -1309,9 +1313,13 @@ function render() {
   const floorLabelEl = document.getElementById('floorLabel');
   floorLabelEl.textContent = floorLabelText();
   floorLabelEl.style.display = inPrep ? 'none' : '';
-  document.getElementById('goldLabel').innerHTML = inFreeVillage
-    ? `金幣 ${bankedGold}`
-    : `金幣 ${bankedGold}（本局 <span class="runGold">+${runGold}</span> 未入袋）`;
+  const goldLabel = document.getElementById('goldLabel');
+  goldLabel.innerHTML = inFreeVillage
+    ? `<img src="assets/item/coin.png" alt="金幣">${bankedGold}`
+    : `<img src="assets/item/coin.png" alt="金幣">${bankedGold}<span class="runGold">本次 +${runGold}</span>`;
+  goldLabel.title = inFreeVillage
+    ? '已帶回村莊的金幣'
+    : '前方是已帶回村莊的金幣；「本次」是這趟遠征尚未入袋的金幣';
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();
