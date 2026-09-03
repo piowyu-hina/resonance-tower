@@ -50,6 +50,16 @@ body {
   border-bottom: 1px solid #444;
   margin-bottom: 8px;
 }
+
+/* The game surface behaves like an application, not a selectable document. */
+html, body, #app, button, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
 .headerLead { min-width: 0; display: flex; flex: 1 1 auto; align-items: center; gap: 18px; }
 .gameBrand { flex: 0 0 auto; display: flex; align-items: center; gap: 9px; }
 .brandSigil { position: relative; width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; }
