@@ -68,6 +68,15 @@ const FLOOR1_MOB_POOL = Object.keys(MONSTER_DEFS);
 // Inventory definitions are display/data only for now. The first backpack
 // pass deliberately has no consume/drop/shop behavior attached yet.
 const ITEM_DEFS = {
+  coin: {
+    name: '金幣',
+    img: 'coin',
+    rarity: '普通',
+    category: 'currency',
+    equipSlot: null,
+    maxStack: Number.MAX_SAFE_INTEGER,
+    desc: '村莊與商店通用的貨幣。',
+  },
   potion: {
     name: '治療藥水',
     img: 'potion',

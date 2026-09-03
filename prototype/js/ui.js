@@ -918,25 +918,34 @@ function renderItemGrid(grid, collection, collectionName) {
       <span class="inventoryQty">×${entry.qty}</span>
       <span class="inventoryItemName">${item.name}</span>
     `;
-    attachItemTooltip(slot, item, entry);
+    if (entry.itemId !== 'coin') attachItemTooltip(slot, item, entry);
   });
 }
 
-function renderInventory() {
-  const grid = document.getElementById('inventoryGrid');
-  grid.innerHTML = '';
-  if (bankedGold > 0) {
-    const coinPosition = document.createElement('div');
-    coinPosition.className = 'inventorySlot inventoryGoldSlot';
-    coinPosition.innerHTML = `<img src="assets/item/coin.png" alt="金幣"><span class="inventoryQty">${bankedGold}</span><span class="inventoryItemName">金幣</span>`;
-    grid.appendChild(coinPosition);
+function syncCoinItem() {
+  const collections = [inventory, storage];
+  const coinEntries = [];
+  collections.forEach(collection => collection.forEach((entry, index) => {
+    if (entry && entry.itemId === 'coin') coinEntries.push({ collection, index });
+  }));
+  if (bankedGold <= 0) {
+    coinEntries.forEach(({ collection, index }) => { collection[index] = null; });
+    return;
   }
-  const itemGrid = document.createDocumentFragment();
-  const temporaryGrid = document.createElement('div');
-  const visibleInventory = bankedGold > 0 ? inventory.slice(0, INVENTORY_SLOT_COUNT - 1) : inventory;
-  renderItemGrid(temporaryGrid, visibleInventory, 'inventory');
-  while (temporaryGrid.firstChild) itemGrid.appendChild(temporaryGrid.firstChild);
-  grid.appendChild(itemGrid);
+  if (coinEntries.length > 0) {
+    coinEntries[0].collection[coinEntries[0].index].qty = bankedGold;
+    coinEntries.slice(1).forEach(({ collection, index }) => { collection[index] = null; });
+    return;
+  }
+  const target = collections
+    .map(collection => ({ collection, index: collection.findIndex(entry => !entry) }))
+    .find(location => location.index >= 0);
+  if (target) target.collection[target.index] = { itemId: 'coin', qty: bankedGold };
+}
+
+function renderInventory() {
+  syncCoinItem();
+  renderItemGrid(document.getElementById('inventoryGrid'), inventory, 'inventory');
   renderItemGrid(document.getElementById('storageGrid'), storage, 'storage');
 }
 

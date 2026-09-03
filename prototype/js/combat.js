@@ -472,8 +472,7 @@ function addInventoryItem(itemId, amount = 1, unsecured = false) {
     entry.qty += added;
     remaining -= added;
   });
-  const usableSlots = bankedGold > 0 ? INVENTORY_SLOT_COUNT - 1 : INVENTORY_SLOT_COUNT;
-  for (let index = 0; index < usableSlots && remaining > 0; index++) {
+  for (let index = 0; index < inventory.length && remaining > 0; index++) {
     if (inventory[index]) continue;
     const added = Math.min(maxStack, remaining);
     inventory[index] = { itemId, qty: added };
