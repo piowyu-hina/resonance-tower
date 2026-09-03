@@ -169,7 +169,7 @@ function showDungeonEntry(onCovered) {
   setTimeout(() => {
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
-  }, 2100);
+  }, 2650);
 }
 
 function beginExpeditionCombat() {

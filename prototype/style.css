@@ -622,15 +622,15 @@ img {
   color: #eef3ec;
   text-align: center;
 }
-#dungeonEntryOverlay.open { display: flex; animation: dungeonEntryCurtain 2.1s ease both; }
-#dungeonEntryArt { position: absolute; inset: -5%; width: 110%; height: 110%; object-fit: cover; opacity: .3; filter: brightness(.55) saturate(.78); animation: dungeonEntryDrift 2.1s ease-out both; }
+#dungeonEntryOverlay.open { display: flex; animation: dungeonEntryCurtain 2.65s ease both; }
+#dungeonEntryArt { position: absolute; inset: -5%; width: 110%; height: 110%; object-fit: cover; opacity: .3; filter: brightness(.55) saturate(.78); animation: dungeonEntryDrift 2.65s ease-out both; }
 .dungeonEntryShade { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(31,55,48,.08), rgba(5,8,10,.9) 72%), linear-gradient(90deg, rgba(5,8,10,.74), transparent 30%, transparent 70%, rgba(5,8,10,.74)); }
 .dungeonEntryShade::after { content: ''; position: absolute; left: 12%; right: 12%; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(194,215,194,.48), transparent); transform: scaleX(0); animation: dungeonEntryLine .7s ease-out .14s both; }
 .dungeonEntryTitle { position: relative; z-index: 1; display: grid; justify-items: center; gap: 8px; padding: 24px 70px; opacity: 0; animation: dungeonEntryText .42s ease-out .13s both; }
 .dungeonEntryTitle small { color: #91a99c; font-family: Georgia, serif; font-size: 10px; font-weight: 700; letter-spacing: .34em; text-indent: .34em; }
 .dungeonEntryTitle strong { color: #f0dca6; font-size: clamp(30px, 4vw, 48px); letter-spacing: .16em; text-indent: .16em; text-shadow: 0 4px 18px rgba(0,0,0,.8); }
 .dungeonEntryTitle span { color: #b4beb8; font-size: 13px; letter-spacing: .08em; }
-@keyframes dungeonEntryCurtain { 0% { opacity: 0; } 14%, 72% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dungeonEntryCurtain { 0% { opacity: 0; } 14%, 62% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes dungeonEntryDrift { from { transform: scale(1.08); } to { transform: scale(1); } }
 @keyframes dungeonEntryLine { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
 @keyframes dungeonEntryText { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
