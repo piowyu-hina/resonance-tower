@@ -54,6 +54,13 @@ function runDebugAction(action) {
     debugStartBossFight();
   } else if (action === 'intro') {
     showBossIntro(() => {});
+  } else if (action === 'xiaochu-story') {
+    unlockedChars.delete('xiaochu');
+    resonanceState.xiaochu = 'encountering';
+    startCharacterEncounter('xiaochu', () => {
+      endRun(false);
+      render();
+    });
   } else if (action === 'reset') {
     window.location.reload();
     return;

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-37">
+<link rel="stylesheet" href="style.css?v=20260903-38">
 </head>
 <body>
 
@@ -41,6 +41,7 @@
       <button type="button" data-debug-action="level">出戰角色升至 10 級</button>
       <button type="button" data-debug-action="boss">直接挑戰首領</button>
       <button type="button" data-debug-action="intro">播放首領演出</button>
+      <button type="button" data-debug-action="xiaochu-story">測試小初取得流程</button>
       <button type="button" class="danger" data-debug-action="reset">重載乾淨進度</button>
     </div>
   </section>
@@ -83,6 +84,14 @@
         <button id="homeStorageBtn" class="homeFacilityBtn homeStorageBtn" type="button">
           <img src="assets/ui/warehouse.png" alt="">
           <span><b>倉庫</b><small>整理背包與存放物品</small></span>
+        </button>
+        <button id="travelJournalBtn" class="homeFacilityBtn journalFacilityBtn" type="button">
+          <span class="facilityTextIcon" aria-hidden="true">書</span>
+          <span><b>旅人手記</b><small>查看旅途中記下的知識與故事</small></span>
+        </button>
+        <button id="contractFacilityBtn" class="homeFacilityBtn contractFacilityBtn" type="button" hidden>
+          <img src="assets/story/resonance_orb.png" alt="">
+          <span><b>締結誓約</b><small>回應正在等待的靈魂</small></span>
         </button>
       </div>
       <div id="homeGrowthView" hidden>
@@ -285,6 +294,29 @@
   </div>
 </div>
 
+<div id="journalOverlay" class="storyPanelOverlay" aria-hidden="true">
+  <section class="journalPanel" role="dialog" aria-modal="true" aria-labelledby="journalTitle">
+    <header><div><small>緋雨 著</small><h2 id="journalTitle">旅人手記</h2></div><button id="journalCloseBtn" type="button" aria-label="關閉旅人手記">×</button></header>
+    <div class="journalChapter">擁有百種身形的男人</div>
+    <div id="journalPageText" class="journalPageText"></div>
+    <footer><span id="journalPageNumber"></span><button id="journalNextBtn" type="button">下一頁</button></footer>
+  </section>
+</div>
+
+<div id="contractOverlay" class="storyPanelOverlay" aria-hidden="true">
+  <section class="contractPanel" role="dialog" aria-modal="true" aria-labelledby="contractPanelTitle">
+    <header><div><small>選擇等待回應的靈魂</small><h2 id="contractPanelTitle">締結誓約</h2></div><button id="contractCloseBtn" type="button" aria-label="關閉締結誓約">×</button></header>
+    <button id="xiaochuSoulBtn" class="soulChoice" type="button">
+      <img src="assets/story/resonance_orb.png" alt="小初的靈魂球">
+      <span><b>小初</b><small>正在等待妳的回應</small></span>
+    </button>
+    <div id="contractConfirm" class="contractConfirm" hidden>
+      <p>是否要與「小初」締結誓約？</p>
+      <div><button id="contractCancelBtn" type="button">再等一下</button><button id="contractConfirmBtn" type="button">締結誓約</button></div>
+    </div>
+  </section>
+</div>
+
 <!-- 對話系統：靈魂契約等劇情橋段用，見 design.md「契約角色與解鎖」 -->
 <div id="dialogueOverlay" aria-hidden="true">
   <div id="soulResonance" aria-hidden="true">
@@ -317,13 +349,13 @@
   </div>
 </div>
 
-<script src="js/constants.js?v=20260903-17"></script>
-<script src="js/state.js?v=20260903-35"></script>
+<script src="js/constants.js?v=20260903-18"></script>
+<script src="js/state.js?v=20260903-36"></script>
 <script src="js/goo.js?v=20260903-1"></script>
-<script src="js/combat.js?v=20260903-34"></script>
-<script src="js/story.js?v=20260903-1"></script>
-<script src="js/ui.js?v=20260903-36"></script>
-<script src="js/debug.js?v=20260903-2"></script>
+<script src="js/combat.js?v=20260903-35"></script>
+<script src="js/story.js?v=20260903-2"></script>
+<script src="js/ui.js?v=20260903-37"></script>
+<script src="js/debug.js?v=20260903-3"></script>
 <script src="js/main.js?v=20260903-33"></script>
 </body>
 </html>

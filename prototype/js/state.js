@@ -29,14 +29,17 @@ let runInventoryGains = {}; // itemId -> unsecured quantity found this expeditio
 let slimeKillCount = 0;       // lifetime count, feeds the killCount unlock type
 let potionUseCount = 0;       // lifetime successful uses, feeds potionCount unlocks
 let unlockedChars = new Set(['wuming']); // wuming starts unlocked for free
-// id -> 'resonating' | 'contracting' | 'contracted' for resonanceContract characters.
+// Xiaochu progresses through encounter -> following -> bookPending -> oathReady
+// -> contracting -> contracted. Other future resonance characters can reuse
+// the same broad encounter/contract pipeline with their own scenes.
 // Absent means its hidden synchronization condition has not been met yet.
 let resonanceState = {};
 let combatItemCooldowns = {}; // itemId -> milliseconds remaining
 let equippedCombatItemId = null; // one player-controlled combat item, never character-bound
 // single source of truth for which modal/popover is currently open - opening
 // one always closes whatever else was open first (see closeOtherOverlays in
-// ui.js). null | 'shop' | 'inventory' | 'combatItemPicker' | 'characterDetail' | 'dialogue'
+// ui.js). null | 'shop' | 'inventory' | 'combatItemPicker' | 'characterDetail'
+// | 'dialogue' | 'journal' | 'contract'
 let activeOverlay = null;
 let shopCountdown = 0;
 let shopMode = null; // 'town' spends secured gold; 'dungeon' spends run gold
@@ -100,7 +103,8 @@ function unlockReqText(id) {
   if (u.type === 'killCount') return `擊殺 ${u.count} 隻史萊姆解鎖（目前 ${Math.min(slimeKillCount, u.count)}/${u.count}）`;
   if (u.type === 'potionCount') return `累計使用 ${u.count} 瓶藥水解鎖（目前 ${Math.min(potionUseCount, u.count)}/${u.count}）`;
   if (u.type === 'resonanceContract') {
-    if (resonanceState[id] === 'resonating') return '正在與未知的共鳴靈同步';
+    if (resonanceState[id] === 'encountering') return '正在與未知的靈魂產生共鳴';
+    if (resonanceState[id] && resonanceState[id] !== 'contracted') return '已經相遇，尚未締結誓約';
     return `${conditionProgressText(u.trigger)}後，會與未知的共鳴靈產生同步`;
   }
   return '';
@@ -122,25 +126,31 @@ function conditionProgressText(cond) {
 // Reaching a hidden condition only establishes resonance during an expedition.
 // The actual meeting and contract are deferred until the player returns home.
 function checkResonanceTriggers() {
-  Object.keys(CHAR_DEFS).forEach(id => {
-    if (unlockedChars.has(id)) return;
+  return Object.keys(CHAR_DEFS).find(id => {
+    if (unlockedChars.has(id)) return false;
     const u = CHAR_DEFS[id].unlock;
-    if (u.type !== 'resonanceContract' || resonanceState[id] || !conditionMet(u.trigger)) return;
-    resonanceState[id] = 'resonating';
-    log('遠方傳來一道陌生的共鳴……也許回村莊後能確認它的來源。', 'good');
+    if (u.type !== 'resonanceContract' || resonanceState[id] || !conditionMet(u.trigger)) return false;
+    resonanceState[id] = 'encountering';
+    return true;
   });
 }
 
 function startPendingVillageContracts() {
-  Object.keys(CHAR_DEFS).forEach(id => {
-    const u = CHAR_DEFS[id].unlock;
-    if (u.type !== 'resonanceContract' || resonanceState[id] !== 'resonating') return;
-    resonanceState[id] = 'contracting';
-    queueDialogue(u.contractDialogue, () => {
-      resonanceState[id] = 'contracted';
-      unlockChar(id);
+  if (resonanceState.xiaochu !== 'following') return;
+  resonanceState.xiaochu = 'villageReturn';
+  queueDialogue('xiaochu_village', () => {
+    prepLocation = 'home';
+    homeMode = 'menu';
+    render();
+    queueDialogue('xiaochu_home_search', () => {
+      resonanceState.xiaochu = 'bookPending';
+      render();
     });
   });
+}
+
+function contractStoryLocked() {
+  return ['villageReturn', 'bookPending', 'bookReading', 'oathReady', 'contracting'].includes(resonanceState.xiaochu);
 }
 
 let charEls = {};    // id -> battle-card DOM refs, only for CURRENT active party, rebuilt on entering combat

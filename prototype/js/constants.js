@@ -208,7 +208,7 @@ const CHAR_DEFS = {
     unlock: {
       type: 'resonanceContract',
       trigger: { type: 'killCount', monster: 'slime', count: 50 },
-      contractDialogue: 'xiaochu_contract',
+      encounterDialogue: 'xiaochu_encounter',
     },
     baseHp: 40, baseAtk: 6, baseDef: 3,
     atkInterval: 2200, // ms between this character's own actions - their "attack speed"

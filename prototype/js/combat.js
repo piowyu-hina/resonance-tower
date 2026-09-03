@@ -334,7 +334,6 @@ function onMonsterDefeated(m) {
   if (!m.isBoss && !m.isSummoned) {
     slimeKillCount++; // all floor-1 mobs are slimes for now - see design.md 角色解鎖系統
     checkThresholdUnlocks();
-    checkResonanceTriggers();
     if (Math.random() < SLIME_MONSTER_CRYSTAL_DROP_CHANCE) {
       const added = addInventoryItem('monsterCrystal', 1, true);
       if (added > 0) {
@@ -392,13 +391,23 @@ function onMonsterDefeated(m) {
 
   setTimeout(() => {
     mobsCleared++; // one full wave of mobs cleared
+    const encounterId = checkResonanceTriggers();
+    if (encounterId) {
+      startCharacterEncounter(encounterId, continueAfterClearedWave);
+      render();
+      return;
+    }
+    continueAfterClearedWave();
+  }, MONSTER_DEATH_REMOVE_MS);
+}
+
+function continueAfterClearedWave() {
     if (mobsCleared >= MOBS_PER_FLOOR) {
       enterPrepBoss();
     } else {
       spawnWave();
     }
     render();
-  }, MONSTER_DEATH_REMOVE_MS);
 }
 
 // shared by death and voluntary retreat: both end the run and send everyone
@@ -681,6 +690,7 @@ function tick() {
       renderShopView();
     }
   }
+  if (activeOverlay === 'dialogue') return;
   if (phase !== 'combat') return; // waiting on the player to confirm prepFloor/prepBoss
 
   Object.keys(combatItemCooldowns).forEach(itemId => {

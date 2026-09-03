@@ -13,6 +13,8 @@ const OVERLAY_CLOSERS = {
   charmPicker: () => setCharmPickerOpen(false),
   characterDetail: () => setCharacterDetailOpen(false),
   dialogue: () => closeDialogue(),
+  journal: () => closeTravelJournal(false),
+  contract: () => closeContractPanel(),
 };
 
 // The preparation phase is a small location hub: village is the outer layer,
@@ -1002,16 +1004,21 @@ function buildUI() {
 
   document.getElementById('townShopBtn').addEventListener('click', openTownShop);
   document.getElementById('homeLocationBtn').addEventListener('click', () => {
+    if (contractStoryLocked()) return;
     prepLocation = 'home';
     homeMode = 'menu';
     render();
   });
   document.getElementById('homeBackBtn').addEventListener('click', () => {
+    if (contractStoryLocked()) return;
     prepLocation = 'village';
     render();
   });
-  document.getElementById('homeStorageBtn').addEventListener('click', () => setInventoryOpen(true, '倉庫'));
+  document.getElementById('homeStorageBtn').addEventListener('click', () => {
+    if (!contractStoryLocked()) setInventoryOpen(true, '倉庫');
+  });
   document.getElementById('homeGrowthBtn').addEventListener('click', () => {
+    if (contractStoryLocked()) return;
     homeMode = 'growth';
     render();
   });
@@ -1037,7 +1044,9 @@ function buildUI() {
     render();
   });
 
-  document.getElementById('bagBtn').addEventListener('click', () => setInventoryOpen(true));
+  document.getElementById('bagBtn').addEventListener('click', () => {
+    if (!contractStoryLocked()) setInventoryOpen(true);
+  });
   document.getElementById('defeatConfirmBtn').addEventListener('click', confirmDefeat);
   document.getElementById('victoryConfirmBtn').addEventListener('click', confirmVictory);
   document.getElementById('inventoryCloseBtn').addEventListener('click', () => setInventoryOpen(false));
@@ -1050,6 +1059,10 @@ function buildUI() {
     if (clickedBackdrop || clickedWarehouseBlank) setInventoryOpen(false);
   });
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && activeOverlay === 'dialogue') {
+      e.preventDefault();
+      return;
+    }
     if (e.key === 'Escape' && activeOverlay) OVERLAY_CLOSERS[activeOverlay]();
   });
   document.addEventListener('click', event => {
@@ -1458,6 +1471,19 @@ function renderPrepView() {
   document.getElementById('homeView').style.display = atHome ? '' : 'none';
   document.getElementById('homeMenu').hidden = !atHome || homeMode !== 'menu';
   document.getElementById('homeGrowthView').hidden = !atHome || homeMode !== 'growth';
+  const storyLocked = contractStoryLocked();
+  const waitingForBook = ['bookPending', 'bookReading'].includes(resonanceState.xiaochu);
+  const oathReady = resonanceState.xiaochu === 'oathReady';
+  const journalUnlocked = ['bookPending', 'bookReading', 'oathReady', 'contracting', 'contracted'].includes(resonanceState.xiaochu);
+  document.getElementById('travelJournalBtn').hidden = !journalUnlocked;
+  document.getElementById('contractFacilityBtn').hidden = !oathReady;
+  document.getElementById('travelJournalBtn').classList.toggle('storyRequired', waitingForBook);
+  document.getElementById('contractFacilityBtn').classList.toggle('storyRequired', oathReady);
+  document.getElementById('homeBackBtn').disabled = storyLocked;
+  document.getElementById('homeGrowthBtn').disabled = storyLocked;
+  document.getElementById('homeStorageBtn').disabled = storyLocked;
+  document.getElementById('travelJournalBtn').disabled = storyLocked && !waitingForBook;
+  document.getElementById('bagBtn').disabled = storyLocked;
   document.getElementById('regionView').style.display = atRegions ? '' : 'none';
   document.getElementById('expeditionView').style.display = (atVillage || atHome || atRegions) ? 'none' : '';
   Object.entries(homeEls).forEach(([id, refs]) => {
