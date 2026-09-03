@@ -23,8 +23,22 @@ const EXPEDITION_GUIDE_LINES = [
 let expeditionGuideLine = 0;
 
 function advanceExpeditionGuide() {
-  expeditionGuideLine = (expeditionGuideLine + 1) % EXPEDITION_GUIDE_LINES.length;
+  const bubble = document.querySelector('.expeditionGuideBubble');
+  const nextButton = document.getElementById('expeditionGuideNextBtn');
+  if (bubble.hidden) {
+    expeditionGuideLine = 0;
+    document.getElementById('expeditionGuideText').textContent = EXPEDITION_GUIDE_LINES[0];
+    nextButton.textContent = '下一句';
+    bubble.hidden = false;
+    return;
+  }
+  if (expeditionGuideLine === EXPEDITION_GUIDE_LINES.length - 1) {
+    bubble.hidden = true;
+    return;
+  }
+  expeditionGuideLine++;
   document.getElementById('expeditionGuideText').textContent = EXPEDITION_GUIDE_LINES[expeditionGuideLine];
+  nextButton.textContent = expeditionGuideLine === EXPEDITION_GUIDE_LINES.length - 1 ? '關閉' : '下一句';
 }
 
 // The preparation phase is a small location hub: village is the outer layer,
