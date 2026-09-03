@@ -29,7 +29,7 @@ let runInventoryGains = {}; // itemId -> unsecured quantity found this expeditio
 let slimeKillCount = 0;       // lifetime count, feeds the killCount unlock type
 let potionUseCount = 0;       // lifetime successful uses, feeds potionCount unlocks
 let unlockedChars = new Set(['wuming']); // wuming starts unlocked for free
-// id -> 'resonating' | 'contracted' for resonanceContract characters.
+// id -> 'resonating' | 'contracting' | 'contracted' for resonanceContract characters.
 // Absent means its hidden synchronization condition has not been met yet.
 let resonanceState = {};
 let combatItemCooldowns = {}; // itemId -> milliseconds remaining
@@ -119,14 +119,23 @@ function conditionProgressText(cond) {
   return '';
 }
 
-// Each character has one hidden trigger and one self-contained contract scene.
-// 'resonating' prevents the scene from being queued repeatedly before it ends.
+// Reaching a hidden condition only establishes resonance during an expedition.
+// The actual meeting and contract are deferred until the player returns home.
 function checkResonanceTriggers() {
   Object.keys(CHAR_DEFS).forEach(id => {
     if (unlockedChars.has(id)) return;
     const u = CHAR_DEFS[id].unlock;
     if (u.type !== 'resonanceContract' || resonanceState[id] || !conditionMet(u.trigger)) return;
     resonanceState[id] = 'resonating';
+    log('遠方傳來一道陌生的共鳴……也許回村莊後能確認它的來源。', 'good');
+  });
+}
+
+function startPendingVillageContracts() {
+  Object.keys(CHAR_DEFS).forEach(id => {
+    const u = CHAR_DEFS[id].unlock;
+    if (u.type !== 'resonanceContract' || resonanceState[id] !== 'resonating') return;
+    resonanceState[id] = 'contracting';
     queueDialogue(u.contractDialogue, () => {
       resonanceState[id] = 'contracted';
       unlockChar(id);

@@ -447,6 +447,7 @@ function endRun(bankGold) {
   partyDefense = { bonus: 0, until: 0 };
   combatItemCooldowns = {};
   enterPrepFloor();
+  startPendingVillageContracts();
 }
 
 function removeInventoryItemQuantity(itemId, amount) {
