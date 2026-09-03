@@ -15,32 +15,6 @@ const OVERLAY_CLOSERS = {
   dialogue: () => closeDialogue(),
 };
 
-const EXPEDITION_GUIDE_LINES = [
-  '歡迎來到共鳴之塔。',
-  '先選擇區域，再決定要附身的角色。',
-  '遠征中的收穫，要成功回來才會保留喔。',
-];
-let expeditionGuideLine = 0;
-
-function advanceExpeditionGuide() {
-  const bubble = document.querySelector('.expeditionGuideBubble');
-  const nextButton = document.getElementById('expeditionGuideNextBtn');
-  if (bubble.hidden) {
-    expeditionGuideLine = 0;
-    document.getElementById('expeditionGuideText').textContent = EXPEDITION_GUIDE_LINES[0];
-    nextButton.textContent = '下一句';
-    bubble.hidden = false;
-    return;
-  }
-  if (expeditionGuideLine === EXPEDITION_GUIDE_LINES.length - 1) {
-    bubble.hidden = true;
-    return;
-  }
-  expeditionGuideLine++;
-  document.getElementById('expeditionGuideText').textContent = EXPEDITION_GUIDE_LINES[expeditionGuideLine];
-  nextButton.textContent = expeditionGuideLine === EXPEDITION_GUIDE_LINES.length - 1 ? '關閉' : '下一句';
-}
-
 // The preparation phase is a small location hub: village is the outer layer,
 // while character/loadout management lives inside the home location.
 let prepLocation = 'village';
@@ -1075,8 +1049,6 @@ function buildUI() {
       && !e.target.closest('#inventoryCloseBtn');
     if (clickedBackdrop || clickedWarehouseBlank) setInventoryOpen(false);
   });
-  document.getElementById('expeditionGuideCharacter').addEventListener('click', advanceExpeditionGuide);
-  document.getElementById('expeditionGuideNextBtn').addEventListener('click', advanceExpeditionGuide);
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && activeOverlay) OVERLAY_CLOSERS[activeOverlay]();
   });
