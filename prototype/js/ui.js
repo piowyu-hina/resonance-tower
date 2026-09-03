@@ -1303,6 +1303,7 @@ function floorLabelText() {
 
 function render() {
   const inPrep = (phase === 'prepFloor' || phase === 'prepBoss');
+  document.getElementById('app').classList.toggle('combatActive', !inPrep);
   const inFreeVillage = phase === 'prepFloor' && !partyLocked;
   const floorLabelEl = document.getElementById('floorLabel');
   floorLabelEl.textContent = floorLabelText();

@@ -22,6 +22,7 @@ function initDebugTools() {
   if (requestedView === 'regions') prepLocation = 'regions';
   if (requestedView === 'expedition') prepLocation = 'expedition';
   if (requestedView === 'shop') openTownShop();
+  if (requestedView === 'boss') debugStartBossFight();
 }
 
 function runDebugAction(action) {
