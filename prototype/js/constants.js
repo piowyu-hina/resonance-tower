@@ -268,6 +268,7 @@ const SOLO_PARTY_LIMIT = 1; // until multiplayer ships, only one character goes 
 // counts down its own actionCountdown (ms) independently, and this fast
 // master loop just advances all of those clocks + drives the visible bars.
 const MASTER_TICK_MS = 100;
+const DEFEAT_RESTART_DELAY_MS = 10000;
 const MOB_ATK_INTERVAL = 2200;
 const BOSS_ATK_INTERVAL = 2200;
 const BOSS_ENTRY_GRACE_MS = 900;

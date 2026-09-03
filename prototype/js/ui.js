@@ -23,6 +23,8 @@ let prepLocation = 'village';
 let homeMode = 'menu';
 let homeEls = {};
 let lastRenderedSurface = null;
+let defeatRestartTimer = null;
+let defeatRestartDeadline = 0;
 
 // Call before opening `nextId`: enforces "only one overlay/popover open at a
 // time" so callers never have to manually juggle every other overlay's flag.
@@ -72,15 +74,50 @@ function showDefeatOverlay() {
   const overlay = document.getElementById('defeatOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
+  clearDefeatRestartTimer();
+  defeatRestartDeadline = Date.now() + DEFEAT_RESTART_DELAY_MS;
+  updateDefeatRestartCountdown();
+  defeatRestartTimer = setInterval(updateDefeatRestartCountdown, 250);
 }
 
-function confirmDefeat() {
+function clearDefeatRestartTimer() {
+  if (defeatRestartTimer !== null) clearInterval(defeatRestartTimer);
+  defeatRestartTimer = null;
+  defeatRestartDeadline = 0;
+}
+
+function updateDefeatRestartCountdown() {
+  const seconds = Math.max(0, Math.ceil((defeatRestartDeadline - Date.now()) / 1000));
+  document.getElementById('defeatRestartCountdown').textContent = t('result.autoRestartIn', {
+    seconds: formatLocaleNumber(seconds),
+  });
+  if (seconds <= 0) restartAfterDefeat();
+}
+
+function settleDefeat() {
+  clearDefeatRestartTimer();
   const overlay = document.getElementById('defeatOverlay');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
   log('遠征失敗。本次遠征取得的金幣與戰利品已遺失。', 'warn');
   endRun(false);
+}
+
+function returnToVillageAfterDefeat() {
+  settleDefeat();
   render();
+}
+
+function restartAfterDefeat() {
+  if (phase !== 'defeat') return;
+  settleDefeat();
+  if (contractStoryLocked() || party.length === 0) {
+    render();
+    return;
+  }
+  prepLocation = 'expedition';
+  render();
+  showDungeonEntry(beginExpeditionCombat);
 }
 
 function showVictoryOverlay(securedGold) {
@@ -128,11 +165,23 @@ function showDungeonEntry(onCovered) {
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
 
-  setTimeout(onCovered, 900);
+  setTimeout(onCovered, 1550);
   setTimeout(() => {
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
-  }, 1250);
+  }, 2100);
+}
+
+function beginExpeditionCombat() {
+  partyLocked = true;
+  phase = 'combat';
+  buildBattleRoster();
+  spawnWave();
+  party.forEach(id => {
+    const c = roster.find(r => r.id === id);
+    c.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(c);
+  });
+  render();
 }
 
 function popup(portraitEl, text, cls) {
@@ -1146,7 +1195,8 @@ function buildUI() {
   document.getElementById('bagBtn').addEventListener('click', () => {
     if (!contractStoryLocked()) setInventoryOpen(true);
   });
-  document.getElementById('defeatConfirmBtn').addEventListener('click', confirmDefeat);
+  document.getElementById('defeatRestartBtn').addEventListener('click', restartAfterDefeat);
+  document.getElementById('defeatVillageBtn').addEventListener('click', returnToVillageAfterDefeat);
   document.getElementById('victoryConfirmBtn').addEventListener('click', confirmVictory);
   document.getElementById('inventoryCloseBtn').addEventListener('click', () => setInventoryOpen(false));
   document.getElementById('inventoryOverlay').addEventListener('click', e => {
@@ -1180,17 +1230,6 @@ function buildUI() {
   const actionArea = document.getElementById('actionArea');
   startBtnEl = document.createElement('button');
   startBtnEl.id = 'startBtn';
-  const beginCombat = () => {
-    partyLocked = true;
-    phase = 'combat';
-    buildBattleRoster();
-    spawnWave();
-    party.forEach(id => {
-      const c = roster.find(r => r.id === id);
-      c.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(c);
-    });
-    render();
-  };
   startBtnEl.addEventListener('click', () => {
     if (party.length === 0) return; // need at least one character to fight with
     if (phase === 'prepFloor' || phase === 'prepBoss') {
@@ -1198,9 +1237,9 @@ function buildUI() {
         resetBossEntryCooldowns();
         phase = 'bossIntro';
         render();
-        showBossIntro(beginCombat);
+        showBossIntro(beginExpeditionCombat);
       } else {
-        showDungeonEntry(beginCombat);
+        showDungeonEntry(beginExpeditionCombat);
       }
     }
   });
@@ -1549,13 +1588,9 @@ function render() {
   goldLabel.innerHTML = inFreeVillage ? '' : `<img src="assets/item/coin.png" alt="遠征金幣">${runGold}`;
   const unsecuredTotal = Object.values(runInventoryGains).reduce((total, quantity) => total + Math.max(0, quantity), 0);
   const bagBtn = document.getElementById('bagBtn');
-  const bagRiskBadge = document.getElementById('bagRiskBadge');
-  bagBtn.classList.toggle('hasUnsecuredItems', unsecuredTotal > 0);
   bagBtn.setAttribute('aria-label', unsecuredTotal > 0
     ? t('header.openBagUnsecured', { quantity: formatLocaleNumber(unsecuredTotal) })
     : t('header.openBag'));
-  bagRiskBadge.hidden = unsecuredTotal <= 0;
-  bagRiskBadge.textContent = unsecuredTotal > 99 ? '99+' : formatLocaleNumber(unsecuredTotal);
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();

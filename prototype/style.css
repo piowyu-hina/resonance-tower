@@ -124,8 +124,6 @@ img {
   font-weight: 800;
   cursor: pointer;
 }
-#bagRiskBadge { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; display: grid; place-items: center; padding: 0 4px; border: 1px solid #e6bd69; border-radius: 10px; background: #6c4821; box-shadow: 0 2px 7px rgba(0,0,0,.5); color: #ffe6a9; font-size: 10px; font-style: normal; line-height: 1; }
-#bagRiskBadge[hidden] { display: none; }
 #bagBtn:hover:not(:disabled) { border-color: #91abc1; background: linear-gradient(180deg, #4b647a, #374d61); transform: translateY(-1px); }
 #bagBtn:disabled { opacity: .35; cursor: not-allowed; }
 #townShopBtn {
@@ -624,8 +622,8 @@ img {
   color: #eef3ec;
   text-align: center;
 }
-#dungeonEntryOverlay.open { display: flex; animation: dungeonEntryCurtain 1.25s ease both; }
-#dungeonEntryArt { position: absolute; inset: -5%; width: 110%; height: 110%; object-fit: cover; opacity: .3; filter: brightness(.55) saturate(.78); animation: dungeonEntryDrift 1.25s ease-out both; }
+#dungeonEntryOverlay.open { display: flex; animation: dungeonEntryCurtain 2.1s ease both; }
+#dungeonEntryArt { position: absolute; inset: -5%; width: 110%; height: 110%; object-fit: cover; opacity: .3; filter: brightness(.55) saturate(.78); animation: dungeonEntryDrift 2.1s ease-out both; }
 .dungeonEntryShade { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(31,55,48,.08), rgba(5,8,10,.9) 72%), linear-gradient(90deg, rgba(5,8,10,.74), transparent 30%, transparent 70%, rgba(5,8,10,.74)); }
 .dungeonEntryShade::after { content: ''; position: absolute; left: 12%; right: 12%; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(194,215,194,.48), transparent); transform: scaleX(0); animation: dungeonEntryLine .7s ease-out .14s both; }
 .dungeonEntryTitle { position: relative; z-index: 1; display: grid; justify-items: center; gap: 8px; padding: 24px 70px; opacity: 0; animation: dungeonEntryText .42s ease-out .13s both; }
@@ -2110,8 +2108,13 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .defeatMark { color: #b77882; font-size: 12px; font-weight: 800; letter-spacing: .28em; }
 #defeatModal h2 { margin: 14px 0 10px; color: #eee8ea; font-size: 24px; }
 #defeatModal p { margin: 0 0 16px; color: #9ea2aa; font-size: 12px; line-height: 1.8; }
-#defeatConfirmBtn { min-width: 150px; padding: 10px 20px; border: 1px solid #79545d; border-radius: 7px; background: #4b3138; color: #f2e8eb; cursor: pointer; }
-#defeatConfirmBtn:hover { background: #604049; }
+#defeatRestartCountdown { margin: -7px 0 12px; color: #b99ca4; font-size: 12px; font-variant-numeric: tabular-nums; }
+.defeatActions { display: flex; justify-content: center; gap: 8px; }
+.defeatActions button { min-width: 150px; padding: 10px 16px; border-radius: 7px; cursor: pointer; }
+#defeatRestartBtn { border: 1px solid #8b5d68; background: #5b3741; color: #fff0f3; }
+#defeatRestartBtn:hover { background: #704650; }
+#defeatVillageBtn { border: 1px solid #555d67; background: #30353c; color: #c9cdd3; }
+#defeatVillageBtn:hover { border-color: #747e89; background: #3a4149; }
 #victoryOverlay { display: flex; position: fixed; inset: 0; z-index: 1200; padding: 20px; background: rgba(7,9,10,.86); align-items: center; justify-content: center; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .18s ease-out, visibility 0s linear .29s; }
 #victoryOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 #victoryModal { width: min(470px, 100%); padding: 34px 28px 26px; border: 1px solid #857048; border-radius: 14px; background: radial-gradient(circle at 50% 0, #393323, #181a1d 58%); box-shadow: 0 18px 70px rgba(0,0,0,.65); color: #dedbd2; text-align: center; opacity: 0; transform: translateY(10px) scale(.985); transition: opacity .25s ease-out .04s, transform .25s cubic-bezier(.2,.78,.28,1) .04s; }

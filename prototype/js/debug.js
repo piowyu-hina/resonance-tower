@@ -35,6 +35,12 @@ function initDebugTools() {
     addInventoryItem('monsterCrystal', 2, true);
     setInventoryOpen(true);
   }
+  if (requestedView === 'defeat') {
+    runGold = 21;
+    addInventoryItem('monsterCrystal', 2, true);
+    phase = 'defeat';
+    showDefeatOverlay();
+  }
   if (requestedView === 'boss') debugStartBossFight();
 }
 
