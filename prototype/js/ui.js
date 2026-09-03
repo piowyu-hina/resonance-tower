@@ -925,13 +925,16 @@ function renderItemGrid(grid, collection, collectionName) {
 function renderInventory() {
   const grid = document.getElementById('inventoryGrid');
   grid.innerHTML = '';
-  const coinPosition = document.createElement('div');
-  coinPosition.className = `inventorySlot${bankedGold > 0 ? ' inventoryGoldSlot' : ' empty'}`;
-  if (bankedGold > 0) coinPosition.innerHTML = `<img src="assets/item/coin.png" alt="金幣"><span class="inventoryQty">${bankedGold}</span><span class="inventoryItemName">金幣</span>`;
-  grid.appendChild(coinPosition);
+  if (bankedGold > 0) {
+    const coinPosition = document.createElement('div');
+    coinPosition.className = 'inventorySlot inventoryGoldSlot';
+    coinPosition.innerHTML = `<img src="assets/item/coin.png" alt="金幣"><span class="inventoryQty">${bankedGold}</span><span class="inventoryItemName">金幣</span>`;
+    grid.appendChild(coinPosition);
+  }
   const itemGrid = document.createDocumentFragment();
   const temporaryGrid = document.createElement('div');
-  renderItemGrid(temporaryGrid, inventory, 'inventory');
+  const visibleInventory = bankedGold > 0 ? inventory.slice(0, INVENTORY_SLOT_COUNT - 1) : inventory;
+  renderItemGrid(temporaryGrid, visibleInventory, 'inventory');
   while (temporaryGrid.firstChild) itemGrid.appendChild(temporaryGrid.firstChild);
   grid.appendChild(itemGrid);
   renderItemGrid(document.getElementById('storageGrid'), storage, 'storage');
