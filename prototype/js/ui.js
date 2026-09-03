@@ -896,6 +896,7 @@ function attachInventoryDrag(slot, index) {
 }
 
 function renderInventory() {
+  document.getElementById('inventoryWallet').innerHTML = `<img src="assets/item/coin.png" alt="金幣">${bankedGold}`;
   const grid = document.getElementById('inventoryGrid');
   grid.innerHTML = '';
   for (let index = 0; index < INVENTORY_SLOT_COUNT; index++) {
@@ -1345,9 +1346,8 @@ function render() {
   floorLabelEl.textContent = floorLabelText();
   floorLabelEl.style.display = inPrep ? 'none' : '';
   const goldLabel = document.getElementById('goldLabel');
-  goldLabel.innerHTML = inFreeVillage
-    ? `<img src="assets/item/coin.png" alt="金幣">${bankedGold}`
-    : `<img src="assets/item/coin_out.png" alt="遠征金幣">${runGold}`;
+  goldLabel.style.display = inFreeVillage ? 'none' : '';
+  goldLabel.innerHTML = inFreeVillage ? '' : `<img src="assets/item/coin_out.png" alt="遠征金幣">${runGold}`;
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();

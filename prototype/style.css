@@ -574,6 +574,8 @@ body {
 }
 .inventoryHeader { display: flex; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
 .inventoryHeader #inventoryTitle { flex: 1; }
+#inventoryWallet { width: fit-content; display: flex; align-items: center; gap: 7px; margin: 0 0 12px auto; padding: 6px 11px; border: 1px solid #78663f; border-radius: 18px; background: #342d20; color: #efc76c; font-size: 13px; font-weight: 700; }
+#inventoryWallet img { width: 21px; height: 21px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4)); }
 #inventoryCloseBtn {
   width: 28px;
   height: 28px;
