@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-14">
+<link rel="stylesheet" href="style.css?v=20260903-16">
 </head>
 <body>
 
@@ -231,16 +231,23 @@
       <button id="inventoryCloseBtn" aria-label="關閉背包">×</button>
     </div>
     <div id="inventoryTransferLayout">
-      <section class="inventoryPane">
-        <div class="inventoryPaneTitle">背包</div>
+      <section class="inventoryPane backpackPane">
+        <div class="inventoryPaneTitle">
+          <img src="assets/ui/bag.png" alt="">
+          <span><b>隨身背包</b><small>遠征時能夠攜帶的物品</small></span>
+        </div>
         <div id="inventoryGrid"></div>
       </section>
-      <section id="storagePane" class="inventoryPane" hidden>
-        <div class="inventoryPaneTitle">倉庫</div>
+      <div id="inventoryTransferHint" aria-hidden="true">⇄<small>拖曳移動</small></div>
+      <section id="storagePane" class="inventoryPane storagePane" hidden>
+        <div class="inventoryPaneTitle">
+          <img src="assets/ui/house.png" alt="">
+          <span><b>家中倉庫</b><small>安全存放、不會帶上遠征</small></span>
+        </div>
         <div id="storageGrid"></div>
       </section>
     </div>
-    <div class="inventoryNote">拖曳物品可以整理位置；能力書與技能書可在角色詳情中使用。</div>
+    <div id="inventoryNote" class="inventoryNote">拖曳物品可以整理位置；能力書與技能書可在角色詳情中使用。</div>
   </div>
 </div>
 
@@ -306,7 +313,7 @@
 <script src="js/goo.js?v=20260903-1"></script>
 <script src="js/combat.js?v=20260903-15"></script>
 <script src="js/story.js?v=20260903-1"></script>
-<script src="js/ui.js?v=20260903-15"></script>
+<script src="js/ui.js?v=20260903-16"></script>
 <script src="js/debug.js?v=20260903-1"></script>
 <script src="js/main.js?v=20260903-1"></script>
 </body>

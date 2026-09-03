@@ -948,6 +948,10 @@ function setInventoryOpen(open, title = '背包') {
     document.getElementById('inventoryTitle').textContent = title;
     document.getElementById('inventoryModal').classList.toggle('warehouseOpen', warehouseOpen);
     document.getElementById('storagePane').hidden = !warehouseOpen;
+    document.getElementById('inventoryTransferHint').style.display = warehouseOpen ? '' : 'none';
+    document.getElementById('inventoryNote').textContent = warehouseOpen
+      ? '把物品拖到另一側即可在隨身背包與家中倉庫之間移動。'
+      : '拖曳物品可以整理位置；能力書與技能書可在角色詳情中使用。';
   }
   const overlay = document.getElementById('inventoryOverlay');
   overlay.classList.toggle('open', open);
