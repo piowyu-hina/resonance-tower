@@ -654,6 +654,9 @@ function renderCharacterDetail(characterId) {
   if (!c || !def) return;
   const unlocked = isCharUnlocked(characterId);
   const selected = party.includes(characterId);
+  const rarity = RARITY_DEFS[def.rarity];
+  const skins = characterSkins(characterId);
+  const currentSkin = equippedSkin(characterId);
   if (selectedGrowthLine === 'action' && !def.action) selectedGrowthLine = 'atk';
   const activeLine = selectedGrowthLine;
   const activeMeta = growthLineMeta(characterId, activeLine);
@@ -662,6 +665,7 @@ function renderCharacterDetail(characterId) {
   const activeBookCount = inventoryItemCount(activeBookId);
   const activeMaxed = activeLevel >= STAT_LINE_MAX;
   const content = document.getElementById('characterDetailContent');
+  content.style.setProperty('--rarity-color', rarity.color);
   content.innerHTML = `
     <div class="detailPortraitColumn">
       <div class="detailArtFrame">
@@ -672,14 +676,18 @@ function renderCharacterDetail(characterId) {
     </div>
     <div class="detailInfo">
       <div class="detailTitleRow">
-        <div><h2 id="characterDetailName">${def.name}</h2><span>Lv.${c.level} · ${c.xp}/${xpToNext(c.level)} EXP</span></div>
+        <div class="detailIdentity">
+          <span class="detailRarity">${rarity.label}</span>
+          <h2 id="characterDetailName">${def.name}</h2>
+          <span>Lv.${c.level} · ${c.xp}/${xpToNext(c.level)} EXP</span>
+        </div>
         <div class="growthWallet"><span><img src="assets/item/${ITEM_DEFS.statBook.img}.png" alt="">能力書 <b>${inventoryItemCount('statBook')}</b></span><span><img src="assets/item/${ITEM_DEFS.skillBook.img}.png" alt="">技能書 <b>${inventoryItemCount('skillBook')}</b></span></div>
       </div>
-      <div class="detailSectionTitle">共鳴外觀</div>
+      <div class="detailSectionTitle detailSectionHeading"><span>共鳴外觀</span><small>目前：${currentSkin.name} · 持有 ${skins.length}</small></div>
       <div class="skinPicker">
-        ${characterSkins(characterId).map(skin => `
-          <button type="button" class="skinOption${equippedSkinByCharacter[characterId] === skin.skinId ? ' selected' : ''}" data-skin-id="${skin.skinId}">
-            <img src="assets/characters/${skin.portrait}.png" alt="${skin.name}"><span>${skin.name}</span>
+        ${skins.map(skin => `
+          <button type="button" aria-pressed="${equippedSkinByCharacter[characterId] === skin.skinId}" class="skinOption${equippedSkinByCharacter[characterId] === skin.skinId ? ' selected' : ''}" data-skin-id="${skin.skinId}">
+            <span class="skinPreview"><img src="assets/characters/${skin.portrait}.png" alt="${skin.name}"><i aria-hidden="true">✓</i></span><span>${skin.name}</span>
           </button>`).join('')}
       </div>
       <div class="growthVital"><span>HP</span><b>${Math.max(0, c.curHp)} / ${c.maxHp}</b></div>
@@ -1030,8 +1038,9 @@ function buildUI() {
         <span class="fallback" style="display:none;">缺少圖片</span>
       </span>
       <span class="homeGrowthInfo">
+        <span class="homeGrowthMeta"><span class="rarityTag">${rarity.label}</span><span>外觀 ${characterSkins(c.id).length}</span></span>
         <b>${def.name}</b>
-        <small>Lv.<span class="lvl"></span></small>
+        <small>Lv.<span class="lvl"></span> · ${equippedSkin(c.id).name}</small>
         <span class="homeGrowthSkills">${def.skills.map(s => `<img src="assets/skills/${s.img}.png" alt="" onerror="this.classList.add('missing');">`).join('')}</span>
         <em>查看能力與技能配點</em>
       </span>
