@@ -240,8 +240,7 @@ function attachItemTooltip(el, item, entry) {
 function coinTooltipHTML(context) {
   const inShop = context === 'shop';
   const inTown = inShop ? shopMode === 'town' : phase === 'prepFloor' && !partyLocked;
-  const state = inTown ? '已帶回村莊' : '遠征中取得';
-  return `<div class="coinTip"><img src="assets/item/coin.png" alt=""><div><b>金幣</b><small>${state}</small></div></div>`;
+  return `<div class="coinTip"><img src="assets/item/coin.png" alt=""><b>${inTown ? '金幣' : '遠征金幣'}</b></div>`;
 }
 
 function attachCoinTooltip(el, context) {

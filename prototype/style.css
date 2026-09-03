@@ -476,7 +476,6 @@ body {
   overflow: hidden;
 }
 #bossArena.active { display: block; }
-#bossArena.active::after { content: '共鳴干涉區 · 點擊黏液'; position: absolute; z-index: 1; top: 7px; right: 7px; padding: 4px 7px; border: 1px solid #53696e; border-radius: 10px; background: rgba(19,29,32,.9); color: #b8d4d7; font-size: 10px; font-weight: 700; letter-spacing: .04em; box-shadow: 0 2px 8px rgba(0,0,0,.35); pointer-events: none; }
 #bossArena .gooHint {
   position: absolute;
   top: 4px;
@@ -552,10 +551,8 @@ body {
 #tooltip .ttSkillsHead { margin-top: 4px; font-weight: bold; color: #e0a95a; }
 #tooltip .ttSkill { font-size: 10px; color: #999; }
 #tooltip .ttMissing { margin-top: 5px; color: #ff9b8e; font-size: 10px; }
-.coinTip { width: 142px; display: grid; grid-template-columns: 32px 1fr; align-items: center; gap: 8px; padding: 2px; }
+.coinTip { display: flex; align-items: center; gap: 8px; padding: 2px; }
 .coinTip > img { width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,.45)); }
-.coinTip > div { display: grid; gap: 2px; }
-.coinTip small { color: #9b9078; font-size: 9px; }
 .coinTip b { color: #f3cb69; font-size: 13px; line-height: 1; }
 #tooltip:has(.coinTip) { max-width: 160px; padding: 7px; border-color: #78633b; border-radius: 8px; background: linear-gradient(145deg, #27231c, #15181b); box-shadow: 0 6px 18px rgba(0,0,0,.58); }
 
