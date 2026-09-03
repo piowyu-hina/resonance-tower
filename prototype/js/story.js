@@ -176,6 +176,7 @@ function renderDialogueLine() {
   document.getElementById('dialogueSpeakerName').textContent = def ? def.name : (special ? special.name : '');
   document.getElementById('dialogueText').textContent = line.text;
   const frame = document.getElementById('dialoguePortraitFrame');
+  const box = document.getElementById('dialogueBox');
   const img = document.getElementById('dialoguePortraitImg');
   frame.classList.remove('missing', 'orbSpeaker', 'sceneArt', 'narration');
   if (def) {
@@ -196,8 +197,10 @@ function renderDialogueLine() {
     frame.classList.add('missing');
   }
   frame.classList.remove('lineEntering');
+  box.classList.remove('lineEntering');
   void frame.offsetWidth;
   frame.classList.add('lineEntering');
+  box.classList.add('lineEntering');
 }
 
 function startCharacterEncounter(characterId, onDone) {
@@ -209,7 +212,11 @@ function startCharacterEncounter(characterId, onDone) {
 }
 
 function renderJournalPage() {
-  document.getElementById('journalPageText').textContent = JOURNAL_PAGES[journalPage];
+  const page = document.getElementById('journalPageText');
+  page.textContent = JOURNAL_PAGES[journalPage];
+  page.classList.remove('pageTurning');
+  void page.offsetWidth;
+  page.classList.add('pageTurning');
   document.getElementById('journalPageNumber').textContent = `${journalPage + 1}／${JOURNAL_PAGES.length}`;
   document.getElementById('journalNextBtn').textContent = journalPage === JOURNAL_PAGES.length - 1 ? '讀完' : '下一頁';
 }

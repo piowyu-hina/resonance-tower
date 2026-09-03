@@ -22,11 +22,20 @@ const OVERLAY_CLOSERS = {
 let prepLocation = 'village';
 let homeMode = 'menu';
 let homeEls = {};
+let lastRenderedSurface = null;
 
 // Call before opening `nextId`: enforces "only one overlay/popover open at a
 // time" so callers never have to manually juggle every other overlay's flag.
 function closeOtherOverlays(nextId) {
   if (activeOverlay && activeOverlay !== nextId) OVERLAY_CLOSERS[activeOverlay]();
+}
+
+function animateSurfaceChange(surface, key) {
+  if (!surface || key === lastRenderedSurface) return;
+  lastRenderedSurface = key;
+  surface.classList.remove('surfaceEntering');
+  void surface.offsetWidth;
+  surface.classList.add('surfaceEntering');
 }
 
 function renderRunResultSummary(targetId, gold) {
@@ -1504,6 +1513,20 @@ function render() {
   } else {
     renderCombatView();
   }
+  const atVillageSurface = phase === 'prepFloor' && !partyLocked && prepLocation === 'village';
+  const atHomeSurface = phase === 'prepFloor' && !partyLocked && prepLocation === 'home';
+  const atRegionSurface = phase === 'prepFloor' && !partyLocked && prepLocation === 'regions';
+  const visibleSurface = !inPrep
+    ? document.getElementById('combatView')
+    : atVillageSurface
+      ? document.getElementById('villageView')
+      : atHomeSurface
+        ? document.getElementById('homeView')
+        : atRegionSurface
+          ? document.getElementById('regionView')
+          : document.getElementById('expeditionView');
+  const surfaceKey = !inPrep ? 'combat' : `${phase}:${prepLocation}:${atHomeSurface ? homeMode : ''}`;
+  animateSurfaceChange(visibleSurface, surfaceKey);
 
   const logEl = document.getElementById('log');
   const logWasVisible = logEl.style.display === 'block';
