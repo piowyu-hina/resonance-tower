@@ -361,7 +361,9 @@ function onMonsterDefeated(m) {
       const otherCard = monsterEls[other.id] && monsterEls[other.id].card;
       if (otherCard) otherCard.remove();
     });
+    const expectedRunId = runId;
     setTimeout(() => {
+      if (runId !== expectedRunId) return; // player retreated during the death animation - this run is gone
       log(`${regionName(floor)}制霸！`, 'good');
       if (floor >= MAX_IMPLEMENTED_FLOOR) {
         const securedGold = runGold;
@@ -381,7 +383,9 @@ function onMonsterDefeated(m) {
   if (m.isSummoned) return; // add deaths never advance the pre-boss wave counter
   if (aliveMonsters().length > 0) return; // rest of this regular wave is still alive
 
+  const expectedRunId = runId;
   setTimeout(() => {
+    if (runId !== expectedRunId) return; // player retreated during the death animation - this run is gone
     mobsCleared++; // one full wave of mobs cleared
     const encounterId = checkResonanceTriggers();
     if (encounterId) {
@@ -405,6 +409,7 @@ function continueAfterClearedWave() {
 // Every way an expedition ends keeps its rewards. Defeat only costs time and
 // floor progress, which keeps unattended play productive instead of punitive.
 function endRun() {
+  runId++; // invalidate any in-flight onMonsterDefeated() timeout from the run just ending
   bankedGold += runGold;
   runItemGains = {};
   runGold = 0;

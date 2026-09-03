@@ -29,6 +29,11 @@ let floor = 1;
 let monsters = [];        // 2~3 simultaneous mobs, or a single-element array for the boss wave
 let monsterIdCounter = 0;
 let phase = PHASES.PREP_FLOOR;
+// Bumped by endRun(). A deferred combat callback (see onMonsterDefeated's
+// setTimeouts in combat.js) captures runId when scheduled and checks it
+// before acting, so retreating mid-death-animation can't let a stale
+// callback mutate a run that already ended.
+let runId = 0;
 let partyLocked = false; // once true (first "開始出擊" of a run), party can't change until endRun()
 let mobsCleared = 0;     // counts full MOB WAVES cleared (not individual mobs) toward the boss gate
 let partyBuff = { mult: 1, until: 0 };
