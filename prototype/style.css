@@ -1109,6 +1109,8 @@ button:focus-visible,
 }
 #dialogueOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 #dialogueModal {
+  position: relative;
+  isolation: isolate;
   width: min(720px, calc(100vw - 30px));
   display: flex;
   flex-direction: column;
@@ -1122,6 +1124,8 @@ button:focus-visible,
 }
 #dialogueOverlay.open #dialogueModal { opacity: 1; transform: translateY(0); }
 #dialoguePortraitFrame {
+  position: relative;
+  z-index: 1;
   width: 220px;
   height: 300px;
   display: flex;
@@ -1138,6 +1142,8 @@ button:focus-visible,
 #dialoguePortraitFrame.missing .dialogueMissingArt { display: block; }
 #dialoguePortraitFrame.missing img { display: none; }
 #dialogueBox {
+  position: relative;
+  z-index: 2;
   width: 100%;
   border: 1px solid #59616c;
   border-radius: 0 0 12px 12px;
