@@ -160,27 +160,13 @@ function monsterTooltipHTML(m) {
 }
 
 function positionTooltip(e) {
-  const pad = 14;
-  let x = e.clientX + pad;
-  let y = e.clientY + pad;
-  const maxX = window.innerWidth - 210;
-  const maxY = window.innerHeight - 120;
-  if (x > maxX) x = e.clientX - pad - 200;
-  if (y > maxY) y = e.clientY - pad - 100;
-  tooltipEl.style.left = x + 'px';
-  tooltipEl.style.top = y + 'px';
-}
-
-function positionTooltipAbove(el) {
-  const gap = 8;
+  const gap = 14;
   const edge = 8;
-  const rect = el.getBoundingClientRect();
   const width = tooltipEl.offsetWidth;
   const height = tooltipEl.offsetHeight;
-  let x = rect.left + (rect.width - width) / 2;
-  let y = rect.top - height - gap;
+  let x = e.clientX - width / 2;
+  const y = Math.max(edge, e.clientY - height - gap);
   x = Math.max(edge, Math.min(window.innerWidth - width - edge, x));
-  if (y < edge) y = rect.bottom + gap;
   tooltipEl.style.left = Math.round(x) + 'px';
   tooltipEl.style.top = Math.round(y) + 'px';
 }
@@ -215,13 +201,12 @@ function attachSkillTooltip(el, skill) {
 }
 
 function attachStatusTooltip(el, status, character) {
-  el.addEventListener('mouseenter', () => {
+  el.addEventListener('mouseenter', e => {
     const missingImage = el.querySelector('.statusIcon').classList.contains('missing');
     const remainingMs = status.remaining ? status.remaining(character) : 0;
-    tooltipEl.innerHTML = statusTooltipHTML(status, missingImage, remainingMs);
-    tooltipEl.style.display = 'block';
-    positionTooltipAbove(el);
+    showTooltipContent(statusTooltipHTML(status, missingImage, remainingMs), e);
   });
+  el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }
 
@@ -810,6 +795,9 @@ function buildShopUI() {
   document.getElementById('shopSellAllBtn').addEventListener('click', () => sellMonsterCrystals(inventoryItemCount('monsterCrystal')));
   document.getElementById('shopAutoLeaveBtn').addEventListener('click', toggleShopAutoLeave);
   document.getElementById('shopLeaveBtn').addEventListener('click', () => leaveShop(false));
+  document.getElementById('shopOverlay').addEventListener('click', event => {
+    if (event.target.id === 'shopOverlay') leaveShop(false);
+  });
   document.getElementById('shopBuyTab').addEventListener('click', () => {
     shopTab = 'buy';
     resetShopIdleTimer();
@@ -1363,15 +1351,14 @@ function renderCharacterStatuses(c, container) {
     if (!moreBadge) {
       moreBadge = document.createElement('span');
       moreBadge.className = 'statusMore';
-      moreBadge.addEventListener('mouseenter', () => {
+      moreBadge.addEventListener('mouseenter', event => {
         const hiddenNow = STATUS_DEFS.filter(status => status.isActive(c)).slice(4);
-        tooltipEl.innerHTML = `
+        showTooltipContent(`
           <div class="ttName">其他狀態</div>
           ${hiddenNow.map(status => `<div class="ttStat">${status.label}：${status.desc}</div>`).join('')}
-        `;
-        tooltipEl.style.display = 'block';
-        positionTooltipAbove(moreBadge);
+        `, event);
       });
+      moreBadge.addEventListener('mousemove', positionTooltip);
       moreBadge.addEventListener('mouseleave', hideTooltip);
     }
     moreBadge.textContent = `+${hidden.length}`;
