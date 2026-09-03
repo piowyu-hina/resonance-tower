@@ -61,16 +61,18 @@ img {
   user-select: none;
 }
 
-.expeditionGuide { min-height: 138px; display: grid; grid-template-columns: 128px minmax(0,1fr); align-items: end; margin: 4px 0 16px; padding: 0 16px 0 4px; overflow: hidden; border: 1px solid #5c4c55; border-radius: 12px; background: radial-gradient(circle at 10% 100%, rgba(169,91,126,.2), transparent 34%), linear-gradient(145deg, #29262b, #20242a); }
+.regionSelectionLayout { display: grid; grid-template-columns: minmax(290px,370px) minmax(260px,330px); align-items: end; gap: 22px; }
+.expeditionGuide { min-width: 0; display: grid; grid-template-rows: 230px auto; align-items: end; }
 .expeditionGuideCharacter { align-self: stretch; padding: 0; border: 0; background: transparent; cursor: pointer; }
-.expeditionGuideCharacter img { width: 140px; height: 145px; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 9px 10px rgba(0,0,0,.45)); transition: transform .16s ease; }
+.expeditionGuideCharacter img { width: 100%; height: 240px; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 9px 10px rgba(0,0,0,.45)); transition: transform .16s ease; }
 .expeditionGuideCharacter:hover img { transform: translateY(-3px); }
-.expeditionGuideBubble { align-self: center; min-width: 0; display: grid; grid-template-columns: 1fr auto; gap: 5px 12px; padding: 15px 17px; border: 1px solid #755a68; border-radius: 10px; background: rgba(30,31,37,.76); box-shadow: 0 8px 18px rgba(0,0,0,.22); }
+.expeditionGuideBubble { min-width: 0; display: grid; grid-template-columns: 1fr auto; gap: 5px 12px; padding: 15px 17px; border: 1px solid #755a68; border-radius: 10px; background: rgba(30,31,37,.82); box-shadow: 0 8px 18px rgba(0,0,0,.22); }
 .expeditionGuideBubble b { color: #f0a9c3; font-size: 18px; }
 .expeditionGuideBubble p { min-height: 1.65em; margin: 0; color: #eee8eb; font-size: 16px; line-height: 1.65; }
 .expeditionGuideBubble button { grid-column: 2; grid-row: 1 / span 2; align-self: center; padding: 8px 12px; border: 1px solid #856273; border-radius: 7px; background: #5d4050; color: #fff; cursor: pointer; }
 @media (max-width: 600px) {
-  .expeditionGuide { min-height: 122px; grid-template-columns: 92px minmax(0,1fr); padding: 0 8px 0 0; }
+  .regionSelectionLayout { grid-template-columns: 1fr; gap: 14px; }
+  .expeditionGuide { min-height: 122px; grid-template-columns: 92px minmax(0,1fr); grid-template-rows: auto; align-items: end; padding: 0 8px 0 0; }
   .expeditionGuideCharacter img { width: 105px; height: 124px; }
   .expeditionGuideBubble { grid-template-columns: 1fr; padding: 11px 12px; }
   .expeditionGuideBubble b { font-size: 16px; }
