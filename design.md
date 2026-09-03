@@ -350,3 +350,7 @@
 - UI 回歸不再只靠靜態截圖：`npm test` 會以系統 Edge 實際跑過副本進場、小怪轉首領、同角色連續對話與 Overlay 互斥，並檢查階段、DOM class、卡片數量與關鍵元素尺寸。
 - 正式流程不得直接指定任意 `phase` 字串；所有階段集中在 `PHASES`，並由 `setPhase()` 驗證合法轉移。畫面分類統一使用 `isPrepPhase()`／`isCombatSurfacePhase()`，避免新增過場階段時漏改某個畫面判斷。開發工具若需跳關，必須明確使用 `{ force: true }`。
 - 有限動畫與計時演出共用 `transitions.js`：同一轉場重新開始時會取消舊 timer／listener，完成時一次清理，避免較舊的延遲 callback 在新畫面上生效。DOM 短動畫仍保留最終幀後清理與延遲 fallback。
+- 原本單一的 `ui.js` 已依責任拆為 `ui-overlays.js`、`ui-loadout.js`、`ui-character.js`、`ui-commerce.js`、`ui-main.js`；仍使用依序載入的 classic scripts，以保留直接開啟 `file://` 原型及既有全域函式的相容性。載入順序視為相依關係，不可任意交換。
+- 原本單一的 `style.css` 已依原始 cascade 順序拆為 `styles/base.css`、`items.css`、`story.css`、`world.css`；故事介面內互相覆寫的重複 selector 已合併，但視覺結果與載入優先序維持不變。
+- 真瀏覽器 smoke test 額外覆蓋首頁、角色培養、地區、遠征準備、商店、背包、重新整備、旅人手記、締結誓約及對話十個主要畫面；每個畫面都會檢查可見尺寸、四份樣式是否成功載入，以及是否發生未捕捉的頁面錯誤。
+- UI renderer 必須容許「狀態已恢復、對應 DOM 尚未掛載」的短暫情形，例如除錯直達、轉場中或未來伺服器狀態恢復；找不到角色卡 refs 時略過該次更新，等下一次建立／渲染補齊，不可讓整個畫面中斷。

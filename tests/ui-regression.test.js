@@ -11,8 +11,56 @@ function near(actual, expected, message) {
 
 async function openView(browser, view) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  page.runtimeErrors = [];
+  page.on('pageerror', error => page.runtimeErrors.push(error));
   await page.goto(`${prototypeUrl}?debug&view=${view}`, { waitUntil: 'load' });
   return page;
+}
+
+function assertNoRuntimeErrors(page, view) {
+  assert.deepEqual(page.runtimeErrors.map(error => error.message), [], `${view} emitted a runtime error`);
+}
+
+async function testMajorViewsRender(browser) {
+  const views = [
+    ['home', '#homeView'],
+    ['growth', '#homeGrowthView'],
+    ['regions', '#regionView'],
+    ['expedition', '#expeditionView'],
+    ['shop', '#shopOverlay.open'],
+    ['inventory', '#inventoryOverlay.open'],
+    ['defeat', '#defeatOverlay.open'],
+    ['journal', '#journalOverlay.open .journalPanel'],
+    ['contract', '#contractOverlay.open .contractPanel'],
+    ['dialogue', '#dialogueOverlay.open #dialogueModal'],
+  ];
+  for (const [view, selector] of views) {
+    const page = await openView(browser, view);
+    await page.waitForTimeout(250);
+    const result = await page.evaluate(selectorToCheck => {
+      const element = document.querySelector(selectorToCheck);
+      if (!element) return { found: false };
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return {
+        found: true,
+        width: rect.width,
+        height: rect.height,
+        display: style.display,
+        visibility: style.visibility,
+        opacity: Number(style.opacity),
+        loadedStyles: [...document.styleSheets].filter(sheet => sheet.href).length,
+      };
+    }, selector);
+    assert.equal(result.found, true, `${view} target must exist`);
+    assert.ok(result.width > 100 && result.height > 40, `${view} target must have a usable box`);
+    assert.notEqual(result.display, 'none', `${view} target must be displayed`);
+    assert.notEqual(result.visibility, 'hidden', `${view} target must be visible`);
+    assert.ok(result.opacity > 0, `${view} target must not be transparent`);
+    assert.equal(result.loadedStyles, 4, `${view} must load every split stylesheet`);
+    assertNoRuntimeErrors(page, view);
+    await page.close();
+  }
 }
 
 async function testDungeonEntry(browser) {
@@ -47,6 +95,7 @@ async function testDungeonEntry(browser) {
   assert.equal(finished.overlayVisibility, 'hidden');
   assert.equal(finished.monsterCount, covered.monsterCount);
   for (const key of ['x', 'y', 'width', 'height']) near(finished.rect[key], covered.rect[key], `combat rect ${key}`);
+  assertNoRuntimeErrors(page, 'dungeon-entry');
   await page.close();
 }
 
@@ -84,6 +133,7 @@ async function testBossTransition(browser) {
     allCards: document.querySelectorAll('#monsterSide .monsterCard').length,
   }));
   assert.deepEqual(active, { bossCards: 1, dyingCards: 0, allCards: 1 });
+  assertNoRuntimeErrors(page, 'boss transition');
   await page.close();
 }
 
@@ -113,6 +163,7 @@ async function testSameSpeakerDialogue(browser) {
   assert.notEqual(after.text, before.text);
   assert.equal(after.animating, false);
   for (const key of ['x', 'y', 'width', 'height']) near(after.rect[key], before.rect[key], `portrait rect ${key}`);
+  assertNoRuntimeErrors(page, 'same-speaker dialogue');
   await page.close();
 }
 
@@ -128,12 +179,14 @@ async function testOverlayExclusivity(browser) {
     contractOpen: document.getElementById('contractOverlay').classList.contains('open'),
   }));
   assert.deepEqual(state, { activeOverlay: 'contract', journalOpen: false, contractOpen: true });
+  assertNoRuntimeErrors(page, 'overlay exclusivity');
   await page.close();
 }
 
 (async () => {
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    await testMajorViewsRender(browser);
     await testDungeonEntry(browser);
     await testBossTransition(browser);
     await testSameSpeakerDialogue(browser);

@@ -1,0 +1,289 @@
+/* --- 對話系統（見 design.md「契約角色與解鎖」）--- */
+#dialogueOverlay {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 9200;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(ellipse at 50% 68%, rgba(26,39,54,.38), transparent 54%), rgba(5,7,10,.88);
+  backdrop-filter: blur(1.5px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .18s ease-out, visibility 0s linear .2s;
+}
+#dialogueOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; cursor: pointer; transition-delay: 0s; }
+#dialogueModal {
+  position: relative;
+  isolation: isolate;
+  width: min(860px, calc(100vw - 30px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  opacity: 0;
+  transform: translateY(9px);
+  transition: opacity .2s ease-out, transform .2s ease-out;
+}
+#dialogueOverlay.open #dialogueModal { opacity: 1; transform: translateY(0); }
+#dialoguePortraitFrame {
+  position: relative;
+  z-index: 1;
+  width: 380px;
+  height: min(520px, 62vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+#dialoguePortraitFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 14px 14px rgba(0,0,0,.72));
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+.dialogueMissingArt { display: none; color: #bd7777; font-size: 11px; }
+#dialoguePortraitFrame.missing .dialogueMissingArt { display: block; }
+#dialoguePortraitFrame.missing img { display: none; }
+#dialogueBox {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  border: 1px solid #59616c;
+  margin-top: -6px;
+  border-top: 2px solid #b99a4b;
+  border-radius: 10px;
+  background: linear-gradient(105deg, rgba(31,35,42,.97), rgba(39,44,52,.94));
+  color: #ddd;
+  padding: 14px 18px;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.72);
+}
+#dialogueSpeakerName { font-size: 13px; font-weight: bold; color: #e0c25a; margin-bottom: 6px; min-height: 16px; }
+#dialogueText { font-size: 14px; line-height: 1.6; min-height: 44px; white-space: pre-wrap; }
+
+/* --- 契約演出與對話視覺 --- */
+#dialogueModal.presentationHidden { visibility: hidden; }
+#dialoguePortraitImg.lineEntering { animation: dialogueCharacterEnter .28s ease-out both; }
+#dialogueText.lineEntering { animation: dialogueLineFade .12s ease-out both; }
+#dialoguePortraitFrame.orbSpeaker { width: 230px; height: min(280px,38vh); }
+#dialoguePortraitFrame.orbSpeaker img { object-position: center; filter: drop-shadow(0 0 22px rgba(103,207,255,.65)); }
+#dialoguePortraitFrame.sceneArt { width: min(520px,76vw); height: min(560px,62vh); }
+#dialoguePortraitFrame.sceneArt img { object-position: center; }
+#dialoguePortraitFrame.narration { display: none; }
+#dialoguePortraitFrame.narration + #dialogueBox { margin-top: 0; border-radius: 10px; font-style: italic; }
+#dialogueAdvanceMark {
+  height: 12px;
+  margin-top: 5px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+#dialogueAdvanceMark span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #d8bb65;
+  opacity: .25;
+  animation: dialogueAdvancePulse 1.15s ease-in-out infinite;
+}
+#dialogueAdvanceMark span:nth-child(2) { animation-delay: .16s; }
+#dialogueAdvanceMark span:nth-child(3) { animation-delay: .32s; }
+
+#soulResonance, #contractFormed {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  background: radial-gradient(circle at 50% 46%, rgba(45,110,166,.24), rgba(3,8,14,.96) 66%);
+}
+#soulResonance.playing, #contractFormed.playing { display: flex; }
+.soulResonanceGlow {
+  position: absolute;
+  width: min(72vw, 720px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(165,239,255,.3), rgba(80,165,255,.07) 43%, transparent 70%);
+  animation: soulGlow 1.8s ease-in-out infinite;
+}
+#soulResonance::before, #soulResonance::after {
+  content: '';
+  position: absolute;
+  width: min(38vw, 380px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(150,231,255,.58);
+  border-radius: 50%;
+  opacity: 0;
+  animation: soulRing 2.6s ease-out forwards;
+}
+#soulResonance::after { animation-delay: .28s; }
+#soulResonanceOrb {
+  position: relative;
+  width: min(42vw, 410px);
+  max-height: 60vh;
+  object-fit: contain;
+  opacity: 0;
+  animation: soulOrbEnter 2.2s cubic-bezier(.18,.75,.2,1) forwards;
+  -webkit-user-drag: none;
+}
+.soulMissingArt {
+  display: none;
+  position: relative;
+  width: 220px;
+  height: 220px;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #8a6a6a;
+  border-radius: 10px;
+  color: #d79a9a;
+  text-align: center;
+  line-height: 1.7;
+}
+.soulMissingArt small { color: #9d8585; }
+#soulResonance.missingArt #soulResonanceOrb { display: none; }
+#soulResonance.missingArt .soulMissingArt { display: flex; }
+.soulResonanceTitle {
+  position: absolute;
+  top: calc(50% + min(24vw,235px));
+  color: #e8fbff;
+  font-size: clamp(20px,3vw,34px);
+  letter-spacing: .35em;
+  text-indent: .35em;
+  text-shadow: 0 0 8px #71dfff, 0 0 24px #347ee6;
+  opacity: 0;
+  animation: presentationTextIn .7s ease .72s forwards;
+}
+.soulInteractionHint {
+  position: absolute;
+  bottom: 22px;
+  color: rgba(220,242,255,.58);
+  font-size: 12px;
+  opacity: 0;
+  animation: presentationTextIn .5s ease 1.7s forwards;
+}
+.contractFormedStage {
+  position: relative;
+  width: min(390px,76vw);
+  height: min(510px,60vh);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+#contractFormedMagicCircle {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 48%;
+  width: min(480px, 92vw);
+  aspect-ratio: 1;
+  object-fit: contain;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.62) rotate(-12deg);
+  filter: drop-shadow(0 0 12px rgba(83,190,255,.65));
+  animation: rarityCircleReveal 1.1s cubic-bezier(.16,.75,.2,1) .15s forwards, rarityCircleIdle 12s linear 1.25s infinite;
+}
+#contractFormedMagicCircle[hidden] { display: none; }
+#contractFormedCharacter {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  opacity: 0;
+  filter: drop-shadow(0 16px 16px rgba(0,0,0,.7));
+  animation: partnerCharacterReveal .75s cubic-bezier(.16,.8,.25,1) .25s forwards;
+}
+#contractFormedTitle {
+  color: #f1fbff;
+  font-size: clamp(30px,4vw,44px);
+  font-weight: bold;
+  letter-spacing: .13em;
+  text-indent: .13em;
+  text-shadow: 0 0 10px rgba(108,218,255,.75), 0 2px 3px #000;
+  opacity: 0;
+  animation: presentationTextIn .55s ease .8s forwards;
+}
+.contractFormedSubtitle {
+  margin-top: 10px;
+  color: #e8f7ff;
+  font-size: clamp(15px,2vw,20px);
+  letter-spacing: .2em;
+  text-indent: .2em;
+  opacity: 0;
+  animation: presentationTextIn .55s ease 1.1s forwards;
+}
+.contractFormedKicker {
+  margin-top: 12px;
+  color: #d8bb65;
+  font-size: 12px;
+  letter-spacing: .25em;
+  text-indent: .25em;
+  opacity: 0;
+  animation: presentationTextIn .55s ease 1.45s forwards;
+}
+
+@keyframes dialogueCharacterEnter { from { opacity:.35; transform:translateY(8px); } to { opacity:1; transform:none; } }
+@keyframes dialogueLineFade { from { opacity:.65; } to { opacity:1; } }
+@keyframes dialogueAdvancePulse { 0%,70%,100% { opacity:.22; transform:translateY(0); } 35% { opacity:.9; transform:translateY(-2px); } }
+@keyframes soulGlow { 0%,100% { opacity:.55; transform:scale(.9); } 50% { opacity:1; transform:scale(1.08); } }
+@keyframes soulRing { 0% { opacity:0; transform:scale(.25); } 28% { opacity:.72; } 82% { opacity:.12; } 100% { opacity:0; transform:scale(1.9); } }
+@keyframes soulOrbEnter {
+  0% { opacity:0; transform:scale(.18) rotate(-14deg); filter:brightness(.8) blur(5px) drop-shadow(0 0 8px rgba(125,226,255,.15)); }
+  18% { opacity:.28; filter:brightness(.92) blur(3px) drop-shadow(0 0 12px rgba(125,226,255,.35)); }
+  38% { opacity:1; transform:scale(1.06) rotate(2deg); filter:brightness(1.08) blur(0) drop-shadow(0 0 24px rgba(125,226,255,.82)); }
+  65% { transform:scale(.95) rotate(-1deg); }
+  100% { opacity:1; transform:none; filter:brightness(1) drop-shadow(0 0 20px rgba(125,226,255,.72)); }
+}
+@keyframes partnerCharacterReveal { from { opacity:0; transform:translateY(28px) scale(.92); } to { opacity:1; transform:none; } }
+@keyframes rarityCircleReveal {
+  from { opacity:0; transform:translate(-50%,-50%) scale(.62) rotate(-12deg); }
+  to { opacity:.7; transform:translate(-50%,-50%) scale(1) rotate(0); }
+}
+@keyframes rarityCircleIdle {
+  from { opacity:.7; transform:translate(-50%,-50%) scale(1) rotate(0); }
+  50% { opacity:.86; }
+  to { opacity:.7; transform:translate(-50%,-50%) scale(1) rotate(360deg); }
+}
+@keyframes presentationTextIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+/* 商店關閉鍵與背包採用同一位置及外觀。 */
+#inventoryCloseBtn, #shopLeaveBtn {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  padding: 0;
+  border: 1px solid #666;
+  border-radius: 5px;
+  background: #3a3e45;
+  color: #ddd;
+  font-size: 20px;
+  line-height: 22px;
+  cursor: pointer;
+}
+#shopCountdown { margin-right: 9px; }
+#shopAutoLeaveBtn { flex: 1; }
+
+@media (max-width: 650px) {
+  #dialogueOverlay { padding: 12px; }
+  #dialoguePortraitFrame { width: 210px; height: min(330px,48vh); }
+  #dialogueBox { padding: 12px 14px; }
+  #soulResonanceOrb { width: min(70vw,340px); }
+  .soulResonanceTitle { top: calc(50% + min(38vw,195px)); }
+  .contractFormedStage { height: min(430px,58vh); }
+}

@@ -1,0 +1,439 @@
+/* --- unified item library; opening it intentionally does not pause combat --- */
+#inventoryOverlay {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 13, 0.72);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .16s ease-out, visibility 0s linear .16s;
+}
+#inventoryOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+#inventoryModal {
+  width: min(500px, calc(100vw - 30px));
+  max-height: calc(100vh - 30px);
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid #59616c;
+  border-radius: 10px;
+  background: #272b31;
+  color: #ddd;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+  user-select: none;
+  opacity: 0;
+  transform: translateY(7px) scale(.99);
+  transition: opacity .18s ease-out, transform .18s ease-out;
+}
+#inventoryOverlay.open #inventoryModal { opacity: 1; transform: translateY(0) scale(1); }
+.inventoryHeader { display: flex; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
+.inventoryHeader #inventoryTitle { flex: 1; }
+#inventoryCloseBtn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #666;
+  border-radius: 5px;
+  background: #3a3e45;
+  color: #ddd;
+  font-size: 20px;
+  line-height: 22px;
+  cursor: pointer;
+}
+#inventoryGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.inventorySlot {
+  position: relative;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid #555d68;
+  border-radius: 7px;
+  background: #1b1e23;
+}
+.inventorySlot:not(.empty):hover { border-color: #8ba3bf; box-shadow: 0 0 8px rgba(110,155,205,0.35); }
+.inventorySlot[draggable="true"] { cursor: grab; }
+.inventorySlot.dragging { opacity: 0.35; cursor: grabbing; }
+.inventorySlot.dragTarget { border-color: #e0c25a; background: #30333a; box-shadow: inset 0 0 8px rgba(224,194,90,0.25); }
+.inventorySlot.empty { opacity: 0.45; background: #202329; }
+.inventorySlot.empty.dragTarget { opacity: 1; background: #30333a; }
+.inventorySlot img { width: 42px; height: 42px; object-fit: contain; }
+.inventoryQty { position: absolute; right: 5px; bottom: 4px; color: #fff; font-size: 12px; font-weight: bold; }
+.inventoryItemName { width: 100%; box-sizing: border-box; overflow: hidden; padding: 0 34px 0 5px; color: #bbb; font-size: 10px; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.prepQuickSlots { display: flex; justify-content: center; gap: 7px; width: 100%; margin-top: 2px; padding-top: 6px; border-top: 1px solid #3d4149; }
+
+/* Manual combat commands stay visually separate from auto-fighting cards.
+   Potion is a standalone command; only active relic slots belong to chars. */
+#combatActionBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 9px 10px;
+  border-top: 1px solid #41464f;
+}
+.actionBarTitle { margin-right: 2px; color: #99aab0; font-size: 10px; font-weight: 700; letter-spacing: .1em; }
+.partyColumn #combatActionBar { border: 1px solid #3e4a4d; border-radius: 9px; background: rgba(16,20,23,.48); }
+.relicActions { display: flex; align-items: center; gap: 8px; }
+.actionBarGroup { display: flex; align-items: center; gap: 8px; }
+.combatItemButton {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 1px solid #6c7785;
+  border-radius: 7px;
+  background: linear-gradient(#303640, #232831);
+  color: #ddd;
+  cursor: pointer;
+}
+.combatItemButton:hover { border-color: #9eabb9; background: linear-gradient(#3a424e, #29313b); }
+.combatItemButton.disabled { cursor: not-allowed; opacity: 0.48; }
+.combatItemButton.disabled:hover { border-color: #6c7785; background: linear-gradient(#303640, #232831); }
+.combatItemButton img { width: 28px; height: 28px; object-fit: contain; }
+.combatItemButton .quickQty { right: 5px; bottom: 3px; }
+.itemCdOverlay { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.68); pointer-events: none; }
+.itemCdText { position: absolute; z-index: 3; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: bold; text-shadow: 0 1px 2px #000; pointer-events: none; }
+.actionLockOverlay { position: absolute; z-index: 4; inset: 0; display: none; align-items: center; justify-content: center; pointer-events: none; }
+.charActionButton.controlLocked .actionLockOverlay { display: flex; }
+.actionLockOverlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.78;
+}
+.quickSlot {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px dashed #59616c;
+  border-radius: 6px;
+  background: #1b1e23;
+  color: #808791;
+  text-align: center;
+}
+.quickSlot.equipped { border-style: solid; color: #bbb; }
+.quickSlot.dragTarget { border-color: #e0c25a; background: #30333a; box-shadow: inset 0 0 8px rgba(224,194,90,0.25); }
+.quickSlot img { width: 28px; height: 28px; object-fit: contain; }
+.quickFallback { font-size: 20px; line-height: 25px; }
+.quickLabel { display: none; }
+.quickQty { position: absolute; right: 3px; bottom: 2px; color: #fff; font-size: 10px; font-weight: bold; }
+
+#combatItemPicker, #charmPicker {
+  display: block;
+  position: fixed;
+  z-index: 8500;
+  width: 210px;
+  padding: 9px;
+  border: 1px solid #626b77;
+  border-radius: 8px;
+  background: #272b31;
+  color: #ddd;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.65);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-3px) scale(.985);
+  transform-origin: top left;
+  transition: opacity .1s ease-out, transform .1s ease-out, visibility 0s linear .1s;
+}
+#combatItemPicker.open, #charmPicker.open { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1); transition-delay: 0s; }
+.pickerTitle { margin-bottom: 7px; color: #aeb5bf; font-size: 10px; font-weight: bold; }
+#combatItemPickerList, #charmPickerList { display: flex; flex-direction: column; gap: 5px; }
+.pickerItem {
+  width: 100%;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 7px;
+  border: 1px solid #4d5560;
+  border-radius: 6px;
+  background: #1c2026;
+  color: #ddd;
+  text-align: left;
+  cursor: pointer;
+}
+.pickerItem:hover { border-color: #8494a7; background: #252c35; }
+.pickerItem.selected { border-color: #6e9f72; box-shadow: inset 0 0 0 1px rgba(110,159,114,0.25); }
+.pickerItem.unavailable { opacity: 0.42; cursor: not-allowed; }
+.pickerItem img { width: 32px; height: 32px; object-fit: contain; }
+.pickerItem span { font-size: 10px; }
+.pickerItem b { color: #fff; font-size: 10px; }
+.pickerEmptyIcon { display: flex; align-items: center; justify-content: center; width: 32px; font-size: 20px !important; color: #7f8791; }
+
+#characterDetailOverlay {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 8700;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(8,10,13,0.78);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .18s ease-out, visibility 0s linear .2s;
+}
+#characterDetailOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+#characterDetailModal {
+  position: relative;
+  width: min(920px, calc(100vw - 30px));
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid #59616c;
+  border-radius: 11px;
+  background: #272b31;
+  color: #ddd;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.72);
+  /* dragging across cards/text in here was highlighting text blue and
+     showing the native "drag this image" ghost - kill both. */
+  user-select: none;
+  -webkit-user-select: none;
+  opacity: 0;
+  transform: translateY(8px) scale(.99);
+  transition: opacity .2s ease-out, transform .2s ease-out;
+}
+#characterDetailOverlay.open #characterDetailModal { opacity: 1; transform: translateY(0) scale(1); }
+#characterDetailModal img { -webkit-user-drag: none; user-drag: none; }
+#characterDetailCloseBtn { position: absolute; z-index: 2; top: 8px; right: 8px; width: 30px; height: 30px; border: 1px solid #666; border-radius: 5px; background: #383d44; color: #ddd; font-size: 20px; cursor: pointer; }
+#characterDetailContent { display: grid; grid-template-columns: minmax(250px, 0.82fr) minmax(430px, 1.5fr); gap: 20px; }
+.detailPortraitColumn { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.detailArtFrame { min-height: 500px; display: flex; align-items: center; justify-content: center; border: 1px solid color-mix(in srgb, var(--rarity-color, #59616c) 52%, #30343a); border-radius: 12px; background: radial-gradient(circle at 50% 24%, color-mix(in srgb, var(--rarity-color, #59616c) 15%, #303640), #1b1e23 62%); overflow: hidden; box-shadow: inset 0 0 42px rgba(0,0,0,.22); }
+.detailArtFrame img { width: 100%; height: 100%; max-height: 540px; object-fit: contain; }
+.detailMissingArt { display: none; color: #bd7777; font-size: 11px; }
+.detailArtFrame.missing .detailMissingArt { display: block; }
+.detailInfo { min-width: 0; padding-top: 6px; }
+.detailTitleRow { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; padding-right: 34px; }
+.detailTitleRow h2 { margin: 0; color: #fff; font-size: 24px; }
+.detailTitleRow span { display: block; margin-top: 4px; color: #9299a2; font-size: 12px; }
+.detailIdentity { display: grid; justify-items: start; }
+.detailIdentity .detailRarity { margin: 0 0 5px; padding: 3px 7px; border: 1px solid var(--rarity-color, #777); border-radius: 10px; color: var(--rarity-color, #bbb); font-size: 9px; font-weight: 700; letter-spacing: .1em; }
+.growthWallet { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.growthWallet span { display: flex; align-items: center; gap: 5px; margin: 0; padding: 5px 7px; border: 1px solid #444b55; border-radius: 15px; background: #1c2025; color: #aeb5be; font-size: 12px; white-space: nowrap; }
+.growthWallet img { width: 18px; height: 18px; object-fit: contain; }
+.growthWallet b { color: #f0d878; font-size: 13px; }
+.growthVital { display: flex; justify-content: space-between; margin: 12px 0 4px; padding: 7px 10px; border-left: 3px solid #a85b5b; border-radius: 4px; background: #20242a; color: #9299a2; font-size: 12px; }
+.growthVital b { color: #eee; }
+.detailSectionTitle { margin: 13px 0 7px; color: #8f98a4; font-size: 12px; font-weight: bold; letter-spacing: 0.12em; }
+.detailSectionHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.detailSectionHeading small { color: #777f89; font-size: 10px; font-weight: normal; letter-spacing: 0; }
+.growthGrid { display: grid; gap: 7px; }
+.growthStats { grid-template-columns: repeat(3, 1fr); }
+.growthSkills { grid-template-columns: repeat(2, 1fr); }
+.growthCard { position: relative; min-width: 0; min-height: 58px; display: flex; align-items: center; gap: 8px; padding: 7px 30px 7px 8px; border: 1px solid #3e454f; border-radius: 8px; background: #20242a; color: #c7ccd3; text-align: left; cursor: pointer; transition: border-color .14s, background .14s, transform .14s; }
+.growthCard:hover { border-color: #697482; background: #262b32; transform: translateY(-1px); }
+/* "currently selected" is blue, not gold - gold is reserved for the
+   專屬操作 card's permanent identity marker (below). Tried it the other way
+   first (selected=gold, action=teal) and it read backwards - gold already
+   means "special/action" everywhere else in this UI (book icons, action
+   icon frames elsewhere), so selection got the new color instead. */
+.growthCard.selected { border-color: #5aa9e6; background: linear-gradient(135deg, #202b36, #24272c 58%); box-shadow: inset 3px 0 #5aa9e6, 0 0 10px rgba(90,169,230,.15); }
+.growthCard.maxed { border-color: #75652e; }
+/* 專屬操作 card gets its own permanent gold frame so it reads as distinct
+   from the 3 auto-skill cards it sits next to, even when not selected. */
+.growthCard.actionCard { border-color: #d7ae4d; box-shadow: 0 0 7px rgba(215,174,77,0.35); }
+.growthCard.actionCard.selected { border-color: #5aa9e6; box-shadow: inset 3px 0 #5aa9e6, 0 0 10px rgba(90,169,230,.35); }
+.growthCard img, .growthGlyph { flex: 0 0 42px; width: 42px; height: 42px; border-radius: 7px; background: #15181c; object-fit: cover; }
+.growthGlyph { display: flex; align-items: center; justify-content: center; color: #d7ae4d; font-size: 20px; }
+.growthCardText { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.growthCardText b { overflow: hidden; color: #f0f1f3; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.growthCardText small { overflow: hidden; color: #89919b; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.growthLevel { position: absolute; top: 6px; right: 7px; color: #d7ae4d; font-size: 10px; }
+.growthLevel::before { content: 'Lv.'; color: #757d87; margin-right: 1px; }
+.growthInspector { margin-top: 12px; padding: 12px; border: 1px solid #454c56; border-radius: 9px; background: linear-gradient(180deg, #20242a, #1b1f24); }
+.growthInspectorHead { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 2px 12px; }
+.growthInspectorHead span { grid-column: 1 / -1; color: #8e96a0; font-size: 11px; }
+.growthInspectorHead h3 { margin: 0; color: #fff; font-size: 17px; }
+.growthInspectorHead b { color: #d7ae4d; font-size: 13px; }
+.growthCompare { display: grid; grid-template-columns: 1fr 22px 1fr; align-items: center; gap: 5px; margin: 10px 0; }
+.growthCompare > div { padding: 8px 9px; border-radius: 6px; background: #16191d; }
+.growthCompare small { display: block; margin-bottom: 3px; color: #7f8791; font-size: 10px; }
+.growthCompare strong { color: #e4e6e9; font-size: 13px; }
+.growthCompare > span { color: #d7ae4d; text-align: center; }
+.growthUpgradeRow { display: flex; align-items: center; gap: 10px; }
+.growthCost { flex: 1; display: flex; align-items: center; gap: 6px; color: #aeb5be; font-size: 12px; }
+.growthCost img { width: 24px; height: 24px; object-fit: contain; }
+#growthUpgradeBtn { min-width: 130px; padding: 9px 16px; border: 1px solid #b18b39; border-radius: 6px; background: #6b5222; color: #fff2c3; font-size: 13px; font-weight: bold; cursor: pointer; user-select: none; }
+#growthUpgradeBtn:hover:not(:disabled) { background: #806329; }
+#growthUpgradeBtn:disabled { border-color: #4c5158; background: #30343a; color: #777e87; cursor: default; }
+#characterDetailSelectBtn { width: 100%; padding: 9px; border: 1px solid #57825c; border-radius: 6px; background: #345c3a; color: #eee; cursor: pointer; }
+#characterDetailSelectBtn:disabled { border-color: #50545a; background: #30343a; color: #858b94; cursor: default; }
+
+@media (max-width: 650px) {
+  #characterDetailContent { grid-template-columns: 1fr; }
+  .detailArtFrame { min-height: 250px; max-height: 340px; }
+  .growthStats, .growthSkills { grid-template-columns: 1fr; }
+  .growthWallet { justify-content: flex-start; }
+}
+
+#shopOverlay {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 8800;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: rgba(8,10,13,0.72);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .18s ease-out, visibility 0s linear .21s;
+}
+#shopOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+#shopModal {
+  width: min(1040px, calc(100vw - 20px));
+  min-height: min(680px, calc(100vh - 20px));
+  max-height: calc(100vh - 20px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px;
+  border: 1px solid #69604b;
+  border-radius: 10px;
+  background: #292a2d;
+  color: #ddd;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.65);
+  opacity: 0;
+  transform: translateY(8px) scale(.992);
+  transition: opacity .21s ease-out, transform .21s ease-out;
+}
+#shopOverlay.open #shopModal { opacity: 1; transform: translateY(0) scale(1); }
+.logHeading { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; margin: 0 -10px 6px; padding: 7px 10px; border-bottom: 1px solid #30353c; background: rgba(20,22,26,.96); }
+.logHeading span { color: #c6ccd1; font-size: 13px; font-weight: 800; letter-spacing: .08em; }
+.columnHeading span { color: #d7dadd; font-size: 12px; }
+.columnHeading small { color: #717982; font-size: 8px; font-weight: normal; letter-spacing: .08em; }
+.partyColumn .columnHeading { border-bottom-color: #435353; }
+.enemyColumn .columnHeading { border-bottom-color: #594347; }
+
+/* Combat hierarchy: opposing fields read separately and controls stay anchored. */
+.battleColumn { display: flex; flex-direction: column; border-width: 1px; }
+.partyColumn { border-color: #455c60; background: radial-gradient(circle at 50% 34%, rgba(62,126,126,.18), transparent 42%), linear-gradient(145deg, #293235, #262a31); }
+.enemyColumn { border-color: #61484d; background: radial-gradient(circle at 50% 34%, rgba(151,69,78,.16), transparent 43%), linear-gradient(145deg, #332a2e, #292a31); }
+.columnHeading { align-items: center; min-height: 32px; margin-bottom: 14px; padding: 0 3px 9px; }
+.columnHeading span { font-size: 15px; }
+.columnHeading small { font-size: 10px; }
+#partySide, #monsterSide { flex: 1; align-content: flex-start; }
+.partyColumn #combatActionBar { flex: 0 0 auto; margin-top: 16px; padding: 11px 12px; border-color: #51666a; background: linear-gradient(180deg, rgba(27,38,41,.94), rgba(18,24,27,.94)); box-shadow: 0 7px 18px rgba(0,0,0,.22); }
+.actionBarTitle { color: #b8c9ca; font-size: 11px; }
+.charCard { border-color: #527074; background: linear-gradient(160deg, #2b353a, #22272d); }
+.monsterCard { border-color: #654a50; background: linear-gradient(160deg, #382d31, #28262c); box-shadow: 0 10px 22px rgba(0,0,0,.18); }
+.monsterCard.boss { border-color: #89515a; box-shadow: 0 12px 28px rgba(0,0,0,.28), 0 0 22px rgba(190,66,78,.13); }
+
+/* Keep keyboard navigation visible without adding a focus ring to mouse clicks. */
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #ffc15a;
+  outline-offset: 3px;
+}
+
+/* Respect the operating-system accessibility preference across combat/UI effects. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+.shopHeader { position: sticky; top: -18px; z-index: 6; display: flex; align-items: center; margin: -18px -18px 10px; padding: 18px 18px 10px; border-bottom: 1px solid #414246; background: #292a2d; font-size: 18px; font-weight: bold; }
+#shopTitle { flex: 1; color: #e0c25a; }
+#shopCountdown { color: #a8a096; font-size: 10px; font-weight: normal; }
+.shopLayout { display: grid; grid-template-columns: minmax(290px, .78fr) minmax(470px, 1.45fr); gap: 18px; align-items: start; }
+.shopKeeperPanel { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.shopKeeperArt {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #454b53;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #24262a, #1d1f22);
+  color: #c8cdd3;
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.shopKeeperArt img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 14px 14px rgba(0,0,0,.55));
+  -webkit-user-drag: none;
+}
+.shopKeeperArt small { margin-top: 5px; color: #897070; font-size: 10px; }
+#shopDialogue {
+  position: relative;
+  width: 100%;
+  min-height: 94px;
+  padding: 32px 16px 14px;
+  border: 1px solid #615b50;
+  border-radius: 8px;
+  background: #202225;
+  color: #ddd;
+  text-align: left;
+  cursor: pointer;
+}
+#shopDialogue:hover { border-color: #8c7d60; background: #25272a; }
+#shopKeeperName { position: absolute; top: 11px; left: 17px; color: #d9bd72; font-size: 13px; font-weight: bold; }
+#shopDialogueText { display: block; font-size: 15px; line-height: 1.75; }
+.shopGoodsPanel { min-width: 0; }
+.shopSection { margin-bottom: 14px; padding: 14px; border: 1px solid #45484e; border-radius: 9px; background: #22252a; }
+.shopSectionTitle { margin-bottom: 10px; color: #aaa; font-size: 12px; font-weight: bold; }
+.shopSellRow, .shopBuyRow { display: grid; grid-template-columns: 38px 1fr auto auto; align-items: center; gap: 8px; }
+.shopSellActions { display: flex; gap: 5px; }
+.shopBuyRow + .shopBuyRow { margin-top: 6px; padding-top: 6px; border-top: 1px solid #3c4047; }
+.shopSellRow img, .shopBuyRow img { width: 52px; height: 52px; object-fit: contain; }
+.shopSellRow span, .shopBuyRow span { font-size: 12px; }
+.shopOwned, #shopStoneQty { color: #9299a2; }
+.shopSellRow button, .shopBuyRow button, #shopLeaveBtn { padding: 6px 8px; border: 1px solid #62666d; border-radius: 5px; background: #343940; color: #eee; font-size: 10px; cursor: pointer; }
+.shopSellRow button:disabled, .shopBuyRow button:disabled { opacity: 0.4; cursor: not-allowed; }
+.shopFooter { display: flex; gap: 7px; }
+#shopAutoLeaveBtn, #shopLeaveBtn { flex: 1; padding: 7px; border: 1px solid #62666d; border-radius: 5px; color: #eee; cursor: pointer; }
+#shopAutoLeaveBtn { background: #343940; }
+#shopLeaveBtn { background: #4a4031; border-color: #77654b; }
+
+@media (max-width: 650px) {
+  .shopLayout { grid-template-columns: 1fr; }
+  .shopKeeperPanel { display: grid; grid-template-columns: 108px minmax(0, 1fr); }
+  .shopKeeperArt { width: min(280px, 100%); min-height: 0; grid-column: 1 / -1; justify-self: center; }
+  .shopKeeperArt img { height: 100%; }
+  #shopDialogue { min-height: 92px; }
+}
+
+@media (max-width: 850px) {
+  body { padding-top: 10px; }
+  #app { width: min(542px, calc(100vw - 12px)); }
+  .combatColumns { grid-template-columns: 1fr; gap: 0; }
+  .battleColumn { min-height: 0; }
+  .enemyColumn { order: 1; margin-bottom: 8px; }
+  .partyColumn { order: 2; }
+  .partyColumn #combatActionBar { position: sticky; z-index: 20; bottom: max(6px, env(safe-area-inset-bottom)); }
+}

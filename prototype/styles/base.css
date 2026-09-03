@@ -1,0 +1,642 @@
+/* one box model everywhere - so a card's declared width is its actual
+   rendered width and layout math (like the app width below) stays exact
+   instead of drifting by whatever padding/border a card happens to have. */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(circle at 18% 5%, rgba(82,108,92,.16), transparent 32%),
+    radial-gradient(circle at 82% 0%, rgba(145,101,48,.12), transparent 28%),
+    linear-gradient(155deg, #171a1b, #1d1d1d 48%, #171819);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  height: 100%;
+  font-family: "Microsoft JhengHei", sans-serif;
+}
+
+body {
+  height: auto;
+  min-height: 100vh;
+  padding: 18px 0 28px;
+}
+
+/* Desktop uses the available width for a two-column battle view. */
+#app {
+  width: min(1040px, calc(100vw - 24px));
+  background: #23262b;
+  border: 1px solid #4a4f50;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.48), 0 0 0 1px rgba(255,255,255,.025) inset;
+  color: #ddd;
+  padding: 8px;
+  overflow: hidden;
+  /* this is a click-driven game UI, not a document - dragging over a card
+     shouldn't highlight its text like a text selection. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+  min-height: 62px;
+  padding: 7px 10px 13px;
+  border-bottom: 1px solid #454a4d;
+  margin-bottom: 8px;
+}
+body.storyOperationLock::after { content: ''; position: fixed; z-index: 8990; inset: 0; background: rgba(4,6,8,.72); pointer-events: none; }
+.storyFocusTarget { position: relative !important; z-index: 9000 !important; overflow: visible !important; opacity: 1 !important; filter: none !important; box-shadow: 0 0 0 3px rgba(240,191,85,.5), 0 0 34px rgba(240,191,85,.48); }
+#homeLocationBtn.storyFocusTarget { animation: homeFocusRingPulse 2.2s ease-in-out infinite; }
+@keyframes homeFocusRingPulse { 0%, 100% { box-shadow: 0 0 0 2px rgba(240,191,85,.2), 0 0 14px rgba(240,191,85,.16); } 50% { box-shadow: 0 0 0 4px rgba(255,214,119,.88), 0 0 42px rgba(240,191,85,.7); } }
+
+/* The game surface behaves like an application, not a selectable document. */
+html, body, #app, button, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.headerLead { min-width: 0; display: flex; flex: 1 1 auto; align-items: center; gap: 18px; }
+.gameBrand { flex: 0 0 auto; display: flex; align-items: center; gap: 9px; }
+.brandSigil { position: relative; width: 40px; height: 40px; display: grid; place-items: center; flex: 0 0 auto; }
+.brandSigil::after { content: ''; position: absolute; inset: 5px; border-radius: 50%; box-shadow: 0 0 18px rgba(105,199,255,.22); }
+.brandSigil img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; filter: brightness(.9) saturate(.92) drop-shadow(0 0 7px rgba(105,199,255,.38)); }
+.brandSigilFallback { display: none; width: 31px; height: 31px; place-items: center; border: 1px solid #9d783c; border-radius: 50%; background: radial-gradient(circle, #574226, #29271f 68%); color: #ffd074; font-size: 22px; line-height: 1; }
+.brandCopy { display: grid; gap: 1px; line-height: 1; }
+.brandCopy b { color: #f1d08b; font-size: 15px; letter-spacing: .14em; white-space: nowrap; }
+.brandCopy small { color: #777f80; font-family: Georgia, serif; font-size: 7px; letter-spacing: .2em; white-space: nowrap; }
+#header .headerLeft { display: flex; flex-direction: column; gap: 3px; }
+#floorLabel { color: #cbd0d1; font-size: 12px; }
+.headerActions { display: flex; align-items: center; gap: 6px; }
+.saveActions { display: flex; align-items: center; gap: 5px; margin-left: 2px; padding-left: 8px; border-left: 1px solid #41484d; }
+.saveActions button {
+  min-width: 58px;
+  padding: 7px 10px;
+  border: 1px solid #59646a;
+  border-radius: 6px;
+  background: linear-gradient(#343b40,#293036);
+  color: #cfd8db;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.saveActions button:hover:not(:disabled) { border-color: #9b824f; color: #f1d08b; background: linear-gradient(#41433e,#30343a); }
+.saveActions button:disabled { opacity: .35; cursor: not-allowed; }
+.saveStatus { min-height: 0; max-height: 0; margin: 0 10px; overflow: hidden; border-radius: 6px; color: #dbe9df; font-size: 13px; text-align: center; opacity: 0; transition: max-height .2s ease, padding .2s ease, margin-bottom .2s ease, opacity .2s ease; }
+.saveStatus.visible { max-height: 42px; margin-bottom: 8px; padding: 7px 10px; background: #26352d; border: 1px solid #476653; opacity: 1; }
+.saveStatus.error { color: #f0c9c4; background: #3b2929; border-color: #714848; }
+#debugToggleBtn { border-color: #887044; background: #4b402c; color: #ffd27a; }
+#debugPanel { margin: 0 10px 10px; padding: 10px; border: 1px dashed #8b7449; border-radius: 7px; background: #28251f; }
+#debugPanel[hidden] { display: none; }
+.debugPanelHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #ffd27a; }
+#debugStatus { color: #b6aa93; font-size: 11px; font-weight: normal; }
+.debugActions { display: flex; flex-wrap: wrap; gap: 6px; }
+.debugActions button { padding: 6px 9px; border: 1px solid #6f6758; border-radius: 5px; background: #37332c; color: #eee4d2; cursor: pointer; }
+.debugActions button:hover { border-color: #d3a957; background: #494034; }
+.debugActions button.danger { border-color: #845050; color: #efb1b1; }
+#goldLabel { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #e0c25a; }
+#goldLabel > img { width: 16px; height: 16px; object-fit: contain; }
+
+#bagBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 82px;
+  height: 40px;
+  padding: 5px 11px 5px 8px;
+  border: 1px solid #6b8297;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #40566a, #304355);
+  box-shadow: 0 4px 11px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.05);
+  color: #eef6fb;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+#bagBtn:hover:not(:disabled) { border-color: #91abc1; background: linear-gradient(180deg, #4b647a, #374d61); transform: translateY(-1px); }
+#bagBtn:disabled { opacity: .35; cursor: not-allowed; }
+#townShopBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  background: #574b31;
+  color: #f2e5bd;
+  border: 1px solid #806f48;
+  border-radius: 4px;
+  padding: 4px 7px;
+  cursor: pointer;
+}
+#bagBtn img, #townShopBtn img { width: 18px; height: 18px; object-fit: contain; }
+
+.panel {
+  background: #2c2f36;
+  border: 1px solid #3d4149;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+/* shared by every hp/xp/atk row on both charCard and monsterCard - one place
+   to tune label/bar/number proportions instead of duplicating them per card. */
+.row { display: flex; align-items: center; gap: 4px; width: 100%; }
+.barOuter {
+  flex: 1;
+  height: 10px;
+  background: #14161a;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #444;
+}
+.barInner { height: 100%; transition: width 0.4s; }
+.hpBar { background: linear-gradient(#e05555,#b83232); }
+.xpBar { background: linear-gradient(#5aa9e6,#3c7fc0); }
+.atkBar { background: linear-gradient(#7fe8d8,#2f9e8f); transition: none; }
+.atkLabel, .expLabel, .hpLabel { font-size: 9px; color: #999; flex-shrink: 0; }
+
+/* --- portrait: character art lives in assets/characters/, monster art in
+   assets/monsters/. If a file is missing the emoji fallback just keeps
+   showing, nothing breaks. */
+.portrait {
+  position: relative;
+  overflow: visible;
+  border-radius: 8px;
+  background: radial-gradient(circle at 50% 30%, #3a3f47, #1b1d21);
+  border: 2px solid #4a4f58;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: default;
+}
+/* every portrait (character or monster) shows the whole illustration
+   uncropped - "cover" would slice off the edges of art that doesn't happen
+   to match the frame's aspect ratio. */
+.portrait img { width: 100%; height: 100%; object-fit: contain; object-position: center; border-radius: 6px; }
+.portrait .fallback { font-size: 32px; line-height: 1; }
+/* single source of truth for portrait size - prep/battle/monster cards all
+   frame art identically so switching screens doesn't jump around. */
+.prepCard .portrait, .charCard .portrait, .monsterCard .portrait.big {
+  width: 130px;
+  height: 160px;
+}
+.prepCard .portrait .fallback, .charCard .portrait .fallback, .monsterCard .portrait.big .fallback {
+  font-size: 44px;
+}
+.portrait.hitFlash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,60,60,0.55);
+  border-radius: 6px;
+  animation: flashFade 0.35s ease-out forwards;
+}
+@keyframes flashFade { from { opacity: 1; } to { opacity: 0; } }
+
+/* skill-cast flourish: the skill's own icon flashes up and fades out over
+   the caster's portrait, independent of the floating damage/heal numbers. */
+.castIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 92px;
+  height: 92px;
+  transform: translate(-50%, -50%) scale(0.6);
+  pointer-events: none;
+  animation: castFade 0.7s ease-out forwards;
+}
+.castIcon img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 6px rgba(255,255,255,0.7)); }
+.castIcon .fallback { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 60px; }
+@keyframes castFade {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  25%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35); }
+}
+
+.popup {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: bold;
+  pointer-events: none;
+  animation: floatUp 0.9s ease-out forwards;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  white-space: nowrap;
+}
+.popup.dmg { color: #ff6b6b; }
+.popup.heal { color: #6bffa0; }
+.popup.buff { color: #ffe066; }
+.popup.perfect { color: #ffd23f; font-size: 15px; text-shadow: 0 0 6px rgba(255,210,63,0.9), 0 1px 2px rgba(0,0,0,0.8); }
+@keyframes floatUp {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(-28px); }
+}
+
+/* --- prepView: 進場組隊畫面，角色卡片式選擇 --- */
+#prepView .prepHeading { font-size: 14px; color: #e0a95a; font-weight: bold; margin-bottom: 4px; }
+#prepView .prepMsg { color: #999; font-style: italic; font-size: 13px; margin-bottom: 8px; }
+#prepRoster { display: flex; flex-wrap: wrap; gap: 10px; }
+.prepCard {
+  position: relative;
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--rarity-color, #3d4149);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--rarity-color, #3d4149) 45%, transparent);
+  background: #262931;
+  cursor: pointer;
+  transition: box-shadow 0.15s, opacity 0.15s;
+}
+.prepCard:hover { box-shadow: 0 0 10px color-mix(in srgb, var(--rarity-color, #667) 70%, transparent); }
+.prepCard.holding { transform: scale(0.985); filter: brightness(1.08); }
+.holdIndicator {
+  position: absolute;
+  z-index: 6;
+  width: 38px;
+  height: 38px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));
+}
+.holdIndicator svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.holdIndicator circle { fill: rgba(18,21,25,0.62); stroke-width: 3; }
+.holdTrack { stroke: rgba(255,255,255,0.25); }
+.holdProgress {
+  fill: none !important;
+  stroke: #f1c85f;
+  stroke-linecap: round;
+  stroke-dasharray: 87.97;
+  stroke-dashoffset: 87.97;
+  animation: holdProgress 450ms linear forwards;
+}
+@keyframes holdProgress { to { stroke-dashoffset: 0; } }
+/* selection state is a neutral white glow layered on top, so it never fights
+   with a rarity's own frame color (稀有 is blue, same family as the old
+   selection highlight used to be). */
+.prepCard.inParty { box-shadow: 0 0 6px color-mix(in srgb, var(--rarity-color, #3d4149) 45%, transparent), 0 0 10px rgba(255,255,255,0.65); }
+.prepCard.runLocked { cursor: default; } /* the whole run's party is locked in - not this character being locked */
+.prepCard .nm { font-size: 14px; text-align: center; font-weight: bold; }
+.prepCard .lvlTag { font-size: 10px; color: #999; }
+.prepCard .selectedBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #5a8fd6;
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  display: none;
+}
+.prepCard.inParty .selectedBadge { display: block; }
+.prepCard.runLocked .selectedBadge { display: none; } /* locked in = can't change picks anymore, badge stops being actionable info */
+
+/* charLocked = this character itself hasn't been unlocked yet (see design.md
+   角色解鎖系統), independent from runLocked (which is about the whole party
+   being locked in for the current expedition). */
+.prepCard.charLocked { cursor: default; }
+.prepCard.charLocked:hover { box-shadow: 0 0 6px color-mix(in srgb, var(--rarity-color, #3d4149) 45%, transparent); }
+.prepCard.charLocked .portrait img,
+.prepCard.charLocked .portrait .fallback { filter: grayscale(1) brightness(0.5); }
+.prepCard.charLocked .skills { opacity: 0.35; filter: grayscale(1); }
+.prepCard .lockOverlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(10,11,14,0.72);
+  text-align: center;
+}
+.prepCard.charLocked .lockOverlay { display: flex; }
+.prepCard .lockOverlay .lockIcon { font-size: 26px; }
+.prepCard .lockOverlay .lockReq { font-size: 10px; color: #ccc; line-height: 1.4; }
+
+#actionArea { width: 100%; display: flex; gap: 6px; margin-top: 14px; }
+.combatItemQuickSlot { cursor: pointer; }
+.combatItemQuickSlot.locked { cursor: default; opacity: 0.72; }
+#actionArea button {
+  flex: 1;
+  font-size: 11px;
+  padding: 6px 4px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid #666;
+}
+#startBtn { background: #345c3a; color: #eee; border-color: #4a8a54; }
+#retreatBtn { background: #5c4a34; color: #eee; border-color: #8a6f4a; }
+#actionArea button:disabled { background: #333; color: #777; border-color: #555; cursor: not-allowed; }
+
+/* --- combatView: desktop has enemies left and party/actions right --- */
+#combatView { display: none; }
+.combatColumns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.battleColumn { min-width: 0; min-height: 435px; margin-bottom: 8px; padding: 11px; }
+.partyColumn { background: radial-gradient(circle at 50% 38%, rgba(74,112,111,.12), transparent 38%), #2c2f36; }
+.enemyColumn { background: radial-gradient(circle at 50% 38%, rgba(132,72,72,.1), transparent 40%), #2c2f36; }
+.columnHeading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #41464f;
+  color: #aeb5bf;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+}
+
+#monsterSide { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+#partySide { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+
+.charCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #3d4149;
+  background: #262931;
+  width: 150px;
+  border-color: #46585a;
+  box-shadow: 0 10px 22px rgba(0,0,0,.18);
+}
+#bagBtn img { width: 29px; height: 29px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.38)); }
+.charCard.down { opacity: 0.4; }
+.charCard .body { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+.charCard .topRow { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.charCard .topRow .nm { flex: 1; font-weight: bold; }
+.charCard .topRow .lvlTag { font-size: 11px; color: #999; }
+.charCard .hpText, .charCard .xpText { font-size: 9px; color: #999; min-width: 38px; text-align: right; white-space: nowrap; }
+.statusList {
+  position: absolute;
+  z-index: 3;
+  top: 5px;
+  right: 5px;
+  width: calc(100% - 10px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 3px;
+  pointer-events: none;
+}
+.statusList.empty { display: none; }
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background: #1b1d22;
+  font-size: 9px;
+  line-height: 14px;
+  white-space: nowrap;
+  pointer-events: auto;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+.statusBadge.good { border-color: #426949; }
+.statusBadge.bad { border-color: #75483f; }
+/* icon now carries the good/bad read (art itself + border tint), the text
+   label was redundant next to a clear icon and just took up space */
+.statusBadge .statusName { display: none; }
+.statusBadge .statusIcon { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+.statusBadge .statusIcon img { width: 100%; height: 100%; object-fit: contain; }
+.statusBadge .statusIcon.missing { border: 1px dashed #a96565; border-radius: 3px; background: rgba(120,40,40,0.12); }
+.statusBadge .statusTime { display: none; }
+.statusMore {
+  min-width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #69717c;
+  border-radius: 8px;
+  background: rgba(20,22,26,0.92);
+  color: #ddd;
+  font-size: 9px;
+  pointer-events: auto;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+.skills { display: flex; gap: 6px; margin-top: 4px; justify-content: center; }
+.prepCard .skills { gap: 2px; }
+.skillIcon {
+  width: 32px; height: 32px;
+  border-radius: 5px;
+  background: #14161a;
+  border: 1px solid #444;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  position: relative;
+  overflow: hidden;
+}
+.skillIcon img { width: 100%; height: 100%; object-fit: cover; }
+.skillIcon .fallback { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; }
+.skillIcon .cdOverlay { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.65); }
+.prepActionIcon {
+  border-color: #d7ae4d;
+  box-shadow: 0 0 6px rgba(215,174,77,0.4), inset 0 0 5px rgba(215,174,77,0.15);
+}
+.prepActionIcon::after {
+  content: '';
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f1c85f;
+  box-shadow: 0 0 4px #f1c85f;
+}
+
+.monsterCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #3d4149;
+  background: #262931;
+  width: 150px;
+}
+.monsterCard.down { opacity: 0.4; }
+.monsterCard.dying {
+  pointer-events: none;
+  animation: monsterDeath 1.05s ease-in forwards;
+}
+@keyframes monsterDeath {
+  0%, 35% { opacity: 0.4; filter: grayscale(1); transform: scale(1); }
+  100% { opacity: 0; filter: grayscale(1); transform: scale(0.88); }
+}
+.monsterCard .name { font-weight: bold; font-size: 14px; }
+.monsterCard.boss .name { color: #ef5b5b; }
+.monsterCard.boss { border-color: #62464b; box-shadow: 0 10px 24px rgba(0,0,0,.2), 0 0 18px rgba(170,65,65,.08); }
+.monsterCard .monsterTopRow { width: 100%; display: flex; align-items: center; gap: 6px; }
+.monsterCard .monsterTopRow .name { flex: 1; }
+.monsterCard .monsterTopRow .lvlTag { color: #999; font-size: 11px; white-space: nowrap; }
+.monsterCard .hpText { font-size: 9px; color: #999; min-width: 38px; text-align: right; white-space: nowrap; }
+
+/* --- 王戰場地機制：黏液，點掉加傷害、放著擴散debuff --- */
+#bossArena {
+  display: none;
+  position: relative;
+  height: 118px;
+  margin-top: 12px;
+  border-radius: 6px;
+  border: 1px dashed #4a4f58;
+  background: linear-gradient(rgba(96,146,153,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(96,146,153,.035) 1px, transparent 1px), radial-gradient(circle at 50% 70%, rgba(58,119,129,.12), transparent 60%), rgba(12,15,18,.35);
+  background-size: 22px 22px, 22px 22px, auto, auto;
+  overflow: hidden;
+}
+#bossArena.active { display: block; }
+#bossArena::before {
+  content: 'BOSS ARENA';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(166, 191, 199, .12);
+  font-size: clamp(18px, 2.2vw, 27px);
+  font-weight: 900;
+  letter-spacing: .34em;
+  text-indent: .34em;
+  text-shadow: 0 1px 12px rgba(135, 190, 201, .08);
+  pointer-events: none;
+  user-select: none;
+}
+#bossArena .gooHint {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 9px;
+  color: #7fae7f;
+  pointer-events: none;
+}
+.goo {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #9fc9f5, #2f5f9e);
+  border: 2px solid #24455c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(100,170,255,0.5);
+  animation: gooPulse 2s ease-in-out infinite;
+  overflow: hidden;
+}
+.goo img { width: 100%; height: 100%; object-fit: cover; }
+.goo .fallback { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; }
+@keyframes gooPulse {
+  0%, 100% { transform: scale(0.92); }
+  50% { transform: scale(1.08); }
+}
+
+#log {
+  background: #14161a;
+  border: 1px solid #3d4149;
+  border-radius: 6px;
+  height: 110px;
+  overflow-y: auto;
+  padding: 0 10px 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #aaa;
+  scrollbar-width: thin;
+  scrollbar-color: #4a4f58 #14161a;
+  transition: height 0.2s;
+}
+#log::-webkit-scrollbar { width: 8px; }
+#log::-webkit-scrollbar-track { background: #14161a; border-radius: 4px; }
+#log::-webkit-scrollbar-thumb { background: #4a4f58; border-radius: 4px; }
+#log::-webkit-scrollbar-thumb:hover { background: #5a5f68; }
+#log .logLine:last-child { font-weight: 700; }
+#log .logLine.party { color: #7fb8ff; }
+#log .logLine.enemy { color: #ff8a7a; }
+#log .logLine.good  { color: #8fe89f; }
+#log .logLine.warn  { color: #ffb15a; }
+
+/* --- hover tooltip: 顯示角色/怪物詳細數值 --- */
+#tooltip {
+  position: fixed;
+  display: none;
+  z-index: 9999;
+  background: #111418;
+  border: 1px solid #4a4f58;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: #ddd;
+  max-width: 200px;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+#tooltip .ttName { font-weight: bold; margin-bottom: 4px; color: #fff; font-size: 12px; }
+#tooltip .ttStat { margin-bottom: 2px; color: #bbb; }
+#tooltip .ttSkillsHead { margin-top: 4px; font-weight: bold; color: #e0a95a; }
+#tooltip .ttSkill { font-size: 10px; color: #999; }
+#tooltip .ttMissing { margin-top: 5px; color: #ff9b8e; font-size: 10px; }
+
+/* A short location reveal covers the prep-to-combat rebuild. It is separate
+   from the much longer boss entrance so ordinary runs never feel stalled. */
+#dungeonEntryOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1180;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #090c0e;
+  color: #eef3ec;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+#dungeonEntryOverlay.open { visibility: visible; pointer-events: auto; animation: dungeonEntryCurtain 2.65s ease both; }
+#dungeonEntryOverlay.open.finished { visibility: hidden; pointer-events: none; }
+#dungeonEntryArt { position: absolute; inset: -5%; width: 110%; height: 110%; object-fit: cover; opacity: .3; filter: brightness(.55) saturate(.78); }
+#dungeonEntryOverlay.open #dungeonEntryArt { animation: dungeonEntryDrift 2.65s ease-out both; }
+.dungeonEntryShade { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(31,55,48,.08), rgba(5,8,10,.9) 72%), linear-gradient(90deg, rgba(5,8,10,.74), transparent 30%, transparent 70%, rgba(5,8,10,.74)); }
+.dungeonEntryShade::after { content: ''; position: absolute; left: 12%; right: 12%; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(194,215,194,.48), transparent); transform: scaleX(0); }
+#dungeonEntryOverlay.open .dungeonEntryShade::after { animation: dungeonEntryLine .7s ease-out .14s both; }
+.dungeonEntryTitle { position: relative; z-index: 1; display: grid; justify-items: center; gap: 8px; padding: 24px 70px; opacity: 0; }
+#dungeonEntryOverlay.open .dungeonEntryTitle { animation: dungeonEntryText .42s ease-out .13s both; }
+.dungeonEntryTitle small { color: #91a99c; font-family: Georgia, serif; font-size: 10px; font-weight: 700; letter-spacing: .34em; text-indent: .34em; }
+.dungeonEntryTitle strong { color: #f0dca6; font-size: clamp(30px, 4vw, 48px); letter-spacing: .16em; text-indent: .16em; text-shadow: 0 4px 18px rgba(0,0,0,.8); }
+.dungeonEntryTitle span { color: #b4beb8; font-size: 13px; letter-spacing: .08em; }
+@keyframes dungeonEntryCurtain { 0% { opacity: 0; } 14%, 62% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dungeonEntryDrift { from { transform: scale(1.08); } to { transform: none; } }
+@keyframes dungeonEntryLine { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: none; } }
+@keyframes dungeonEntryText { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
