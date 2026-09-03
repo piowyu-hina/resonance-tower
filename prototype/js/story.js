@@ -92,7 +92,7 @@ const DIALOGUE_PRESENTATION = {
 };
 
 const STORY_SPEAKERS = {
-  xiaochu_orb: { name: '小初', art: 'assets/story/resonance_orb.png', orb: true },
+  xiaochu_orb: { name: '小初', art: 'assets/story/xiaochu_resonance_orb.png', orb: true },
   xiaochu_kiss: { name: '', art: 'assets/story/xiaochu_kiss.png', scene: true },
   narrator: { name: '', narration: true },
 };
