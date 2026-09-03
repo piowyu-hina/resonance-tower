@@ -7,7 +7,9 @@ Desktop.ini
 .vscode/
 .idea/
 *.log
+node_modules/
 
 # Local browser/test artifacts
 prototype-*-profile/
 prototype-review*.png
+test-results/

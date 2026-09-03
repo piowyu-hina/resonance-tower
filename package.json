@@ -1,0 +1,13 @@
+{
+  "name": "resonance-tower",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "npm run test:unit && npm run test:ui",
+    "test:unit": "node tests/progression.test.js && node tests/i18n.test.js && node tests/save.test.js",
+    "test:ui": "node tests/ui-regression.test.js"
+  },
+  "devDependencies": {
+    "playwright-core": "1.62.1"
+  }
+}
