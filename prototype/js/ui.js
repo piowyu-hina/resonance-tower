@@ -813,7 +813,7 @@ function renderShopView() {
     : '本次遠征途中取得、目前可以使用的金幣';
   renderShopDialogue();
   document.getElementById('shopCountdown').textContent = shopMode === 'town'
-    ? `安全金幣：${bankedGold}`
+    ? ''
     : (shopAutoLeave ? `${Math.ceil(shopCountdown / 1000)} 秒後自動離開` : '自動離開已關閉');
   const crystalQty = inventoryItemCount('monsterCrystal');
   document.getElementById('shopMonsterCrystalQty').textContent = `持有 ×${crystalQty}`;
