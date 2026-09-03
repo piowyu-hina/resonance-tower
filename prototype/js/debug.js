@@ -41,6 +41,7 @@ function initDebugTools() {
     phase = 'defeat';
     showDefeatOverlay();
   }
+  if (requestedView === 'dialogue') queueDialogue('xiaochu_first_possession');
   if (requestedView === 'boss') debugStartBossFight();
 }
 

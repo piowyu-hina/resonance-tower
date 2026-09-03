@@ -271,7 +271,7 @@ const DEFEAT_RESTART_DELAY_MS = 10000;
 const MOB_ATK_INTERVAL = 2200;
 const BOSS_ATK_INTERVAL = 2200;
 const BOSS_ENTRY_GRACE_MS = 900;
-const MONSTER_DEATH_REMOVE_MS = 1100;
+const MONSTER_DEATH_ANIMATION_MS = 1100;
 const MAX_IMPLEMENTED_FLOOR = 1; // raise this when floor 2 content is ready
 // design.md「區域推進」：floor numbers stay the internal progression unit,
 // but are framed to the player as named regions - floor 1 is 森林, the

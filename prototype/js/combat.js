@@ -322,7 +322,9 @@ function onMonsterDefeated(m) {
     refs.hpBar.style.width = '0%';
     refs.hpText.textContent = `0/${m.maxHp}`;
     refs.card.classList.add('down', 'dying');
-    setTimeout(() => refs.card.remove(), MONSTER_DEATH_REMOVE_MS); // let the grey-out and fade finish before the slot closes
+    // Keep the now-transparent card as a layout placeholder until the next
+    // wave rebuild. Removing it here makes every surviving enemy snap toward
+    // the centre on the animation's final frame.
   }
 
   const alive = activeAliveMembers();
@@ -372,7 +374,7 @@ function onMonsterDefeated(m) {
         enterPrepFloor();
       }
       render();
-    }, MONSTER_DEATH_REMOVE_MS);
+    }, MONSTER_DEATH_ANIMATION_MS);
     return;
   }
 
@@ -388,7 +390,7 @@ function onMonsterDefeated(m) {
       return;
     }
     continueAfterClearedWave();
-  }, MONSTER_DEATH_REMOVE_MS);
+  }, MONSTER_DEATH_ANIMATION_MS);
 }
 
 function continueAfterClearedWave() {

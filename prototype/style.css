@@ -1147,11 +1147,11 @@ button:focus-visible,
   background: radial-gradient(ellipse at 50% 68%, rgba(26,39,54,.38), transparent 54%), rgba(5,7,10,.88);
   backdrop-filter: blur(1.5px);
 }
-#dialogueModal { width: min(780px, calc(100vw - 30px)); }
+#dialogueModal { width: min(860px, calc(100vw - 30px)); }
 #dialogueModal.presentationHidden { visibility: hidden; }
 #dialoguePortraitFrame {
-  width: 300px;
-  height: min(430px, 53vh);
+  width: 380px;
+  height: min(520px, 62vh);
   border: none;
   border-radius: 0;
   background: transparent;
@@ -1161,8 +1161,8 @@ button:focus-visible,
   object-position: center bottom;
   filter: drop-shadow(0 14px 14px rgba(0,0,0,.72));
 }
-#dialoguePortraitFrame.lineEntering img { animation: dialogueCharacterEnter .28s ease-out; }
-#dialogueText.lineEntering { animation: dialogueLineFade .12s ease-out; }
+#dialoguePortraitFrame.lineEntering img { animation: dialogueCharacterEnter .28s ease-out both; will-change: opacity, transform; }
+#dialogueText.lineEntering { animation: dialogueLineFade .12s ease-out both; will-change: opacity; }
 #dialoguePortraitFrame.orbSpeaker { width: 230px; height: min(280px,38vh); }
 #dialoguePortraitFrame.orbSpeaker img { object-position: center; filter: drop-shadow(0 0 22px rgba(103,207,255,.65)); }
 #dialoguePortraitFrame.sceneArt { width: min(520px,76vw); height: min(560px,62vh); }
@@ -1332,7 +1332,7 @@ button:focus-visible,
   animation: presentationTextIn .55s ease 1.45s forwards;
 }
 
-@keyframes dialogueCharacterEnter { from { opacity:.35; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes dialogueCharacterEnter { from { opacity:.35; transform:translateY(8px); } to { opacity:1; transform:none; } }
 @keyframes dialogueLineFade { from { opacity:.65; } to { opacity:1; } }
 @keyframes dialogueAdvancePulse { 0%,70%,100% { opacity:.22; transform:translateY(0); } 35% { opacity:.9; transform:translateY(-2px); } }
 @keyframes soulGlow { from { opacity:.55; transform:scale(.9); } to { opacity:1; transform:scale(1.08); } }
@@ -1344,7 +1344,7 @@ button:focus-visible,
   65% { transform:scale(.95) rotate(-1deg); }
   100% { opacity:1; transform:scale(1); filter:brightness(1) drop-shadow(0 0 20px rgba(125,226,255,.72)); }
 }
-@keyframes partnerCharacterReveal { from { opacity:0; transform:translateY(28px) scale(.92); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes partnerCharacterReveal { from { opacity:0; transform:translateY(28px) scale(.92); } to { opacity:1; transform:none; } }
 @keyframes rarityCircleReveal {
   from { opacity:0; transform:translate(-50%,-50%) scale(.62) rotate(-12deg); }
   to { opacity:.7; transform:translate(-50%,-50%) scale(1) rotate(0); }
@@ -1354,7 +1354,7 @@ button:focus-visible,
   50% { opacity:.86; }
   to { opacity:.7; transform:translate(-50%,-50%) scale(1) rotate(360deg); }
 }
-@keyframes presentationTextIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes presentationTextIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 
 /* 商店關閉鍵與背包採用同一位置及外觀。 */
 #inventoryCloseBtn, #shopLeaveBtn {
@@ -1597,7 +1597,7 @@ button:focus-visible,
 .shopTab:hover { color: #d8c394; background: rgba(115,91,49,.18); }
 .shopTab.active { border-color: #7b6742; background: linear-gradient(180deg, #55452c, #3c3325); color: #f2d38c; box-shadow: inset 0 1px rgba(255,255,255,.05); }
 .shopSection[hidden] { display: none; }
-.shopSection:not([hidden]) { animation: contentFadeIn .14s ease-out; }
+.shopSection:not([hidden]) { animation: contentFadeIn .14s ease-out both; }
 .shopSection { margin: 0; padding: 15px; border-color: #484b4f; border-radius: 11px; background: rgba(29,32,36,.84); box-shadow: inset 0 1px rgba(255,255,255,.025); }
 .shopSectionTitle { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; padding-bottom: 9px; border-bottom: 1px solid #3e4146; }
 .shopSectionTitle span { color: #e0bd72; font-size: 14px; }
@@ -1840,7 +1840,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .journalPanel header button { width: 36px; height: 36px; padding: 0; border: 1px solid #766f64; border-radius: 6px; background: #36383b; color: #ddd; font-size: 24px; cursor: pointer; }
 .journalChapter { margin: 18px 22px 0; color: #d9bd78; font-size: 19px; font-weight: 700; }
 .journalPageText { min-height: 390px; margin: 12px 22px; padding: 23px 26px; border: 1px solid #aa9366; background: #d8c99f; color: #30291f; font-family: serif; font-size: 17px; line-height: 1.85; white-space: pre-wrap; box-shadow: inset 0 0 24px rgba(83,57,23,.14); }
-.journalPageText.pageTurning { animation: pageContentFade .14s ease-out; }
+.journalPageText.pageTurning { animation: pageContentFade .14s ease-out both; }
 .journalPanel footer { display: flex; align-items: center; justify-content: space-between; padding: 0 22px 20px; color: #a99e8b; }
 .journalPanel footer button { padding: 9px 15px; border: 1px solid #806b45; border-radius: 7px; background: #51442e; color: #f0d797; cursor: pointer; }
 
@@ -2107,7 +2107,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .runResultEmpty { grid-column: 1 / -1; padding: 16px; border: 1px dashed rgba(255,255,255,.1); border-radius: 8px; color: #858991; font-size: 12px; text-align: center; }
 .runResultFoot { margin: -7px 0 20px; color: #83868e; font-size: 11px; }
 @keyframes contentFadeIn { from { opacity: .45; } to { opacity: 1; } }
-.surfaceEntering { animation: surfaceFadeIn .2s ease-out; }
+.surfaceEntering { animation: surfaceFadeIn .2s ease-out both; will-change: opacity, transform; }
 @keyframes surfaceFadeIn {
   from { opacity: .45; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
