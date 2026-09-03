@@ -1717,7 +1717,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .homeFacilityBtn span { min-width: 0; display: grid; gap: 7px; }
 .homeFacilityBtn b { color: #e5c275; font-size: 19px; }
 .homeFacilityBtn small { color: #9299a1; font-size: 11px; line-height: 1.5; }
-.contractFacilityBtn img { filter: drop-shadow(0 0 18px rgba(115,205,255,.52)); }
+.contractFacilityBtn img { filter: drop-shadow(0 0 18px rgba(224,138,60,.62)); }
 .homeFacilityBtn.storyRequired { border-color: #e1b855; box-shadow: 0 0 0 2px rgba(225,184,85,.18), 0 0 22px rgba(225,184,85,.28); animation: storyRequiredPulse 1.4s ease-in-out infinite alternate; }
 .homeFacilityBtn:disabled { opacity: .38; filter: grayscale(.6); cursor: default; transform: none; }
 .homeFacilityBtn[hidden] { display: none; }
