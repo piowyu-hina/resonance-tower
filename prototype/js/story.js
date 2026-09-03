@@ -25,6 +25,7 @@ const DIALOGUE_DEFS = {
     { speaker: 'wuming', text: '對了，我們先回家吧。' },
     { speaker: 'wuming', text: '我記得有一本書，好像提過這種情況。' },
     { speaker: 'xiaochu_orb', text: '嗯……' },
+    { speaker: 'hina_guide', text: '先回家看看吧。也許能在那本書裡找到答案。' },
   ],
   xiaochu_home_search: [
     { speaker: 'wuming', text: '我記得……應該放在這裡才對。' },
@@ -93,6 +94,7 @@ const DIALOGUE_PRESENTATION = {
 
 const STORY_SPEAKERS = {
   xiaochu_orb: { name: '小初', art: 'assets/story/resonance_orb.png', orb: true },
+  hina_guide: { name: 'Hina', art: 'assets/characters/hina_guide.png' },
   narrator: { name: '', narration: true },
 };
 

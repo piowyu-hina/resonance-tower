@@ -55,12 +55,26 @@ function runDebugAction(action) {
   } else if (action === 'intro') {
     showBossIntro(() => {});
   } else if (action === 'xiaochu-story') {
+    closeOtherOverlays(null);
+    activeOverlay = null;
     unlockedChars.delete('xiaochu');
-    resonanceState.xiaochu = 'encountering';
-    startCharacterEncounter('xiaochu', () => {
-      endRun(false);
-      render();
+    delete resonanceState.xiaochu;
+    slimeKillCount = 49;
+    prepLocation = 'expedition';
+    phase = 'combat';
+    partyLocked = true;
+    mobsCleared = 0;
+    roster.forEach(character => {
+      character.alive = true;
+      character.curHp = character.maxHp;
     });
+    buildBattleRoster();
+    spawnWave();
+    party.forEach(id => {
+      const character = roster.find(member => member.id === id);
+      character.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(character);
+    });
+    log('開發工具：下一波怪物清空後將觸發小初相遇', 'warn');
   } else if (action === 'reset') {
     window.location.reload();
     return;

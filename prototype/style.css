@@ -1706,7 +1706,6 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .homeFacilityBtn span { min-width: 0; display: grid; gap: 7px; }
 .homeFacilityBtn b { color: #e5c275; font-size: 19px; }
 .homeFacilityBtn small { color: #9299a1; font-size: 11px; line-height: 1.5; }
-.facilityTextIcon { flex: 0 0 118px; width: 118px; height: 118px; display: grid !important; place-items: center; border: 2px solid #866e46; border-radius: 9px 15px 15px 9px; background: linear-gradient(90deg,#3d3020 0 9%,#75603d 10% 12%,#d6c18e 13% 100%); color: #554526; font-family: serif; font-size: 40px; box-shadow: 7px 9px 13px rgba(0,0,0,.35); }
 .contractFacilityBtn img { filter: drop-shadow(0 0 18px rgba(115,205,255,.52)); }
 .homeFacilityBtn.storyRequired { border-color: #e1b855; box-shadow: 0 0 0 2px rgba(225,184,85,.18), 0 0 22px rgba(225,184,85,.28); animation: storyRequiredPulse 1.4s ease-in-out infinite alternate; }
 .homeFacilityBtn:disabled { opacity: .38; filter: grayscale(.6); cursor: default; transform: none; }
@@ -1742,7 +1741,6 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .journalPanel footer { padding: 0 13px 14px; }
   .soulChoice { width: calc(100% - 24px); margin: 12px; padding: 13px; }
   .soulChoice img { width: 78px; height: 78px; }
-  .facilityTextIcon { flex-basis: 90px; width: 90px; height: 90px; }
 }
 #homeGrowthView > .navBackBtn { margin-bottom: 12px; }
 .homeGrowthShell { min-height: 330px; }
