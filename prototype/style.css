@@ -1915,17 +1915,47 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .homeInterior img { width: min(220px,80%); }
 }
 
-/* Typography pass: primary labels and supporting copy stay readable across the hub UI. */
-.brandCopy b { font-size: 17px; }
-.brandCopy small { font-size: 10px; }
-#villageView .prepHeading { font-size: 29px; }
-#villageView .prepMsg { font-size: 14px; }
-.villageLocationCopy b { font-size: 17px; }
-.villageLocationCopy small { font-size: 12px; line-height: 1.5; }
-#homeView .prepHeading, #regionView .prepHeading, #expeditionView .prepHeading { font-size: 21px; }
-#homeView .prepMsg, #regionView .prepMsg, #expeditionView .prepMsg { font-size: 12px; line-height: 1.5; }
-.homeSectionHeading { font-size: 13px; }
-#shopTitle { font-size: 22px; }
-.shopSectionTitle span { font-size: 16px; }
-.shopSectionTitle small, .shopItemCopy small { font-size: 11px; }
-.shopItemCopy b { font-size: 15px; }
+/* Global readability pass: never trade legibility for fitting one line. */
+body { font-size: 16px; }
+button, input, select { font-size: 15px; }
+.brandCopy b { font-size: 20px; }
+.brandCopy small { font-size: 13px !important; }
+#floorLabel, #goldLabel, #debugStatus { font-size: 15px; }
+.prepHeading, #villageView .prepHeading { font-size: clamp(26px, 3vw, 32px); }
+#homeView .homeTopbar .prepHeading, #regionView .homeTopbar .prepHeading, #expeditionView .homeTopbar .prepHeading { font-size: clamp(24px, 2.5vw, 29px) !important; }
+.prepMsg, #villageView .prepMsg, #homeView .prepMsg, #regionView .prepMsg, #expeditionView .prepMsg { font-size: 15px; line-height: 1.6; }
+.villageLocationCopy b, .regionCopy b { font-size: 20px; }
+.villageLocationCopy small, .regionCopy small { font-size: 14px; line-height: 1.55; }
+.regionTitleRow em, .regionIntel, .regionChoose { font-size: 13px; }
+.regionBriefKicker { font-size: 12px; }
+.expeditionRegionMain b { font-size: 19px; }
+.expeditionRegionMain small, .expeditionRegionFacts small { font-size: 13px; line-height: 1.5; }
+.expeditionRegionFacts b { font-size: 14px; white-space: normal; }
+.expeditionStepLabel, #expeditionCharacterHeading.expeditionStepLabel { font-size: 15px; }
+.expeditionCharacter .nm { font-size: 19px; }
+.expeditionCharacter .lvlTag, .expeditionEmptySelection { font-size: 14px; }
+.expeditionCharacter .lockReq { font-size: 13px; }
+.expeditionSelectedIdentity small, .expeditionSelectedIdentity span, .expeditionLoadout small { font-size: 13px; }
+.expeditionSelectedIdentity b { font-size: 18px; }
+.homeSectionHeading { font-size: 16px; }
+.homeFacilityBtn b { font-size: 22px; }
+.homeFacilityBtn small { font-size: 14px; }
+.homeGrowthMeta, .homeGrowthInfo small, .homeGrowthInfo em { font-size: 13px; }
+.homeGrowthInfo b { font-size: 19px; }
+.columnHeading span { font-size: 18px; }
+.columnHeading small, .actionBarTitle { font-size: 13px; }
+.charCard .topRow, .monsterCard .name { font-size: 16px; }
+.charCard .topRow .lvlTag, .monsterCard .monsterTopRow .lvlTag { font-size: 13px; }
+.charCard .hpText, .charCard .xpText, .monsterCard .hpText { font-size: 12px; }
+.inventoryHeader { font-size: 21px; }
+.inventoryPaneTitle b { font-size: 18px; }
+.inventoryPaneTitle small, .inventoryItemName, .inventoryNote { font-size: 13px; line-height: 1.5; }
+.inventoryQty { font-size: 14px; }
+#shopTitle { font-size: 24px; }
+.shopTab, .shopSectionTitle span, .shopItemCopy b { font-size: 16px; }
+.shopSectionTitle small, .shopItemCopy small, .shopOwned, #shopMonsterCrystalQty, #shopCountdown { font-size: 13px !important; line-height: 1.5; white-space: normal; }
+#shopDialogueText { font-size: 15px; }
+#shopKeeperName { font-size: 14px; }
+#tooltip { font-size: 14px; line-height: 1.55; }
+#tooltip .ttStat, #tooltip .ttSkill, #tooltip .ttMissing { font-size: 13px; }
+#log, .logLine { font-size: 14px; line-height: 1.55; }
