@@ -52,10 +52,6 @@ body {
 }
 body.storyOperationLock::after { content: ''; position: fixed; z-index: 8990; inset: 0; background: rgba(4,6,8,.72); }
 .storyFocusTarget { position: relative !important; z-index: 9000 !important; overflow: visible !important; opacity: 1 !important; filter: none !important; box-shadow: 0 0 0 3px rgba(240,191,85,.5), 0 0 34px rgba(240,191,85,.48) !important; }
-.storyFocusTarget::before, .storyFocusTarget::after { content: ''; position: absolute; z-index: 5; left: 50%; bottom: 8%; width: 4px; height: 4px; border-radius: 50%; background: #ffe4a0; box-shadow: -58px 12px 0 rgba(217,174,81,.82), -27px -5px 0 rgba(255,240,173,.9), 18px 9px 0 rgba(239,200,102,.78), 52px -3px 0 rgba(255,245,200,.88); pointer-events: none; animation: storyParticlesRise 2.6s ease-in-out infinite; }
-.storyFocusTarget::after { width: 3px; height: 3px; bottom: 12%; opacity: .7; filter: blur(.2px); animation-delay: -1.25s; animation-duration: 3.1s; transform: translateX(14px); }
-@keyframes storyParticlesRise { 0% { opacity:0; transform:translate(-8px, 12px) scale(.55); } 22% { opacity:.9; } 70% { opacity:.55; } 100% { opacity:0; transform:translate(10px, -88px) scale(.9); } }
-.homeLocationBtn.storyFocusTarget::before, .homeLocationBtn.storyFocusTarget::after { content: none !important; display: none !important; animation: none !important; }
 
 /* The game surface behaves like an application, not a selectable document. */
 html, body, #app, button, [role="button"] {
@@ -1604,7 +1600,7 @@ button:focus-visible,
 .homeGuideHina { position: absolute; z-index: 6; top: 2px; right: 0; width: 180px; height: 218px; display: block; pointer-events: none; }
 .homeGuideHina[hidden] { display: none; }
 .homeGuideHina img { position: absolute; right: 0; bottom: 0; width: 158px; height: 190px; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 8px 10px rgba(0,0,0,.62)); }
-.homeGuideHina > span { position: absolute; z-index: 1; top: -9px; right: 28px; padding: 7px 11px; border: 1px solid #8a6576; border-radius: 9px; background: rgba(42,32,39,.96); color: #f4dce5; font-size: 14px; font-weight: 700; white-space: nowrap; box-shadow: 0 7px 14px rgba(0,0,0,.34); }
+.homeGuideHina > span { position: absolute; z-index: 1; top: 18px; right: 28px; padding: 7px 11px; border: 1px solid #8a6576; border-radius: 9px; background: rgba(42,32,39,.96); color: #f4dce5; font-size: 14px; font-weight: 700; white-space: nowrap; box-shadow: 0 7px 14px rgba(0,0,0,.34); }
 .homeLocationBtn.storyFocusTarget .homeGuideHina > span { animation: guideBubblePulse 2.2s ease-out infinite; }
 .homeLocationBtn.storyFocusTarget .homeGuideHina > span::before { content: ''; position: absolute; z-index: 0; inset: -17px; border-radius: 17px; background: radial-gradient(circle at 2% 48%, #ffe4a0 0 2.5px, transparent 3.5px), radial-gradient(circle at 18% 0%, #f5ce70 0 2px, transparent 3px), radial-gradient(circle at 52% -8%, #fff5c8 0 2.5px, transparent 3.5px), radial-gradient(circle at 88% 4%, #d9ae51 0 2px, transparent 3px), radial-gradient(circle at 104% 52%, #ffe4a0 0 2.5px, transparent 3.5px), radial-gradient(circle at 76% 108%, #efc866 0 2px, transparent 3px), radial-gradient(circle at 28% 110%, #fff0ad 0 2.5px, transparent 3.5px), radial-gradient(circle at -5% 82%, #d9ae51 0 2px, transparent 3px); opacity: 0; pointer-events: none; animation: guideBubbleParticles 2.2s ease-out infinite; }
 @keyframes guideBubblePulse { 0%, 100% { box-shadow: 0 7px 14px rgba(0,0,0,.34), 0 0 0 0 rgba(240,191,85,.18); } 45% { box-shadow: 0 7px 14px rgba(0,0,0,.34), 0 0 0 5px rgba(240,191,85,.2); } }
@@ -1932,7 +1928,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 @media (max-width: 520px) {
   .homeGuideHina { top: -13px; width: 150px; height: 166px; }
   .homeGuideHina img { width: 132px; height: 154px; }
-  .homeGuideHina > span { top: -7px; right: 18px; font-size: 13px; }
+  .homeGuideHina > span { top: 12px; right: 18px; font-size: 13px; }
 }
 
 @media (max-width: 850px) {
