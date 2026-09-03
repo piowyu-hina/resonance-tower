@@ -321,6 +321,25 @@ function renderCharmPicker(character) {
   list.appendChild(empty);
 }
 
+// Keep compact loadout menus visually attached to the game surface. Using the
+// viewport alone let them hang below #app on roomy desktop screens, which made
+// them look detached even though they were technically still on-screen.
+function positionPickerNearAnchor(picker, anchor) {
+  const anchorRect = anchor.getBoundingClientRect();
+  const pickerRect = picker.getBoundingClientRect();
+  const appRect = document.getElementById('app')?.getBoundingClientRect();
+  const leftEdge = Math.max(8, appRect ? appRect.left + 8 : 8);
+  const rightEdge = Math.min(window.innerWidth - 8, appRect ? appRect.right - 8 : window.innerWidth - 8);
+  const topEdge = Math.max(8, appRect ? appRect.top + 8 : 8);
+  const bottomEdge = Math.min(window.innerHeight - 8, appRect ? appRect.bottom - 8 : window.innerHeight - 8);
+  const left = Math.max(leftEdge, Math.min(anchorRect.left, rightEdge - pickerRect.width));
+  const below = anchorRect.bottom + 7;
+  const above = anchorRect.top - pickerRect.height - 7;
+  const top = below + pickerRect.height <= bottomEdge ? below : Math.max(topEdge, above);
+  picker.style.left = `${left}px`;
+  picker.style.top = `${top}px`;
+}
+
 function setCharmPickerOpen(open, anchor = null, character = null) {
   if (open) closeOtherOverlays('charmPicker');
   activeOverlay = open ? 'charmPicker' : (activeOverlay === 'charmPicker' ? null : activeOverlay);
@@ -330,11 +349,7 @@ function setCharmPickerOpen(open, anchor = null, character = null) {
   hideTooltip();
   if (!open || !anchor || !character) return;
   renderCharmPicker(character);
-  const rect = anchor.getBoundingClientRect();
-  const pickerRect = picker.getBoundingClientRect();
-  picker.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - pickerRect.width - 8))}px`;
-  const below = rect.bottom + 7;
-  picker.style.top = `${below + pickerRect.height <= window.innerHeight - 8 ? below : Math.max(8, rect.top - pickerRect.height - 7)}px`;
+  positionPickerNearAnchor(picker, anchor);
 }
 
 function renderExpeditionSelectedSummary() {
@@ -449,14 +464,7 @@ function setCombatItemPickerOpen(open, anchor = null) {
   hideTooltip();
   if (!open || !anchor) return;
   renderCombatItemPicker();
-  const rect = anchor.getBoundingClientRect();
-  const pickerRect = picker.getBoundingClientRect();
-  let left = rect.left;
-  let top = rect.bottom + 7;
-  if (left + pickerRect.width > window.innerWidth - 8) left = window.innerWidth - pickerRect.width - 8;
-  if (top + pickerRect.height > window.innerHeight - 8) top = rect.top - pickerRect.height - 7;
-  picker.style.left = `${Math.max(8, left)}px`;
-  picker.style.top = `${Math.max(8, top)}px`;
+  positionPickerNearAnchor(picker, anchor);
 }
 
 function setCharacterDetailOpen(open, characterId = null) {
