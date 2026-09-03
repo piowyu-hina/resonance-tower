@@ -57,7 +57,13 @@ function initDebugTools() {
       setTimeout(() => document.getElementById('dialogueOverlay').click(), 420);
     }
   }
-  if (requestedView === 'dungeon-entry') showDungeonEntry(() => {});
+  if (requestedView === 'dungeon-entry') showDungeonEntry(prepareDungeonCombat, activatePreparedCombat);
+  if (requestedView === 'boss-intro') {
+    prepLocation = 'expedition';
+    mobsCleared = MOBS_PER_FLOOR;
+    prepareBossCombat();
+    showBossIntro(activatePreparedCombat);
+  }
   if (requestedView === 'go-home' || requestedView === 'go-home-flow') {
     phase = 'prepFloor';
     partyLocked = false;

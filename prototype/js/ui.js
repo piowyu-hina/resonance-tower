@@ -37,21 +37,30 @@ function playTransientAnimation(element, className) {
   if (!element) return;
   const handlerKey = `${className}EndHandler`;
   const runKey = `${className}RunId`;
+  const timerKey = `${className}FallbackTimer`;
   const runId = (element[runKey] || 0) + 1;
   element[runKey] = runId;
+  clearTimeout(element[timerKey]);
   if (element[handlerKey]) element.removeEventListener('animationend', element[handlerKey]);
   element.classList.remove(className);
   void element.offsetWidth;
+  const cleanup = () => {
+    if (element[runKey] !== runId) return;
+    element.classList.remove(className);
+    clearTimeout(element[timerKey]);
+    element[timerKey] = null;
+  };
   element[handlerKey] = event => {
     if (event.target !== element) return;
     element.removeEventListener('animationend', element[handlerKey]);
     element[handlerKey] = null;
-    afterAnimationPaint(() => {
-      if (element[runKey] === runId) element.classList.remove(className);
-    });
+    afterAnimationPaint(cleanup);
   };
   element.addEventListener('animationend', element[handlerKey]);
   element.classList.add(className);
+  // Hidden tabs and display changes may suppress animationend. All callers use
+  // animations <= .35s, so this deliberately late fallback cannot cut one off.
+  element[timerKey] = setTimeout(cleanup, 600);
 }
 
 function removeAfterAnimation(element, fallbackMs) {
@@ -156,7 +165,7 @@ function restartAfterDefeat() {
   }
   prepLocation = 'expedition';
   render();
-  showDungeonEntry(beginExpeditionCombat);
+  showDungeonEntry(prepareDungeonCombat, activatePreparedCombat);
 }
 
 function showVictoryOverlay(securedGold) {
@@ -198,11 +207,12 @@ function showBossIntro(onComplete) {
   setTimeout(finish, 5600);
 }
 
-function showDungeonEntry(onCovered) {
+function showDungeonEntry(onCovered, onComplete = null) {
   const overlay = document.getElementById('dungeonEntryOverlay');
-  if (overlay.classList.contains('open')) return;
+  if (overlay.classList.contains('open') && !overlay.classList.contains('finished')) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     onCovered();
+    if (onComplete) onComplete();
     return;
   }
 
@@ -217,8 +227,12 @@ function showDungeonEntry(onCovered) {
     if (finished) return;
     finished = true;
     overlay.removeEventListener('animationend', handleAnimationEnd);
-    overlay.classList.remove('open');
+    // Keep the completed animation attached and hide it at opacity:0. Removing
+    // the animation class here used to expose its pre-animation frame for one
+    // compositor refresh, which read as a jump at the end of the curtain.
+    overlay.classList.add('finished');
     overlay.setAttribute('aria-hidden', 'true');
+    if (onComplete) onComplete();
   };
   const handleAnimationEnd = event => {
     if (event.target === overlay && event.animationName === 'dungeonEntryCurtain') {
@@ -226,22 +240,39 @@ function showDungeonEntry(onCovered) {
     }
   };
   overlay.addEventListener('animationend', handleAnimationEnd);
+  overlay.classList.remove('open', 'finished');
+  void overlay.offsetWidth;
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
 
-  setTimeout(onCovered, 1550);
+  // Rebuild the combat surface while the curtain is fully opaque. It remains
+  // paused in dungeonIntro, and is only activated after the curtain is gone.
+  setTimeout(onCovered, 560);
   setTimeout(finish, 2850);
 }
 
-function beginExpeditionCombat() {
+function prepareCombat(entryPhase) {
   partyLocked = true;
-  phase = 'combat';
+  phase = entryPhase;
   buildBattleRoster();
   spawnWave();
   party.forEach(id => {
     const c = roster.find(r => r.id === id);
     c.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(c);
   });
+  render();
+}
+
+function prepareDungeonCombat() {
+  prepareCombat('dungeonIntro');
+}
+
+function prepareBossCombat() {
+  prepareCombat('bossIntro');
+}
+
+function activatePreparedCombat() {
+  phase = 'combat';
   render();
 }
 
@@ -1235,11 +1266,13 @@ function buildUI() {
     if (phase === 'prepFloor' || phase === 'prepBoss') {
       if (phase === 'prepBoss') {
         resetBossEntryCooldowns();
-        phase = 'bossIntro';
-        render();
-        showBossIntro(beginExpeditionCombat);
+        // Replace the finished mob wave before the combat view becomes visible.
+        // Otherwise display:none -> block restarts every retained death animation
+        // behind the translucent boss entrance.
+        prepareBossCombat();
+        showBossIntro(activatePreparedCombat);
       } else {
-        showDungeonEntry(beginExpeditionCombat);
+        showDungeonEntry(prepareDungeonCombat, activatePreparedCombat);
       }
     }
   });
@@ -1563,7 +1596,7 @@ function floorLabelText() {
     if (prepLocation === 'regions') return t('region.title');
     return region;
   }
-  if (phase === 'combat' && monsters.length > 0) {
+  if ((phase === 'combat' || phase === 'dungeonIntro' || phase === 'bossIntro') && monsters.length > 0) {
     const boss = monsters.find(m => m.isBoss);
     return boss
       ? t('combat.bossBattle', { region })
@@ -1620,7 +1653,10 @@ function render() {
   const logWasAtBottom = !logWasVisible
     || logEl.scrollHeight - logEl.scrollTop - logEl.clientHeight <= 8;
   const previousLogScrollTop = logEl.scrollTop;
-  logEl.style.display = phase === 'combat' ? 'block' : 'none';
+  // Entry phases use the final combat geometry under their opaque curtains.
+  // Keeping the log mounted prevents the whole surface from changing height on
+  // the first visible frame after either entrance.
+  logEl.style.display = inPrep ? 'none' : 'block';
   const logMarkup = `<div class="logHeading"><span>${t('combat.log')}</span></div>${logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('')}`;
   if (logEl.innerHTML !== logMarkup) {
     logEl.innerHTML = logMarkup;

@@ -1,6 +1,7 @@
 // phase is one of:
 //  'prepFloor' - manual, no timer: confirm party before the floor's mobs start (or retreat here)
 //  'prepBoss'  - manual, no timer: confirm party after mobs are cleared, before the boss
+//  'dungeonIntro' - combat DOM is ready behind the entry curtain, but tick() is paused
 //  'bossIntro' - short non-interactive boss title sequence
 //  'combat'    - the tick loop is actually fighting
 let roster = [];
