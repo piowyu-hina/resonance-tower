@@ -26,56 +26,6 @@ let lastRenderedSurface = null;
 let defeatRestartTimer = null;
 let defeatRestartDeadline = 0;
 
-// Finite animations must paint their final frame before their class or node is
-// removed. Matching CSS duration with setTimeout races the compositor and is
-// the source of the one-frame "jump" seen at the end of several effects.
-function afterAnimationPaint(callback) {
-  requestAnimationFrame(() => requestAnimationFrame(callback));
-}
-
-function playTransientAnimation(element, className) {
-  if (!element) return;
-  const handlerKey = `${className}EndHandler`;
-  const runKey = `${className}RunId`;
-  const timerKey = `${className}FallbackTimer`;
-  const runId = (element[runKey] || 0) + 1;
-  element[runKey] = runId;
-  clearTimeout(element[timerKey]);
-  if (element[handlerKey]) element.removeEventListener('animationend', element[handlerKey]);
-  element.classList.remove(className);
-  void element.offsetWidth;
-  const cleanup = () => {
-    if (element[runKey] !== runId) return;
-    element.classList.remove(className);
-    clearTimeout(element[timerKey]);
-    element[timerKey] = null;
-  };
-  element[handlerKey] = event => {
-    if (event.target !== element) return;
-    element.removeEventListener('animationend', element[handlerKey]);
-    element[handlerKey] = null;
-    afterAnimationPaint(cleanup);
-  };
-  element.addEventListener('animationend', element[handlerKey]);
-  element.classList.add(className);
-  // Hidden tabs and display changes may suppress animationend. All callers use
-  // animations <= .35s, so this deliberately late fallback cannot cut one off.
-  element[timerKey] = setTimeout(cleanup, 600);
-}
-
-function removeAfterAnimation(element, fallbackMs) {
-  let removed = false;
-  const remove = () => {
-    if (removed) return;
-    removed = true;
-    element.remove();
-  };
-  element.addEventListener('animationend', event => {
-    if (event.target === element) afterAnimationPaint(remove);
-  });
-  setTimeout(remove, fallbackMs);
-}
-
 // Call before opening `nextId`: enforces "only one overlay/popover open at a
 // time" so callers never have to manually juggle every other overlay's flag.
 function closeOtherOverlays(nextId) {
@@ -157,7 +107,7 @@ function returnToVillageAfterDefeat() {
 }
 
 function restartAfterDefeat() {
-  if (phase !== 'defeat') return;
+  if (phase !== PHASES.DEFEAT) return;
   settleDefeat();
   if (contractStoryLocked() || party.length === 0) {
     render();
@@ -186,25 +136,23 @@ function confirmVictory() {
 function showBossIntro(onComplete) {
   const overlay = document.getElementById('bossIntroOverlay');
   if (overlay.classList.contains('open')) return;
-  let finished = false;
+  const transition = beginManagedTransition('bossIntro');
   const finish = () => {
-    if (finished) return;
-    finished = true;
-    overlay.removeEventListener('animationend', handleAnimationEnd);
-    overlay.classList.remove('open', 'leaving');
-    overlay.setAttribute('aria-hidden', 'true');
-    onComplete();
+    transition.finish(() => {
+      overlay.classList.remove('open', 'leaving');
+      overlay.setAttribute('aria-hidden', 'true');
+      onComplete();
+    });
   };
-  const handleAnimationEnd = event => {
+  transition.listen(overlay, 'animationend', event => {
     if (event.target === overlay && event.animationName === 'bossIntroLeave') {
       afterAnimationPaint(finish);
     }
-  };
-  overlay.addEventListener('animationend', handleAnimationEnd);
+  });
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
-  setTimeout(() => overlay.classList.add('leaving'), 4800);
-  setTimeout(finish, 5600);
+  transition.after(4800, () => overlay.classList.add('leaving'));
+  transition.after(5600, finish);
 }
 
 function showDungeonEntry(onCovered, onComplete = null) {
@@ -222,24 +170,22 @@ function showDungeonEntry(onCovered, onComplete = null) {
   art.alt = region.name;
   document.getElementById('dungeonEntryName').textContent = region.name;
   document.getElementById('dungeonEntryDescription').textContent = region.description;
-  let finished = false;
+  const transition = beginManagedTransition('dungeonEntry');
   const finish = () => {
-    if (finished) return;
-    finished = true;
-    overlay.removeEventListener('animationend', handleAnimationEnd);
-    // Keep the completed animation attached and hide it at opacity:0. Removing
-    // the animation class here used to expose its pre-animation frame for one
-    // compositor refresh, which read as a jump at the end of the curtain.
-    overlay.classList.add('finished');
-    overlay.setAttribute('aria-hidden', 'true');
-    if (onComplete) onComplete();
+    transition.finish(() => {
+      // Keep the completed animation attached and hide it at opacity:0. Removing
+      // the animation class here used to expose its pre-animation frame for one
+      // compositor refresh, which read as a jump at the end of the curtain.
+      overlay.classList.add('finished');
+      overlay.setAttribute('aria-hidden', 'true');
+      if (onComplete) onComplete();
+    });
   };
-  const handleAnimationEnd = event => {
+  transition.listen(overlay, 'animationend', event => {
     if (event.target === overlay && event.animationName === 'dungeonEntryCurtain') {
       afterAnimationPaint(finish);
     }
-  };
-  overlay.addEventListener('animationend', handleAnimationEnd);
+  });
   overlay.classList.remove('open', 'finished');
   void overlay.offsetWidth;
   overlay.classList.add('open');
@@ -247,13 +193,13 @@ function showDungeonEntry(onCovered, onComplete = null) {
 
   // Rebuild the combat surface while the curtain is fully opaque. It remains
   // paused in dungeonIntro, and is only activated after the curtain is gone.
-  setTimeout(onCovered, 560);
-  setTimeout(finish, 2850);
+  transition.after(560, onCovered);
+  transition.after(2850, finish);
 }
 
 function prepareCombat(entryPhase) {
   partyLocked = true;
-  phase = entryPhase;
+  setPhase(entryPhase);
   buildBattleRoster();
   spawnWave();
   party.forEach(id => {
@@ -264,15 +210,15 @@ function prepareCombat(entryPhase) {
 }
 
 function prepareDungeonCombat() {
-  prepareCombat('dungeonIntro');
+  prepareCombat(PHASES.DUNGEON_INTRO);
 }
 
 function prepareBossCombat() {
-  prepareCombat('bossIntro');
+  prepareCombat(PHASES.BOSS_INTRO);
 }
 
 function activatePreparedCombat() {
-  phase = 'combat';
+  setPhase(PHASES.COMBAT);
   render();
 }
 
@@ -558,7 +504,7 @@ function renderExpeditionSelectedSummary() {
     return;
   }
   const def = CHAR_DEFS[character.id];
-  const bossIdentity = phase === 'prepBoss' ? `
+  const bossIdentity = phase === PHASES.PREP_BOSS ? `
     <div class="expeditionSelectedIdentity bossSelectedIdentity">
       <img src="${characterPortraitPath(character.id)}" alt="${def.name}">
       <div><small>${t(character.id === 'wuming' ? 'loadout.currentDeployment' : 'loadout.currentPossession')}</small><b>${def.name}</b><span>${t('format.level', { level: formatLocaleNumber(character.level) })}</span></div>
@@ -575,11 +521,11 @@ function renderExpeditionSelectedSummary() {
   const combatSlot = summary.querySelector('.combatItemQuickSlot');
   combatSlot.innerHTML = loadoutItemHTML(equippedCombatItemId, '＋', t('picker.potion'));
   combatSlot.classList.toggle('equipped', !!equippedCombatItemId);
-  combatSlot.classList.toggle('locked', phase === 'combat');
+  combatSlot.classList.toggle('locked', phase === PHASES.COMBAT);
   attachCombatActionTooltip(combatSlot, () => equippedCombatItemId);
   const openPicker = event => {
     event.stopPropagation();
-    if (phase !== 'prepFloor' && phase !== 'prepBoss') return;
+    if (!isPrepPhase()) return;
     if (activeOverlay === 'combatItemPicker') {
       setCombatItemPickerOpen(false);
       return;
@@ -599,7 +545,7 @@ function renderExpeditionSelectedSummary() {
   activeSlot.tabIndex = 0;
   const openCharmPicker = event => {
     event.stopPropagation();
-    if (phase !== 'prepFloor' && phase !== 'prepBoss') return;
+    if (!isPrepPhase()) return;
     if (activeOverlay === 'charmPicker') {
       setCharmPickerOpen(false);
       return;
@@ -1211,7 +1157,7 @@ function buildUI() {
     render();
   });
   document.getElementById('expeditionLocationBtn').addEventListener('click', () => {
-    if (phase !== 'prepFloor' || partyLocked) return;
+    if (phase !== PHASES.PREP_FLOOR || partyLocked) return;
     prepLocation = 'regions';
     render();
   });
@@ -1263,8 +1209,8 @@ function buildUI() {
   startBtnEl.id = 'startBtn';
   startBtnEl.addEventListener('click', () => {
     if (party.length === 0) return; // need at least one character to fight with
-    if (phase === 'prepFloor' || phase === 'prepBoss') {
-      if (phase === 'prepBoss') {
+    if (phase === PHASES.PREP_FLOOR || phase === PHASES.PREP_BOSS) {
+      if (phase === PHASES.PREP_BOSS) {
         resetBossEntryCooldowns();
         // Replace the finished mob wave before the combat view becomes visible.
         // Otherwise display:none -> block restarts every retained death animation
@@ -1590,13 +1536,13 @@ function buildMonsterCards() {
 
 function floorLabelText() {
   const region = regionName(floor);
-  if (phase === 'prepFloor' && !partyLocked) {
+    if (phase === PHASES.PREP_FLOOR && !partyLocked) {
     if (prepLocation === 'village') return t('village.title');
     if (prepLocation === 'home') return t('home.title');
     if (prepLocation === 'regions') return t('region.title');
     return region;
   }
-  if ((phase === 'combat' || phase === 'dungeonIntro' || phase === 'bossIntro') && monsters.length > 0) {
+  if (isCombatSurfacePhase() && monsters.length > 0) {
     const boss = monsters.find(m => m.isBoss);
     return boss
       ? t('combat.bossBattle', { region })
@@ -1610,9 +1556,9 @@ function floorLabelText() {
 }
 
 function render() {
-  const inPrep = (phase === 'prepFloor' || phase === 'prepBoss');
+  const inPrep = isPrepPhase();
   document.getElementById('app').classList.toggle('combatActive', !inPrep);
-  const inFreeVillage = phase === 'prepFloor' && !partyLocked;
+  const inFreeVillage = phase === PHASES.PREP_FLOOR && !partyLocked;
   const floorLabelEl = document.getElementById('floorLabel');
   floorLabelEl.textContent = floorLabelText();
   floorLabelEl.style.display = inPrep ? 'none' : '';
@@ -1622,7 +1568,7 @@ function render() {
   const bagBtn = document.getElementById('bagBtn');
   bagBtn.setAttribute('aria-label', t('header.openBag'));
   const townShopBtn = document.getElementById('townShopBtn');
-  townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
+  townShopBtn.style.display = (phase === PHASES.PREP_FLOOR && !partyLocked) ? '' : 'none';
   renderShopView();
 
   document.getElementById('prepView').style.display = inPrep ? 'block' : 'none';
@@ -1633,9 +1579,9 @@ function render() {
   } else {
     renderCombatView();
   }
-  const atVillageSurface = phase === 'prepFloor' && !partyLocked && prepLocation === 'village';
-  const atHomeSurface = phase === 'prepFloor' && !partyLocked && prepLocation === 'home';
-  const atRegionSurface = phase === 'prepFloor' && !partyLocked && prepLocation === 'regions';
+  const atVillageSurface = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'village';
+  const atHomeSurface = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'home';
+  const atRegionSurface = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'regions';
   const visibleSurface = !inPrep
     ? document.getElementById('combatView')
     : atVillageSurface
@@ -1668,9 +1614,9 @@ function render() {
 function renderPrepView() {
   const headingEl = document.getElementById('prepHeading');
   const msgEl = document.getElementById('prepMsg');
-  const atVillage = phase === 'prepFloor' && !partyLocked && prepLocation === 'village';
-  const atHome = phase === 'prepFloor' && !partyLocked && prepLocation === 'home';
-  const atRegions = phase === 'prepFloor' && !partyLocked && prepLocation === 'regions';
+  const atVillage = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'village';
+  const atHome = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'home';
+  const atRegions = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'regions';
   renderRegionContext();
   document.getElementById('villageView').style.display = atVillage ? '' : 'none';
   const homeView = document.getElementById('homeView');
@@ -1715,7 +1661,7 @@ function renderPrepView() {
   });
   if (atVillage || atHome || atRegions) return;
 
-  if (phase === 'prepFloor') {
+  if (phase === PHASES.PREP_FLOOR) {
     headingEl.textContent = t('expedition.preparation', { region: regionName(floor) });
     if (partyLocked) {
       msgEl.textContent = t('expedition.lockedParty', { region: regionName(floor) });
@@ -1736,7 +1682,7 @@ function renderPrepView() {
   }
   startBtnEl.disabled = (party.length === 0);
   document.getElementById('actionArea').style.display = '';
-  const choosingCharacter = phase !== 'prepBoss';
+  const choosingCharacter = phase !== PHASES.PREP_BOSS;
   document.getElementById('expeditionBackBtn').style.display = choosingCharacter ? '' : 'none';
   document.getElementById('expeditionCharacterHeading').style.display = choosingCharacter ? '' : 'none';
   document.getElementById('prepRoster').style.display = choosingCharacter ? '' : 'none';

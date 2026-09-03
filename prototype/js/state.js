@@ -4,12 +4,31 @@
 //  'dungeonIntro' - combat DOM is ready behind the entry curtain, but tick() is paused
 //  'bossIntro' - short non-interactive boss title sequence
 //  'combat'    - the tick loop is actually fighting
+const PHASES = Object.freeze({
+  PREP_FLOOR: 'prepFloor',
+  PREP_BOSS: 'prepBoss',
+  DUNGEON_INTRO: 'dungeonIntro',
+  BOSS_INTRO: 'bossIntro',
+  COMBAT: 'combat',
+  DEFEAT: 'defeat',
+  VICTORY: 'victory',
+});
+const PHASE_TRANSITIONS = Object.freeze({
+  [PHASES.PREP_FLOOR]: new Set([PHASES.DUNGEON_INTRO]),
+  [PHASES.DUNGEON_INTRO]: new Set([PHASES.COMBAT, PHASES.PREP_FLOOR]),
+  [PHASES.COMBAT]: new Set([PHASES.PREP_BOSS, PHASES.DEFEAT, PHASES.VICTORY, PHASES.PREP_FLOOR]),
+  [PHASES.PREP_BOSS]: new Set([PHASES.BOSS_INTRO, PHASES.PREP_FLOOR]),
+  [PHASES.BOSS_INTRO]: new Set([PHASES.COMBAT, PHASES.PREP_FLOOR]),
+  [PHASES.DEFEAT]: new Set([PHASES.PREP_FLOOR]),
+  [PHASES.VICTORY]: new Set([PHASES.PREP_FLOOR]),
+});
+
 let roster = [];
 let party = [];
 let floor = 1;
 let monsters = [];        // 2~3 simultaneous mobs, or a single-element array for the boss wave
 let monsterIdCounter = 0;
-let phase = 'prepFloor';
+let phase = PHASES.PREP_FLOOR;
 let partyLocked = false; // once true (first "開始出擊" of a run), party can't change until endRun()
 let mobsCleared = 0;     // counts full MOB WAVES cleared (not individual mobs) toward the boss gate
 let partyBuff = { mult: 1, until: 0 };
@@ -48,6 +67,23 @@ let shopAutoLeave = true;
 // Cosmetics are permanent collection data and never affect combat stats.
 let ownedSkins = new Set(Object.values(DEFAULT_SKIN_BY_CHARACTER));
 let equippedSkinByCharacter = { ...DEFAULT_SKIN_BY_CHARACTER };
+
+function setPhase(nextPhase, { force = false } = {}) {
+  if (!Object.values(PHASES).includes(nextPhase)) throw new Error(`Unknown game phase: ${nextPhase}`);
+  if (nextPhase === phase) return;
+  if (!force && !PHASE_TRANSITIONS[phase]?.has(nextPhase)) {
+    throw new Error(`Illegal game phase transition: ${phase} -> ${nextPhase}`);
+  }
+  phase = nextPhase;
+}
+
+function isPrepPhase(value = phase) {
+  return value === PHASES.PREP_FLOOR || value === PHASES.PREP_BOSS;
+}
+
+function isCombatSurfacePhase(value = phase) {
+  return value === PHASES.DUNGEON_INTRO || value === PHASES.BOSS_INTRO || value === PHASES.COMBAT;
+}
 
 function characterSkins(characterId) {
   return Object.entries(SKIN_DEFS)

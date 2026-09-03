@@ -134,7 +134,7 @@ function normalizeSaveData(raw) {
 }
 
 function canManageSave() {
-  return phase === 'prepFloor' && !partyLocked && activeOverlay === null && !contractStoryLocked();
+  return phase === PHASES.PREP_FLOOR && !partyLocked && activeOverlay === null && !contractStoryLocked();
 }
 
 function showSaveStatus(message, error = false) {

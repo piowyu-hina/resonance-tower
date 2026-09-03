@@ -38,7 +38,7 @@ function initDebugTools() {
   if (requestedView === 'defeat') {
     runGold = 21;
     addInventoryItem('monsterCrystal', 2, true);
-    phase = 'defeat';
+    setPhase(PHASES.DEFEAT, { force: true });
     showDefeatOverlay();
   }
   if (requestedView === 'journal') {
@@ -65,7 +65,7 @@ function initDebugTools() {
     showBossIntro(activatePreparedCombat);
   }
   if (requestedView === 'go-home' || requestedView === 'go-home-flow') {
-    phase = 'prepFloor';
+    setPhase(PHASES.PREP_FLOOR, { force: true });
     partyLocked = false;
     prepLocation = 'village';
     resonanceState.xiaochu = 'goHome';
@@ -119,7 +119,7 @@ function runDebugAction(action) {
     delete resonanceState.xiaochu;
     slimeKillCount = 49;
     prepLocation = 'expedition';
-    phase = 'combat';
+    setPhase(PHASES.COMBAT, { force: true });
     partyLocked = true;
     mobsCleared = 0;
     roster.forEach(character => {
@@ -136,7 +136,7 @@ function runDebugAction(action) {
   } else if (action === 'focus-particles') {
     closeOtherOverlays(null);
     activeOverlay = null;
-    phase = 'prepFloor';
+    setPhase(PHASES.PREP_FLOOR, { force: true });
     partyLocked = false;
     prepLocation = 'village';
     resonanceState.xiaochu = 'goHome';
@@ -154,7 +154,7 @@ function debugStartBossFight() {
   closeOtherOverlays(null);
   activeOverlay = null;
   prepLocation = 'expedition';
-  phase = 'combat';
+  setPhase(PHASES.COMBAT, { force: true });
   partyLocked = true;
   mobsCleared = MOBS_PER_FLOOR;
   roster.forEach(character => {

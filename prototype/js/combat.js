@@ -1,12 +1,12 @@
 function enterPrepFloor() {
-  phase = 'prepFloor';
+  setPhase(PHASES.PREP_FLOOR);
   prepLocation = 'village';
   // retreating out of prepBoss leaves its auto-opened shop overlay active
   // otherwise - close whatever's open on this clean state transition.
   if (activeOverlay) OVERLAY_CLOSERS[activeOverlay]();
 }
 function enterPrepBoss() {
-  phase = 'prepBoss';
+  setPhase(PHASES.PREP_BOSS);
   closeOtherOverlays('shop');
   activeOverlay = 'shop';
   shopMode = 'dungeon';
@@ -366,7 +366,7 @@ function onMonsterDefeated(m) {
       if (floor >= MAX_IMPLEMENTED_FLOOR) {
         const securedGold = runGold;
         log(`目前開放的區域已全部完成，本次取得 ${securedGold} 金幣！`, 'good');
-        phase = 'victory';
+        setPhase(PHASES.VICTORY);
         showVictoryOverlay(securedGold);
       } else {
         floor++;
@@ -526,7 +526,7 @@ function buyShopItem(itemId) {
 }
 
 function openTownShop() {
-  if (phase !== 'prepFloor' || partyLocked) return;
+  if (phase !== PHASES.PREP_FLOOR || partyLocked) return;
   closeOtherOverlays('shop');
   activeOverlay = 'shop';
   shopMode = 'town';
@@ -588,7 +588,7 @@ function applyCombatItemEffect(effect, target) {
 function canUseCombatItem(itemId) {
   const item = ITEM_DEFS[itemId];
   if (equippedCombatItemId !== itemId) return false;
-  if (phase !== 'combat' || !item || !item.combatAction) return false;
+  if (phase !== PHASES.COMBAT || !item || !item.combatAction) return false;
   if ((combatItemCooldowns[itemId] || 0) > 0) return false;
   if (inventoryItemCount(itemId) <= 0) return false;
   return combatItemTargets(item.combatAction).length > 0;
@@ -613,7 +613,7 @@ function useCombatItem(itemId) {
 function canUseCharacterAction(characterId) {
   const c = roster.find(member => member.id === characterId);
   const action = CHAR_DEFS[characterId] && CHAR_DEFS[characterId].action;
-  return phase === 'combat' && !!c && c.alive && !!action && !isCharacterActionLocked(c) && c.manualActionCd <= 0 && aliveMonsters().length > 0;
+  return phase === PHASES.COMBAT && !!c && c.alive && !!action && !isCharacterActionLocked(c) && c.manualActionCd <= 0 && aliveMonsters().length > 0;
 }
 
 function isCharacterActionLocked(character) {
@@ -651,8 +651,8 @@ function useCharacterAction(characterId) {
 }
 
 function doWipeReset() {
-  if (phase === 'defeat') return;
-  phase = 'defeat';
+  if (phase === PHASES.DEFEAT) return;
+  setPhase(PHASES.DEFEAT);
   showDefeatOverlay();
 }
 
@@ -671,7 +671,7 @@ function tick() {
     }
   }
   if (activeOverlay === 'dialogue') return;
-  if (phase !== 'combat') return; // waiting on the player to confirm prepFloor/prepBoss
+  if (phase !== PHASES.COMBAT) return; // waiting on the player to confirm prepFloor/prepBoss
 
   Object.keys(combatItemCooldowns).forEach(itemId => {
     combatItemCooldowns[itemId] = Math.max(0, combatItemCooldowns[itemId] - MASTER_TICK_MS);
@@ -820,7 +820,7 @@ function tickMonsters() {
 // blocked because "the slot is full". Multiplayer will need a real
 // add/remove toggle again once SOLO_PARTY_LIMIT goes away.
 function toggleParty(id) {
-  if (phase === 'combat') return; // locked once the fight has started
+  if (phase === PHASES.COMBAT) return; // locked once the fight has started
   if (partyLocked) return; // locked for the whole run once you've entered the dungeon
   if (!isCharUnlocked(id)) return; // can't take a locked character into the dungeon
   if (party.includes(id)) return; // already the chosen one - clicking it again does nothing
