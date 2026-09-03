@@ -973,7 +973,9 @@ button:focus-visible,
   #app { width: min(542px, calc(100vw - 12px)); }
   .combatColumns { grid-template-columns: 1fr; gap: 0; }
   .battleColumn { min-height: 0; }
-  .enemyColumn { margin-bottom: 8px; }
+  .enemyColumn { order: 1; margin-bottom: 8px; }
+  .partyColumn { order: 2; }
+  .partyColumn #combatActionBar { position: sticky; z-index: 20; bottom: max(6px, env(safe-area-inset-bottom)); }
 }
 
 /* --- 對話系統（見 design.md「契約角色與解鎖」）--- */
