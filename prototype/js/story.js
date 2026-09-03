@@ -177,9 +177,9 @@ function renderDialogueLine() {
   const def = CHAR_DEFS[line.speaker];
   const special = STORY_SPEAKERS[line.speaker];
   document.getElementById('dialogueSpeakerName').textContent = def ? def.name : (special ? special.name : '');
-  document.getElementById('dialogueText').textContent = line.text;
+  const text = document.getElementById('dialogueText');
+  text.textContent = line.text;
   const frame = document.getElementById('dialoguePortraitFrame');
-  const box = document.getElementById('dialogueBox');
   const img = document.getElementById('dialoguePortraitImg');
   frame.classList.remove('missing', 'orbSpeaker', 'sceneArt', 'narration');
   if (def) {
@@ -200,10 +200,10 @@ function renderDialogueLine() {
     frame.classList.add('missing');
   }
   frame.classList.remove('lineEntering');
-  box.classList.remove('lineEntering');
+  text.classList.remove('lineEntering');
   void frame.offsetWidth;
   if (speakerChanged) frame.classList.add('lineEntering');
-  box.classList.add('lineEntering');
+  text.classList.add('lineEntering');
   lastDialogueSpeaker = line.speaker;
 }
 
@@ -375,7 +375,10 @@ function bindDialogueUI() {
   const orb = document.getElementById('soulResonanceOrb');
   orb.addEventListener('error', () => document.getElementById('soulResonance').classList.add('missingArt'));
   orb.addEventListener('load', () => document.getElementById('soulResonance').classList.remove('missingArt'));
-  document.getElementById('dialogueModal').addEventListener('click', advanceDialogue);
+  document.getElementById('dialogueOverlay').addEventListener('click', event => {
+    if (event.target.closest('#soulResonance, #contractFormed')) return;
+    if (dialoguePhase === 'dialogue') advanceDialogue();
+  });
   document.getElementById('soulResonance').addEventListener('click', finishSoulResonance);
   document.getElementById('contractFormed').addEventListener('click', finishContractFormed);
   document.getElementById('travelJournalBtn').addEventListener('click', openTravelJournal);

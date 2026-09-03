@@ -1107,7 +1107,7 @@ button:focus-visible,
   pointer-events: none;
   transition: opacity .18s ease-out, visibility 0s linear .2s;
 }
-#dialogueOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+#dialogueOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; cursor: pointer; transition-delay: 0s; }
 #dialogueModal {
   position: relative;
   isolation: isolate;
@@ -1180,7 +1180,7 @@ button:focus-visible,
   filter: drop-shadow(0 14px 14px rgba(0,0,0,.72));
 }
 #dialoguePortraitFrame.lineEntering img { animation: dialogueCharacterEnter .28s ease-out; }
-#dialogueBox.lineEntering { animation: dialogueLineFade .16s ease-out; }
+#dialogueText.lineEntering { animation: dialogueLineFade .12s ease-out; }
 #dialoguePortraitFrame.orbSpeaker { width: 230px; height: min(280px,38vh); }
 #dialoguePortraitFrame.orbSpeaker img { object-position: center; filter: drop-shadow(0 0 22px rgba(103,207,255,.65)); }
 #dialoguePortraitFrame.sceneArt { width: min(520px,76vw); height: min(560px,62vh); }
@@ -1351,7 +1351,7 @@ button:focus-visible,
 }
 
 @keyframes dialogueCharacterEnter { from { opacity:.35; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-@keyframes dialogueLineFade { from { opacity:.55; } to { opacity:1; } }
+@keyframes dialogueLineFade { from { opacity:.65; } to { opacity:1; } }
 @keyframes dialogueAdvancePulse { 0%,70%,100% { opacity:.22; transform:translateY(0); } 35% { opacity:.9; transform:translateY(-2px); } }
 @keyframes soulGlow { from { opacity:.55; transform:scale(.9); } to { opacity:1; transform:scale(1.08); } }
 @keyframes soulRing { 0% { opacity:0; transform:scale(.25); } 28% { opacity:.72; } 82% { opacity:.12; } 100% { opacity:0; transform:scale(1.9); } }
