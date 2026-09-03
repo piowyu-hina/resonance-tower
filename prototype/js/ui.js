@@ -899,7 +899,8 @@ function attachInventoryDrag(slot, collectionName, index) {
     inventoryDragFrom = null;
     document.querySelectorAll('.inventorySlot').forEach(el => el.classList.remove('dragging', 'dragTarget'));
   });
-  slot.addEventListener('click', () => {
+  slot.addEventListener('click', event => {
+    event.stopPropagation();
     const modal = document.getElementById('inventoryModal');
     if (!modal.classList.contains('warehouseOpen')) return;
     const collection = collectionName === 'storage' ? storage : inventory;
