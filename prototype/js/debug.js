@@ -21,6 +21,7 @@ function initDebugTools() {
   const requestedView = new URLSearchParams(window.location.search).get('view');
   if (requestedView === 'regions') prepLocation = 'regions';
   if (requestedView === 'expedition') prepLocation = 'expedition';
+  if (requestedView === 'shop') openTownShop();
 }
 
 function runDebugAction(action) {

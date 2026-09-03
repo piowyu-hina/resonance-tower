@@ -261,7 +261,7 @@ const REGION_DEFS = {
     name: '史萊姆叢林',
     description: '史萊姆棲息的近郊叢林',
     image: 'slime_forest',
-    recommendedLevel: 8,
+    recommendedLevel: 1,
     threats: ['緩速', '睡眠', '魅惑'],
     drops: ['魔物結晶', '能力書', '技能書'],
     boss: '史萊姆王',
