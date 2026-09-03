@@ -509,6 +509,21 @@ img {
   overflow: hidden;
 }
 #bossArena.active { display: block; }
+#bossArena::before {
+  content: 'BOSS ARENA';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(166, 191, 199, .12);
+  font-size: clamp(18px, 2.2vw, 27px);
+  font-weight: 900;
+  letter-spacing: .34em;
+  text-indent: .34em;
+  text-shadow: 0 1px 12px rgba(135, 190, 201, .08);
+  pointer-events: none;
+  user-select: none;
+}
 #bossArena .gooHint {
   position: absolute;
   top: 4px;

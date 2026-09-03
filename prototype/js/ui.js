@@ -99,9 +99,14 @@ function showSkillCastEffect(portraitEl, skill) {
 
 function flash(portraitEl) {
   if (!portraitEl) return;
+  clearTimeout(portraitEl.hitFlashTimer);
   portraitEl.classList.remove('hitFlash');
   void portraitEl.offsetWidth; // restart animation
   portraitEl.classList.add('hitFlash');
+  portraitEl.hitFlashTimer = setTimeout(() => {
+    portraitEl.classList.remove('hitFlash');
+    portraitEl.hitFlashTimer = null;
+  }, 380);
 }
 
 // --- hover tooltip: character/monster detailed stats ---

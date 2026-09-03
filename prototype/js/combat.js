@@ -60,7 +60,9 @@ function makeBoss() {
     hp: 60 + floor * 40,
     atk: 6 + Math.floor(floor * 3),
     atkInterval: BOSS_ATK_INTERVAL,
-    actionCountdown: BOSS_ATK_INTERVAL,
+    // Separate the first real hit from the end of the intro. Without this
+    // short grace period, its red damage flash reads like a transition glitch.
+    actionCountdown: BOSS_ATK_INTERVAL + BOSS_ENTRY_GRACE_MS,
     alive: true,
     skillCd: 0, // ms remaining until 黏液潑濺 (the slow-on-hit version) is off cooldown again
     skill: {
