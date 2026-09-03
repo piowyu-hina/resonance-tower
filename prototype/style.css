@@ -60,6 +60,22 @@ img {
   -webkit-user-drag: none;
   user-select: none;
 }
+
+#guideCard { position: fixed; z-index: 12000; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); width: min(560px, calc(100vw - 24px)); display: grid; grid-template-columns: 150px minmax(0,1fr); align-items: end; filter: drop-shadow(0 16px 30px rgba(0,0,0,.55)); }
+#guideCard[hidden] { display: none; }
+#guideCard > img { z-index: 1; width: 180px; height: 180px; object-fit: contain; object-position: center bottom; transform: translateX(12px); pointer-events: none; }
+.guideBubble { position: relative; min-height: 132px; display: flex; flex-direction: column; gap: 9px; padding: 17px 18px 14px 28px; border: 1px solid #8a6a78; border-radius: 14px; background: linear-gradient(145deg, rgba(49,39,47,.97), rgba(29,31,37,.98)); }
+.guideName { color: #f0a9c3; font-size: 18px; font-weight: 800; }
+#guideText { color: #eee8eb; font-size: 15px; line-height: 1.65; }
+.guideActions { display: flex; justify-content: flex-end; gap: 7px; margin-top: auto; }
+.guideActions button { padding: 7px 11px; border: 1px solid #685964; border-radius: 7px; background: #34323a; color: #c8c3c7; cursor: pointer; }
+#guideCloseBtn { border-color: #96677a; background: #684253; color: #fff; }
+@media (max-width: 600px) {
+  #guideCard { right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); width: calc(100vw - 16px); grid-template-columns: 90px minmax(0,1fr); }
+  #guideCard > img { width: 112px; height: 132px; transform: translateX(4px); }
+  .guideBubble { min-height: 124px; padding: 13px 12px 11px 20px; }
+  #guideText { font-size: 14px; }
+}
 .headerLead { min-width: 0; display: flex; flex: 1 1 auto; align-items: center; gap: 18px; }
 .gameBrand { flex: 0 0 auto; display: flex; align-items: center; gap: 9px; }
 .brandSigil { position: relative; width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; }

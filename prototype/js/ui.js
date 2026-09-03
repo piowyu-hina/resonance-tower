@@ -15,6 +15,26 @@ const OVERLAY_CLOSERS = {
   dialogue: () => closeDialogue(),
 };
 
+const GUIDE_COPY = {
+  village: '先在村莊熟悉環境吧。家裡可以培養角色、整理倉庫；準備好後再從遠征入口出發。',
+  expedition: '依序確認區域、選擇附身角色，再配置藥水與護符。都準備好後就能開始出擊。',
+  expeditionGold: '遠征途中取得的金幣可以在地城商店使用；成功撤退或通關後，才會安全帶回村莊。',
+  dungeonShop: '地城商店分成購買與出售兩頁。離開前記得確認補給，倒數結束後商店會自動關閉。',
+};
+
+function hideGuide() {
+  activeGuideId = null;
+  document.getElementById('guideCard').hidden = true;
+}
+
+function showGuideOnce(id) {
+  if (guideSkipped || seenGuideIds.has(id) || !GUIDE_COPY[id]) return;
+  seenGuideIds.add(id);
+  activeGuideId = id;
+  document.getElementById('guideText').textContent = GUIDE_COPY[id];
+  document.getElementById('guideCard').hidden = false;
+}
+
 // The preparation phase is a small location hub: village is the outer layer,
 // while character/loadout management lives inside the home location.
 let prepLocation = 'village';
@@ -1031,6 +1051,7 @@ function buildUI() {
   document.getElementById('forestRegionBtn').addEventListener('click', () => {
     prepLocation = 'expedition';
     render();
+    showGuideOnce('expedition');
   });
   document.getElementById('expeditionBackBtn').addEventListener('click', () => {
     prepLocation = 'regions';
@@ -1048,6 +1069,11 @@ function buildUI() {
       && !e.target.closest('.inventoryPane')
       && !e.target.closest('#inventoryCloseBtn');
     if (clickedBackdrop || clickedWarehouseBlank) setInventoryOpen(false);
+  });
+  document.getElementById('guideCloseBtn').addEventListener('click', hideGuide);
+  document.getElementById('guideSkipBtn').addEventListener('click', () => {
+    guideSkipped = true;
+    hideGuide();
   });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && activeOverlay) OVERLAY_CLOSERS[activeOverlay]();

@@ -49,6 +49,9 @@ let activeOverlay = null;
 let shopCountdown = 0;
 let shopMode = null; // 'town' spends secured gold; 'dungeon' spends run gold
 let shopAutoLeave = true;
+let guideSkipped = false;
+let activeGuideId = null;
+const seenGuideIds = new Set();
 
 // Cosmetics are permanent collection data and never affect combat stats.
 let ownedSkins = new Set(Object.values(DEFAULT_SKIN_BY_CHARACTER));
