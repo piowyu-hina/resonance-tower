@@ -552,14 +552,14 @@ img {
   font-size: 16px;
   cursor: pointer;
   box-shadow: 0 0 6px rgba(100,170,255,0.5);
-  animation: gooPulse 1s ease-in-out infinite alternate;
+  animation: gooPulse 2s ease-in-out infinite;
   overflow: hidden;
 }
 .goo img { width: 100%; height: 100%; object-fit: cover; }
 .goo .fallback { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; }
 @keyframes gooPulse {
-  from { transform: scale(0.92); }
-  to   { transform: scale(1.08); }
+  0%, 100% { transform: scale(0.92); }
+  50% { transform: scale(1.08); }
 }
 
 #log {
@@ -623,17 +623,20 @@ img {
   text-align: center;
 }
 #dungeonEntryOverlay.open { display: flex; animation: dungeonEntryCurtain 2.65s ease both; }
-#dungeonEntryArt { position: absolute; inset: -5%; width: 110%; height: 110%; object-fit: cover; opacity: .3; filter: brightness(.55) saturate(.78); animation: dungeonEntryDrift 2.65s ease-out both; }
+#dungeonEntryArt { position: absolute; inset: -5%; width: 110%; height: 110%; object-fit: cover; opacity: .3; filter: brightness(.55) saturate(.78); }
+#dungeonEntryOverlay.open #dungeonEntryArt { animation: dungeonEntryDrift 2.65s ease-out both; }
 .dungeonEntryShade { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(31,55,48,.08), rgba(5,8,10,.9) 72%), linear-gradient(90deg, rgba(5,8,10,.74), transparent 30%, transparent 70%, rgba(5,8,10,.74)); }
-.dungeonEntryShade::after { content: ''; position: absolute; left: 12%; right: 12%; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(194,215,194,.48), transparent); transform: scaleX(0); animation: dungeonEntryLine .7s ease-out .14s both; }
-.dungeonEntryTitle { position: relative; z-index: 1; display: grid; justify-items: center; gap: 8px; padding: 24px 70px; opacity: 0; animation: dungeonEntryText .42s ease-out .13s both; }
+.dungeonEntryShade::after { content: ''; position: absolute; left: 12%; right: 12%; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(194,215,194,.48), transparent); transform: scaleX(0); }
+#dungeonEntryOverlay.open .dungeonEntryShade::after { animation: dungeonEntryLine .7s ease-out .14s both; }
+.dungeonEntryTitle { position: relative; z-index: 1; display: grid; justify-items: center; gap: 8px; padding: 24px 70px; opacity: 0; }
+#dungeonEntryOverlay.open .dungeonEntryTitle { animation: dungeonEntryText .42s ease-out .13s both; }
 .dungeonEntryTitle small { color: #91a99c; font-family: Georgia, serif; font-size: 10px; font-weight: 700; letter-spacing: .34em; text-indent: .34em; }
 .dungeonEntryTitle strong { color: #f0dca6; font-size: clamp(30px, 4vw, 48px); letter-spacing: .16em; text-indent: .16em; text-shadow: 0 4px 18px rgba(0,0,0,.8); }
 .dungeonEntryTitle span { color: #b4beb8; font-size: 13px; letter-spacing: .08em; }
 @keyframes dungeonEntryCurtain { 0% { opacity: 0; } 14%, 62% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes dungeonEntryDrift { from { transform: scale(1.08); } to { transform: scale(1); } }
-@keyframes dungeonEntryLine { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
-@keyframes dungeonEntryText { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes dungeonEntryDrift { from { transform: scale(1.08); } to { transform: none; } }
+@keyframes dungeonEntryLine { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: none; } }
+@keyframes dungeonEntryText { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
 /* --- unified item library; opening it intentionally does not pause combat --- */
 #inventoryOverlay {
   display: flex;
@@ -1161,8 +1164,8 @@ button:focus-visible,
   object-position: center bottom;
   filter: drop-shadow(0 14px 14px rgba(0,0,0,.72));
 }
-#dialoguePortraitFrame.lineEntering img { animation: dialogueCharacterEnter .28s ease-out both; will-change: opacity, transform; }
-#dialogueText.lineEntering { animation: dialogueLineFade .12s ease-out both; will-change: opacity; }
+#dialoguePortraitImg.lineEntering { animation: dialogueCharacterEnter .28s ease-out both; }
+#dialogueText.lineEntering { animation: dialogueLineFade .12s ease-out both; }
 #dialoguePortraitFrame.orbSpeaker { width: 230px; height: min(280px,38vh); }
 #dialoguePortraitFrame.orbSpeaker img { object-position: center; filter: drop-shadow(0 0 22px rgba(103,207,255,.65)); }
 #dialoguePortraitFrame.sceneArt { width: min(520px,76vw); height: min(560px,62vh); }
@@ -1213,7 +1216,7 @@ button:focus-visible,
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(165,239,255,.3), rgba(80,165,255,.07) 43%, transparent 70%);
-  animation: soulGlow .9s ease-in-out infinite alternate;
+  animation: soulGlow 1.8s ease-in-out infinite;
 }
 #soulResonance::before, #soulResonance::after {
   content: '';
@@ -1335,14 +1338,14 @@ button:focus-visible,
 @keyframes dialogueCharacterEnter { from { opacity:.35; transform:translateY(8px); } to { opacity:1; transform:none; } }
 @keyframes dialogueLineFade { from { opacity:.65; } to { opacity:1; } }
 @keyframes dialogueAdvancePulse { 0%,70%,100% { opacity:.22; transform:translateY(0); } 35% { opacity:.9; transform:translateY(-2px); } }
-@keyframes soulGlow { from { opacity:.55; transform:scale(.9); } to { opacity:1; transform:scale(1.08); } }
+@keyframes soulGlow { 0%,100% { opacity:.55; transform:scale(.9); } 50% { opacity:1; transform:scale(1.08); } }
 @keyframes soulRing { 0% { opacity:0; transform:scale(.25); } 28% { opacity:.72; } 82% { opacity:.12; } 100% { opacity:0; transform:scale(1.9); } }
 @keyframes soulOrbEnter {
   0% { opacity:0; transform:scale(.18) rotate(-14deg); filter:brightness(.8) blur(5px) drop-shadow(0 0 8px rgba(125,226,255,.15)); }
   18% { opacity:.28; filter:brightness(.92) blur(3px) drop-shadow(0 0 12px rgba(125,226,255,.35)); }
   38% { opacity:1; transform:scale(1.06) rotate(2deg); filter:brightness(1.08) blur(0) drop-shadow(0 0 24px rgba(125,226,255,.82)); }
   65% { transform:scale(.95) rotate(-1deg); }
-  100% { opacity:1; transform:scale(1); filter:brightness(1) drop-shadow(0 0 20px rgba(125,226,255,.72)); }
+  100% { opacity:1; transform:none; filter:brightness(1) drop-shadow(0 0 20px rgba(125,226,255,.72)); }
 }
 @keyframes partnerCharacterReveal { from { opacity:0; transform:translateY(28px) scale(.92); } to { opacity:1; transform:none; } }
 @keyframes rarityCircleReveal {
@@ -1826,23 +1829,46 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .homeFacilityBtn b { color: #e5c275; font-size: 19px; }
 .homeFacilityBtn small { color: #9299a1; font-size: 11px; line-height: 1.5; }
 .contractFacilityBtn img { filter: drop-shadow(0 0 18px rgba(224,138,60,.62)); }
-.homeFacilityBtn.storyRequired { border-color: #e1b855; box-shadow: 0 0 0 2px rgba(225,184,85,.18), 0 0 22px rgba(225,184,85,.28); animation: storyRequiredPulse 1.4s ease-in-out infinite alternate; }
+.homeFacilityBtn.storyRequired { border-color: #e1b855; box-shadow: 0 0 0 2px rgba(225,184,85,.18), 0 0 22px rgba(225,184,85,.28); animation: storyRequiredPulse 2.8s ease-in-out infinite; }
 .homeFacilityBtn:disabled { opacity: .38; filter: grayscale(.6); cursor: default; transform: none; }
 .homeFacilityBtn[hidden] { display: none; }
 
 .storyPanelOverlay { position: fixed; z-index: 9150; inset: 0; display: flex; align-items: center; justify-content: center; padding: 22px; background: rgba(6,8,11,.84); backdrop-filter: blur(2px); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .18s ease-out, visibility 0s linear .2s; }
 .storyPanelOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
-.journalPanel { width: min(760px, calc(100vw - 28px)); max-height: calc(100vh - 36px); overflow: auto; border: 1px solid #766345; border-radius: 12px; background: linear-gradient(145deg,#2c2923,#1f2226); box-shadow: 0 20px 52px rgba(0,0,0,.7); opacity: 0; transform: translateY(8px) scale(.992); transition: opacity .2s ease-out, transform .2s ease-out; }
+.journalPanel { position: relative; isolation: isolate; width: min(1040px, calc(100vw - 46px)); height: min(700px, calc(100vh - 42px)); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #816342; border-radius: 18px; background: linear-gradient(135deg,#382519,#211813 48%,#160f0c); box-shadow: 0 32px 100px rgba(0,0,0,.82), inset 0 0 0 5px rgba(117,78,44,.25), inset 0 0 70px rgba(0,0,0,.55); opacity: 0; transform: translateY(8px) scale(.992); transition: opacity .2s ease-out, transform .2s ease-out; }
 .storyPanelOverlay.open > .journalPanel, .storyPanelOverlay.open > .contractPanel { opacity: 1; transform: translateY(0) scale(1); }
-.journalPanel > header { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 20px 13px; border-bottom: 1px solid #5f513b; background: rgba(40,37,32,.97); }
-.journalPanel header small { color: #a79778; font-size: 13px; }
-.journalPanel h2 { margin: 2px 0 0; color: #e5c77f; font-size: 26px; }
-.journalPanel header button { width: 36px; height: 36px; padding: 0; border: 1px solid #766f64; border-radius: 6px; background: #36383b; color: #ddd; font-size: 24px; cursor: pointer; }
-.journalChapter { margin: 18px 22px 0; color: #d9bd78; font-size: 19px; font-weight: 700; }
-.journalPageText { min-height: 390px; margin: 12px 22px; padding: 23px 26px; border: 1px solid #aa9366; background: #d8c99f; color: #30291f; font-family: serif; font-size: 17px; line-height: 1.85; white-space: pre-wrap; box-shadow: inset 0 0 24px rgba(83,57,23,.14); }
-.journalPageText.pageTurning { animation: pageContentFade .14s ease-out both; }
-.journalPanel footer { display: flex; align-items: center; justify-content: space-between; padding: 0 22px 20px; color: #a99e8b; }
-.journalPanel footer button { padding: 9px 15px; border: 1px solid #806b45; border-radius: 7px; background: #51442e; color: #f0d797; cursor: pointer; }
+.journalCoverGlow { position: absolute; z-index: -1; inset: 0; background: radial-gradient(circle at 24% 52%,rgba(190,115,48,.18),transparent 36%), repeating-linear-gradient(105deg,rgba(255,255,255,.012) 0 1px,transparent 1px 8px); pointer-events: none; }
+.journalHeader { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 24px 15px 28px; border-bottom: 1px solid rgba(196,145,82,.25); background: linear-gradient(90deg,rgba(24,15,11,.72),rgba(54,35,24,.62),rgba(24,15,11,.72)); }
+.journalIdentity { display: flex; align-items: center; gap: 13px; }
+.journalEmblem { width: 39px; height: 39px; display: grid; place-items: center; border: 1px solid rgba(213,169,99,.45); border-radius: 50%; color: #e0b66d; font-size: 19px; box-shadow: inset 0 0 13px rgba(214,159,75,.13),0 0 16px rgba(0,0,0,.28); }
+.journalHeader small { color: #a98a69; font-family: Georgia,serif; font-size: 10px; font-weight: 700; letter-spacing: .22em; }
+.journalPanel h2 { margin: 1px 0 0; color: #e8c785; font-family: Georgia,"Noto Serif TC",serif; font-size: 27px; letter-spacing: .13em; text-shadow: 0 2px 12px rgba(0,0,0,.7); }
+.journalHeader button { width: 38px; height: 38px; padding: 0; border: 1px solid rgba(177,137,88,.52); border-radius: 50%; background: rgba(35,24,19,.72); color: #bca888; font-size: 24px; line-height: 34px; cursor: pointer; transition: border-color .16s ease,color .16s ease,background .16s ease,transform .16s ease; }
+.journalHeader button:hover { border-color: #d9ad68; background: #4a3020; color: #f0d197; transform: rotate(4deg); }
+.journalBook { position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(270px,.74fr) minmax(0,1.45fr); margin: 18px 24px 24px; border: 1px solid #856844; border-radius: 7px 12px 12px 7px; background: #cdbb8e; box-shadow: 0 18px 32px rgba(0,0,0,.48),0 0 0 5px #291c14,0 0 0 6px rgba(167,116,65,.58); }
+.journalBook::before { content: ''; position: absolute; z-index: 4; top: 0; bottom: 0; left: 34.1%; width: 28px; transform: translateX(-50%); background: linear-gradient(90deg,transparent,rgba(57,38,22,.18) 37%,rgba(255,246,207,.26) 49%,rgba(51,34,20,.21) 55%,transparent); pointer-events: none; }
+.journalBook::after { content: ''; position: absolute; z-index: 5; left: calc(34.1% - 4px); bottom: -22px; width: 27px; height: 94px; background: linear-gradient(90deg,#6c1f1b,#a34231 43%,#67201c); clip-path: polygon(0 0,100% 0,100% 100%,50% 79%,0 100%); filter: drop-shadow(0 3px 2px rgba(0,0,0,.35)); pointer-events: none; }
+.journalChapterLeaf,.journalReadingLeaf { position: relative; min-width: 0; overflow: hidden; color: #3b2c20; }
+.journalChapterLeaf { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 38px 58px; border-radius: 6px 0 0 6px; background: radial-gradient(circle at 48% 40%,rgba(255,248,211,.5),transparent 32%),linear-gradient(93deg,#b9a478,#ddcd9f 10%,#d2bf91 88%,#b09b72); text-align: center; box-shadow: inset -20px 0 28px rgba(77,53,31,.12); }
+.journalChapterLeaf::before,.journalReadingLeaf::before { content: ''; position: absolute; inset: 0; opacity: .34; background-image: repeating-linear-gradient(0deg,rgba(70,48,28,.05) 0 1px,transparent 1px 5px),radial-gradient(circle at 18% 22%,rgba(82,54,26,.14) 0 1px,transparent 2px); background-size: auto,37px 31px; pointer-events: none; }
+.journalCompass { position: relative; width: 126px; height: 126px; display: grid; place-items: center; margin-bottom: 27px; border: 1px solid rgba(91,63,35,.48); border-radius: 50%; color: #77502d; font-size: 45px; transform: rotate(45deg); box-shadow: 0 0 0 8px rgba(107,75,39,.07),inset 0 0 0 9px rgba(255,249,217,.12); }
+.journalCompass::before,.journalCompass::after { content: ''; position: absolute; background: rgba(94,65,36,.38); }
+.journalCompass::before { width: 160px; height: 1px; }
+.journalCompass::after { width: 1px; height: 160px; }
+.journalCompass span { transform: rotate(-45deg); }
+.journalChapterLeaf > small { position: relative; color: #806344; font-family: Georgia,serif; font-size: 10px; font-weight: 700; letter-spacing: .3em; }
+.journalChapter { position: relative; max-width: 230px; margin-top: 11px; color: #44301f; font-family: Georgia,"Noto Serif TC",serif; font-size: 27px; font-weight: 800; line-height: 1.45; letter-spacing: .08em; }
+.journalChapterLeaf > i { width: 78px; height: 1px; margin-top: 23px; background: linear-gradient(90deg,transparent,#86663e,transparent); }
+.journalReadingLeaf { display: flex; flex-direction: column; padding: 28px 42px 25px 47px; border-radius: 0 10px 10px 0; background: linear-gradient(92deg,#c2ad7e,#e1d2a7 7%,#dfd0a4 92%,#bba678); box-shadow: inset 17px 0 24px rgba(72,49,28,.12),inset -8px 0 18px rgba(74,48,25,.12); }
+.journalLeafOrnament { position: relative; z-index: 1; height: 23px; display: flex; align-items: center; justify-content: center; color: #8a6840; }
+.journalLeafOrnament::before,.journalLeafOrnament::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg,transparent,rgba(102,75,43,.55)); }
+.journalLeafOrnament::after { transform: scaleX(-1); }
+.journalLeafOrnament span { width: 8px; height: 8px; margin: 0 12px; border: 1px solid #88653e; transform: rotate(45deg); }
+.journalPageText { position: relative; z-index: 1; flex: 1; min-height: 0; overflow-y: auto; padding: 19px 12px 18px 7px; color: #35291f; font-family: Georgia,"Noto Serif TC",serif; font-size: 17px; line-height: 2; letter-spacing: .035em; white-space: pre-wrap; text-shadow: 0 1px rgba(255,250,225,.28); scrollbar-color: #9d8055 transparent; }
+.journalPageText.pageTurning { animation: pageContentFade .18s ease-out both; }
+.journalFooter { position: relative; z-index: 2; flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px 4px 0; border-top: 1px solid rgba(93,66,38,.28); color: #71583d; font-family: Georgia,serif; font-size: 11px; font-weight: 700; letter-spacing: .16em; }
+.journalFooter button { min-width: 112px; padding: 10px 18px; border: 1px solid #78532d; border-radius: 3px; background: linear-gradient(180deg,#75502e,#4e321d); color: #f1d9a7; font-weight: 800; letter-spacing: .08em; box-shadow: 0 4px 10px rgba(72,43,18,.28),inset 0 1px rgba(255,226,166,.16); cursor: pointer; transition: border-color .14s ease,background .14s ease,transform .14s ease; }
+.journalFooter button:hover { border-color: #4d321d; background: linear-gradient(180deg,#895f35,#5b3a20); color: #fff0c9; transform: translateY(-1px); }
 
 /* The covenant room is a full ritual stage rather than a generic list modal. */
 #contractOverlay { background: radial-gradient(circle at 50% 45%, rgba(65,93,132,.24), transparent 42%), rgba(3,6,10,.94); backdrop-filter: blur(5px); }
@@ -1862,10 +1888,10 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .contractStage { position: relative; z-index: 1; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: stretch; }
 .soulChoice { grid-column: 1 / -1; width: 100%; min-width: 0; display: grid; grid-template-columns: minmax(340px,.9fr) minmax(320px,1.1fr); align-items: center; gap: 14px; padding: 24px 58px 22px; border: 0; background: transparent; color: #e7edf3; text-align: left; cursor: pointer; }
 .soulChoice[hidden] { display: none; }
-.contractOrbStage { position: relative; min-height: 370px; display: grid; place-items: center; transition: transform .25s ease; }
-.contractOrbStage::before { content: ''; position: absolute; width: 330px; height: 330px; border-radius: 50%; background: radial-gradient(circle, rgba(250,194,83,.22), rgba(68,140,211,.08) 45%, transparent 70%); filter: blur(4px); transition: transform .3s ease, opacity .3s ease; }
+.contractOrbStage { position: relative; min-height: 370px; display: grid; place-items: center; }
+.contractOrbStage::before { content: ''; position: absolute; width: 330px; height: 330px; border-radius: 50%; background: radial-gradient(circle, rgba(250,194,83,.22), rgba(68,140,211,.08) 45%, transparent 70%); filter: blur(4px); transition: opacity .3s ease; }
 .contractMagicCircle { position: absolute; width: 350px; height: 350px; object-fit: contain; opacity: .42; filter: drop-shadow(0 0 14px rgba(71,174,255,.48)); animation: contractCircleTurn 24s linear infinite; }
-.contractSoulOrb { position: relative; z-index: 2; width: 260px; height: 260px; object-fit: contain; filter: drop-shadow(0 0 18px rgba(255,193,64,.5)); animation: contractOrbHover 2.8s ease-in-out infinite alternate; transition: filter .25s ease; }
+.contractSoulOrb { position: relative; z-index: 2; width: 260px; height: 260px; object-fit: contain; filter: drop-shadow(0 0 18px rgba(255,193,64,.5)); animation: contractOrbHover 2.8s ease-in-out infinite; transition: filter .25s ease; }
 .contractOrbStage > i { position: absolute; z-index: 3; width: 286px; height: 286px; border: 1px solid rgba(255,225,143,.18); border-radius: 50%; box-shadow: 0 0 28px rgba(255,192,70,.14), inset 0 0 24px rgba(87,169,234,.1); }
 .contractSoulInfo { min-width: 0; display: grid; align-content: center; justify-items: start; gap: 8px; padding: 30px 20px 30px 30px; border-left: 1px solid rgba(140,168,198,.18); }
 .contractSignal { padding: 4px 8px; border: 1px solid rgba(102,190,231,.32); border-radius: 12px; background: rgba(54,128,168,.12); color: #8dcce9; font-size: 9px; font-weight: 800; letter-spacing: .18em; }
@@ -1874,9 +1900,8 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .contractSoulMessage { margin: 12px 0 17px; color: #c9cfd5; font-family: serif; font-size: 16px; line-height: 1.9; }
 .contractRespond { display: flex; align-items: center; gap: 14px; padding: 11px 16px; border: 1px solid #987846; border-radius: 7px; background: linear-gradient(180deg, rgba(104,76,35,.7), rgba(61,48,30,.82)); color: #f3d99a; font-size: 13px; font-weight: 800; letter-spacing: .08em; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
 .contractRespond i { color: #fff0bd; font-size: 22px; font-style: normal; transition: transform .18s ease; }
-.soulChoice:not(:disabled):hover .contractOrbStage { transform: scale(1.025); }
 .soulChoice:not(:disabled):hover .contractSoulOrb { filter: brightness(1.09) drop-shadow(0 0 28px rgba(255,193,64,.72)); }
-.soulChoice:not(:disabled):hover .contractOrbStage::before { opacity: 1.2; transform: scale(1.08); }
+.soulChoice:not(:disabled):hover .contractOrbStage::before { opacity: 1.2; }
 .soulChoice:not(:disabled):hover .contractRespond { border-color: #d0a85f; background: linear-gradient(180deg, rgba(127,91,38,.82), rgba(75,56,31,.9)); }
 .soulChoice:not(:disabled):hover .contractRespond i { transform: translateX(3px); }
 .soulChoice:disabled { cursor: default; }
@@ -1902,17 +1927,26 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .contractEmpty span { font-size: 12px; }
 .contractFooter { position: relative; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 10px 28px 13px; color: #65717d; font-size: 10px; letter-spacing: .12em; }
 .contractFooter i { flex: 1; height: 1px; background: linear-gradient(90deg,rgba(116,143,170,.25),transparent); }
-@keyframes contractCircleTurn { to { transform: rotate(360deg); } }
-@keyframes contractOrbHover { from { transform: translateY(-3px); } to { transform: translateY(5px); } }
-@keyframes contractConfirmIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes storyRequiredPulse { from { box-shadow:0 0 0 1px rgba(225,184,85,.12),0 0 12px rgba(225,184,85,.15); } to { box-shadow:0 0 0 2px rgba(225,184,85,.25),0 0 28px rgba(225,184,85,.38); } }
-@keyframes pageContentFade { from { opacity:.35; } to { opacity:1; } }
+@keyframes contractCircleTurn { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes contractOrbHover { 0%,100% { transform: translateY(-3px) scale(.975); } 50% { transform: translateY(5px) scale(1.025); } }
+@keyframes contractConfirmIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+@keyframes storyRequiredPulse { 0%,100% { box-shadow:0 0 0 1px rgba(225,184,85,.12),0 0 12px rgba(225,184,85,.15); } 50% { box-shadow:0 0 0 2px rgba(225,184,85,.25),0 0 28px rgba(225,184,85,.38); } }
+@keyframes pageContentFade { from { opacity:.3; transform:translateX(8px); } to { opacity:1; transform:none; } }
 
 @media (max-width: 600px) {
   .storyPanelOverlay { padding: 8px; }
-  .journalPageText { min-height: 0; margin: 10px 12px; padding: 17px; font-size: 15px; }
-  .journalChapter { margin: 14px 13px 0; }
-  .journalPanel footer { padding: 0 13px 14px; }
+  .journalPanel { width: calc(100vw - 16px); height: calc(100vh - 16px); }
+  .journalHeader { padding: 13px 15px; }
+  .journalBook { grid-template-columns: 1fr; margin: 10px 13px 15px; }
+  .journalBook::before,.journalBook::after { display: none; }
+  .journalChapterLeaf { min-height: 145px; padding: 18px; }
+  .journalCompass { width: 58px; height: 58px; margin-bottom: 10px; font-size: 24px; }
+  .journalCompass::before { width: 72px; }
+  .journalCompass::after { height: 72px; }
+  .journalChapter { margin-top: 5px; font-size: 20px; }
+  .journalChapterLeaf > i { margin-top: 10px; }
+  .journalReadingLeaf { padding: 18px 20px; }
+  .journalPageText { font-size: 15px; }
   .contractPanel { width: calc(100vw - 16px); min-height: calc(100vh - 16px); }
   .contractHeader { padding: 18px; }
   .contractStage, .contractPanel.confirming .contractStage { grid-template-columns: 1fr; }
@@ -2118,7 +2152,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 #bossIntroOverlay.open::after { animation: bossShockwave .78s cubic-bezier(.1,.7,.2,1) .65s forwards; }
 #bossIntroOverlay.leaving { animation: bossIntroLeave .6s ease both; }
 .bossIntroStage { display: grid; justify-items: center; animation: bossScreenShake .62s linear .62s both; }
-.bossIntroStage img { width: min(560px, 76vw); max-height: 65vh; object-fit: contain; transform: translateY(-120vh) rotate(-7deg) scale(.62); filter: drop-shadow(0 22px 30px rgba(0,0,0,.72)); animation: bossSkyDrop 1.55s linear .03s forwards, bossIdleFloat .82s ease-in-out 1.62s infinite alternate; }
+.bossIntroStage img { width: min(560px, 76vw); max-height: 65vh; object-fit: contain; transform: translateY(-120vh) rotate(-7deg) scale(.62); filter: drop-shadow(0 22px 30px rgba(0,0,0,.72)); animation: bossSkyDrop 1.55s linear .03s forwards, bossIdleFloat 1.64s ease-in-out 1.62s infinite; }
 .bossIntroName { margin-top: -8px; color: #f1f0df; font-size: clamp(32px, 6vw, 62px); font-weight: 900; letter-spacing: .12em; text-shadow: 0 4px 18px rgba(0,0,0,.85); opacity: 0; animation: bossTitleReveal .38s cubic-bezier(.2,.9,.3,1.2) 1.69s forwards; }
 @keyframes bossIntroBackdrop { from { opacity: 0; } to { opacity: 1; } }
 @keyframes bossSkyDrop {
@@ -2132,9 +2166,9 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   96% { transform: translateY(-7px) rotate(0) scale(.97,1.07); }
   100% { transform: translateY(0) rotate(0) scale(1); }
 }
-@keyframes bossIdleFloat { from { transform: translateY(0) scale(1); } to { transform: translateY(-4px) scale(1.006); } }
+@keyframes bossIdleFloat { 0%,100% { transform: none; } 50% { transform: translateY(-4px) scale(1.006); } }
 @keyframes bossScreenShake {
-  0%, 100% { transform: translate(0,0); }
+  0% { transform: translate(0,0); }
   8% { transform: translate(-42px,23px) rotate(-1.8deg); }
   17% { transform: translate(36px,-28px) rotate(1.5deg); }
   27% { transform: translate(-31px,-16px) rotate(-1.1deg); }
@@ -2143,13 +2177,14 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   62% { transform: translate(17px,-12px) rotate(.7deg); }
   74% { transform: translate(-12px,8px); }
   86% { transform: translate(7px,-4px); }
+  100% { transform: none; }
 }
 @keyframes bossShockwave {
   0% { opacity: 0; transform: translate(-50%,-50%) scale(.15); }
   10% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%,-50%) scale(16); border-width: 1px; }
 }
-@keyframes bossTitleReveal { from { opacity: 0; transform: translateY(18px) scale(.82); filter: blur(6px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+@keyframes bossTitleReveal { from { opacity: 0; transform: translateY(18px) scale(.82); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes bossIntroLeave { to { opacity: 0; } }
 #expeditionView #actionArea { padding-top: 4px; }
 #expeditionView #startBtn { min-height: 48px; border-color: #5d9966; background: linear-gradient(180deg, #3f7048, #31583a); box-shadow: 0 7px 18px rgba(30,73,39,.28); font-size: 15px; font-weight: 800; letter-spacing: .08em; }

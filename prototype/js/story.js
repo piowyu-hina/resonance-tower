@@ -181,29 +181,28 @@ function renderDialogueLine() {
   text.textContent = line.text;
   const frame = document.getElementById('dialoguePortraitFrame');
   const img = document.getElementById('dialoguePortraitImg');
-  frame.classList.remove('missing', 'orbSpeaker', 'sceneArt', 'narration');
-  if (def) {
-    img.src = characterFullArtPath(line.speaker);
-    img.alt = `${def.name} 立繪`;
-    img.onerror = () => frame.classList.add('missing');
-  } else if (special && special.art) {
-    img.src = special.art;
-    img.alt = special.name;
-    img.onerror = () => frame.classList.add('missing');
-    frame.classList.toggle('orbSpeaker', !!special.orb);
-    frame.classList.toggle('sceneArt', !!special.scene);
-  } else if (special && special.narration) {
-    img.removeAttribute('src');
-    img.alt = '';
-    frame.classList.add('narration');
-  } else {
-    frame.classList.add('missing');
+  if (speakerChanged) {
+    frame.classList.remove('missing', 'orbSpeaker', 'sceneArt', 'narration');
+    if (def) {
+      img.src = characterFullArtPath(line.speaker);
+      img.alt = `${def.name} 立繪`;
+      img.onerror = () => frame.classList.add('missing');
+    } else if (special && special.art) {
+      img.src = special.art;
+      img.alt = special.name;
+      img.onerror = () => frame.classList.add('missing');
+      frame.classList.toggle('orbSpeaker', !!special.orb);
+      frame.classList.toggle('sceneArt', !!special.scene);
+    } else if (special && special.narration) {
+      img.removeAttribute('src');
+      img.alt = '';
+      frame.classList.add('narration');
+    } else {
+      frame.classList.add('missing');
+    }
   }
-  frame.classList.remove('lineEntering');
-  text.classList.remove('lineEntering');
-  void frame.offsetWidth;
-  if (speakerChanged) frame.classList.add('lineEntering');
-  text.classList.add('lineEntering');
+  if (speakerChanged && !frame.classList.contains('narration')) playTransientAnimation(img, 'lineEntering');
+  playTransientAnimation(text, 'lineEntering');
   lastDialogueSpeaker = line.speaker;
 }
 
@@ -218,9 +217,7 @@ function startCharacterEncounter(characterId, onDone) {
 function renderJournalPage() {
   const page = document.getElementById('journalPageText');
   page.textContent = JOURNAL_PAGES[journalPage];
-  page.classList.remove('pageTurning');
-  void page.offsetWidth;
-  page.classList.add('pageTurning');
+  playTransientAnimation(page, 'pageTurning');
   document.getElementById('journalPageNumber').textContent = t('format.page', {
     current: formatLocaleNumber(journalPage + 1),
     total: formatLocaleNumber(JOURNAL_PAGES.length),

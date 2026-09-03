@@ -41,7 +41,23 @@ function initDebugTools() {
     phase = 'defeat';
     showDefeatOverlay();
   }
-  if (requestedView === 'dialogue') queueDialogue('xiaochu_first_possession');
+  if (requestedView === 'journal') {
+    prepLocation = 'home';
+    resonanceState.xiaochu = 'bookPending';
+    openTravelJournal();
+  }
+  if (requestedView === 'contract') {
+    prepLocation = 'home';
+    resonanceState.xiaochu = 'oathReady';
+    openContractPanel();
+  }
+  if (requestedView === 'dialogue' || requestedView === 'dialogue-next') {
+    queueDialogue('xiaochu_first_possession');
+    if (requestedView === 'dialogue-next') {
+      setTimeout(() => document.getElementById('dialogueOverlay').click(), 420);
+    }
+  }
+  if (requestedView === 'dungeon-entry') showDungeonEntry(() => {});
   if (requestedView === 'go-home' || requestedView === 'go-home-flow') {
     phase = 'prepFloor';
     partyLocked = false;

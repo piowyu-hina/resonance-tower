@@ -26,6 +26,47 @@ let lastRenderedSurface = null;
 let defeatRestartTimer = null;
 let defeatRestartDeadline = 0;
 
+// Finite animations must paint their final frame before their class or node is
+// removed. Matching CSS duration with setTimeout races the compositor and is
+// the source of the one-frame "jump" seen at the end of several effects.
+function afterAnimationPaint(callback) {
+  requestAnimationFrame(() => requestAnimationFrame(callback));
+}
+
+function playTransientAnimation(element, className) {
+  if (!element) return;
+  const handlerKey = `${className}EndHandler`;
+  const runKey = `${className}RunId`;
+  const runId = (element[runKey] || 0) + 1;
+  element[runKey] = runId;
+  if (element[handlerKey]) element.removeEventListener('animationend', element[handlerKey]);
+  element.classList.remove(className);
+  void element.offsetWidth;
+  element[handlerKey] = event => {
+    if (event.target !== element) return;
+    element.removeEventListener('animationend', element[handlerKey]);
+    element[handlerKey] = null;
+    afterAnimationPaint(() => {
+      if (element[runKey] === runId) element.classList.remove(className);
+    });
+  };
+  element.addEventListener('animationend', element[handlerKey]);
+  element.classList.add(className);
+}
+
+function removeAfterAnimation(element, fallbackMs) {
+  let removed = false;
+  const remove = () => {
+    if (removed) return;
+    removed = true;
+    element.remove();
+  };
+  element.addEventListener('animationend', event => {
+    if (event.target === element) afterAnimationPaint(remove);
+  });
+  setTimeout(remove, fallbackMs);
+}
+
 // Call before opening `nextId`: enforces "only one overlay/popover open at a
 // time" so callers never have to manually juggle every other overlay's flag.
 function closeOtherOverlays(nextId) {
@@ -35,19 +76,7 @@ function closeOtherOverlays(nextId) {
 function animateSurfaceChange(surface, key) {
   if (!surface || key === lastRenderedSurface) return;
   lastRenderedSurface = key;
-  if (surface.surfaceEnterEnd) {
-    surface.removeEventListener('animationend', surface.surfaceEnterEnd);
-  }
-  surface.classList.remove('surfaceEntering');
-  void surface.offsetWidth;
-  surface.surfaceEnterEnd = event => {
-    if (event.animationName !== 'surfaceFadeIn') return;
-    surface.classList.remove('surfaceEntering');
-    surface.removeEventListener('animationend', surface.surfaceEnterEnd);
-    surface.surfaceEnterEnd = null;
-  };
-  surface.addEventListener('animationend', surface.surfaceEnterEnd);
-  surface.classList.add('surfaceEntering');
+  playTransientAnimation(surface, 'surfaceEntering');
 }
 
 function renderRunResultSummary(targetId, gold) {
@@ -148,14 +177,25 @@ function confirmVictory() {
 function showBossIntro(onComplete) {
   const overlay = document.getElementById('bossIntroOverlay');
   if (overlay.classList.contains('open')) return;
-  overlay.classList.add('open');
-  overlay.setAttribute('aria-hidden', 'false');
-  setTimeout(() => overlay.classList.add('leaving'), 4800);
-  setTimeout(() => {
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    overlay.removeEventListener('animationend', handleAnimationEnd);
     overlay.classList.remove('open', 'leaving');
     overlay.setAttribute('aria-hidden', 'true');
     onComplete();
-  }, 5400);
+  };
+  const handleAnimationEnd = event => {
+    if (event.target === overlay && event.animationName === 'bossIntroLeave') {
+      afterAnimationPaint(finish);
+    }
+  };
+  overlay.addEventListener('animationend', handleAnimationEnd);
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  setTimeout(() => overlay.classList.add('leaving'), 4800);
+  setTimeout(finish, 5600);
 }
 
 function showDungeonEntry(onCovered) {
@@ -172,14 +212,25 @@ function showDungeonEntry(onCovered) {
   art.alt = region.name;
   document.getElementById('dungeonEntryName').textContent = region.name;
   document.getElementById('dungeonEntryDescription').textContent = region.description;
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    overlay.removeEventListener('animationend', handleAnimationEnd);
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+  };
+  const handleAnimationEnd = event => {
+    if (event.target === overlay && event.animationName === 'dungeonEntryCurtain') {
+      afterAnimationPaint(finish);
+    }
+  };
+  overlay.addEventListener('animationend', handleAnimationEnd);
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
 
   setTimeout(onCovered, 1550);
-  setTimeout(() => {
-    overlay.classList.remove('open');
-    overlay.setAttribute('aria-hidden', 'true');
-  }, 2650);
+  setTimeout(finish, 2850);
 }
 
 function beginExpeditionCombat() {
@@ -200,7 +251,7 @@ function popup(portraitEl, text, cls) {
   span.className = 'popup ' + cls;
   span.textContent = text;
   portraitEl.appendChild(span);
-  setTimeout(() => span.remove(), 900);
+  removeAfterAnimation(span, 1050);
 }
 
 // skill-cast flourish: briefly shows the skill's own icon fading over the
@@ -215,19 +266,12 @@ function showSkillCastEffect(portraitEl, skill) {
     <span class="fallback">${skill.icon}</span>
   `;
   portraitEl.appendChild(el);
-  setTimeout(() => el.remove(), 700);
+  removeAfterAnimation(el, 850);
 }
 
 function flash(portraitEl) {
   if (!portraitEl) return;
-  clearTimeout(portraitEl.hitFlashTimer);
-  portraitEl.classList.remove('hitFlash');
-  void portraitEl.offsetWidth; // restart animation
-  portraitEl.classList.add('hitFlash');
-  portraitEl.hitFlashTimer = setTimeout(() => {
-    portraitEl.classList.remove('hitFlash');
-    portraitEl.hitFlashTimer = null;
-  }, 380);
+  playTransientAnimation(portraitEl, 'hitFlash');
 }
 
 // --- hover tooltip: character/monster detailed stats ---
