@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-32">
+<link rel="stylesheet" href="style.css?v=20260903-33">
 </head>
 <body>
 
@@ -285,17 +285,19 @@
   </div>
 </div>
 
-<aside id="guideCard" aria-live="polite" hidden>
-  <img src="assets/characters/hina_guide.png" alt="Hina">
-  <div class="guideBubble">
-    <div class="guideName">Hina</div>
-    <div id="guideText"></div>
-    <div class="guideActions">
-      <button id="guideSkipBtn" type="button">略過教學</button>
-      <button id="guideCloseBtn" type="button">知道了</button>
+<div id="guideOverlay" hidden>
+  <aside id="guideCard" role="dialog" aria-modal="true" aria-live="polite">
+    <img src="assets/characters/hina_guide.png" alt="Hina">
+    <div class="guideBubble">
+      <div class="guideName">Hina</div>
+      <div id="guideText"></div>
+      <div class="guideActions">
+        <button id="guideSkipBtn" type="button">略過教學</button>
+        <button id="guideCloseBtn" type="button">知道了</button>
+      </div>
     </div>
-  </div>
-</aside>
+  </aside>
+</div>
 
 <!-- 對話系統：靈魂契約等劇情橋段用，見 design.md「契約角色與解鎖」 -->
 <div id="dialogueOverlay" aria-hidden="true">
@@ -334,7 +336,7 @@
 <script src="js/goo.js?v=20260903-1"></script>
 <script src="js/combat.js?v=20260903-32"></script>
 <script src="js/story.js?v=20260903-1"></script>
-<script src="js/ui.js?v=20260903-32"></script>
+<script src="js/ui.js?v=20260903-33"></script>
 <script src="js/debug.js?v=20260903-1"></script>
 <script src="js/main.js?v=20260903-32"></script>
 </body>

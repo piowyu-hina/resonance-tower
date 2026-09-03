@@ -24,7 +24,7 @@ const GUIDE_COPY = {
 
 function hideGuide() {
   activeGuideId = null;
-  document.getElementById('guideCard').hidden = true;
+  document.getElementById('guideOverlay').hidden = true;
 }
 
 function showGuideOnce(id) {
@@ -32,7 +32,8 @@ function showGuideOnce(id) {
   seenGuideIds.add(id);
   activeGuideId = id;
   document.getElementById('guideText').textContent = GUIDE_COPY[id];
-  document.getElementById('guideCard').hidden = false;
+  document.getElementById('guideOverlay').hidden = false;
+  document.getElementById('guideCloseBtn').focus();
 }
 
 // The preparation phase is a small location hub: village is the outer layer,
@@ -1076,6 +1077,20 @@ function buildUI() {
     hideGuide();
   });
   document.addEventListener('keydown', e => {
+    const guideOverlay = document.getElementById('guideOverlay');
+    if (!guideOverlay.hidden) {
+      if (e.key === 'Escape') e.preventDefault();
+      if (e.key === 'Tab') {
+        const guideButtons = [document.getElementById('guideSkipBtn'), document.getElementById('guideCloseBtn')];
+        const currentIndex = guideButtons.indexOf(document.activeElement);
+        const nextIndex = e.shiftKey
+          ? (currentIndex <= 0 ? guideButtons.length - 1 : currentIndex - 1)
+          : (currentIndex >= guideButtons.length - 1 ? 0 : currentIndex + 1);
+        e.preventDefault();
+        guideButtons[nextIndex].focus();
+      }
+      return;
+    }
     if (e.key === 'Escape' && activeOverlay) OVERLAY_CLOSERS[activeOverlay]();
   });
   document.addEventListener('click', event => {
