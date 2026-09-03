@@ -6,7 +6,10 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: #1e1e1e;
+  background:
+    radial-gradient(circle at 18% 5%, rgba(82,108,92,.16), transparent 32%),
+    radial-gradient(circle at 82% 0%, rgba(145,101,48,.12), transparent 28%),
+    linear-gradient(155deg, #171a1b, #1d1d1d 48%, #171819);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -24,9 +27,9 @@ body {
 #app {
   width: min(1040px, calc(100vw - 24px));
   background: #23262b;
-  border: 2px solid #444;
+  border: 1px solid #4a4f50;
   border-radius: 14px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 60px rgba(0,0,0,.48), 0 0 0 1px rgba(255,255,255,.025) inset;
   color: #ddd;
   padding: 8px;
   overflow: hidden;
@@ -42,11 +45,19 @@ body {
   align-items: center;
   font-size: 18px;
   font-weight: bold;
-  padding: 4px 4px 10px 4px;
+  min-height: 54px;
+  padding: 5px 7px 11px;
   border-bottom: 1px solid #444;
   margin-bottom: 8px;
 }
+.headerLead { min-width: 0; display: flex; align-items: center; gap: 18px; }
+.gameBrand { flex: 0 0 auto; display: flex; align-items: center; gap: 9px; }
+.brandSigil { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid #9d783c; border-radius: 50%; background: radial-gradient(circle, #574226, #29271f 68%); box-shadow: 0 0 14px rgba(225,170,75,.16), inset 0 0 8px rgba(255,205,103,.1); color: #ffd074; font-size: 22px; line-height: 1; }
+.brandCopy { display: grid; gap: 1px; line-height: 1; }
+.brandCopy b { color: #f1d08b; font-size: 15px; letter-spacing: .14em; white-space: nowrap; }
+.brandCopy small { color: #777f80; font-family: Georgia, serif; font-size: 7px; letter-spacing: .2em; white-space: nowrap; }
 #header .headerLeft { display: flex; flex-direction: column; gap: 3px; }
+#floorLabel { color: #cbd0d1; font-size: 12px; }
 .headerActions { display: flex; align-items: center; gap: 6px; }
 #debugToggleBtn { border-color: #887044; background: #4b402c; color: #ffd27a; }
 #debugPanel { margin: 0 10px 10px; padding: 10px; border: 1px dashed #8b7449; border-radius: 7px; background: #28251f; }
@@ -1364,6 +1375,8 @@ button:focus-visible,
 
 /* --- 村莊據點（取代把房屋當大背景的版本） --- */
 #villageView {
+  position: relative;
+  overflow: hidden;
   min-height: 480px;
   padding: 24px;
   border-radius: 12px;
@@ -1371,6 +1384,7 @@ button:focus-visible,
     radial-gradient(circle at 22% 18%, rgba(82,111,91,.18), transparent 30%),
     linear-gradient(145deg, #252b2c, #1d2226 62%, #202329);
 }
+.sceneKicker { margin-bottom: 7px; color: #778980; font-size: 9px; font-weight: 700; letter-spacing: .18em; }
 .villageIntro { margin-bottom: 24px; }
 #villageView .prepHeading {
   margin-bottom: 7px;
@@ -1385,6 +1399,7 @@ button:focus-visible,
   gap: 14px;
 }
 .villageLocation {
+  position: relative;
   min-width: 0;
   min-height: 330px;
   display: flex;
@@ -1407,13 +1422,14 @@ button:focus-visible,
   color: #ddd;
   font-size: inherit;
 }
-#townShopBtn.villageLocation:hover { border-color: #747e87; }
-button.villageLocation { cursor: pointer; transition: transform .16s, border-color .16s, box-shadow .16s; }
+#townShopBtn.villageLocation:hover { border-color: #9b824f; }
+button.villageLocation { cursor: pointer; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
 button.villageLocation:hover {
   transform: translateY(-3px);
-  border-color: #747e87;
-  box-shadow: 0 10px 22px rgba(0,0,0,.28);
+  border-color: #9b824f;
+  box-shadow: 0 13px 28px rgba(0,0,0,.28), 0 0 18px rgba(212,169,82,.08);
 }
+button.villageLocation:active { transform: translateY(-1px); }
 .villageLocationArt {
   width: 100%;
   height: 245px;
@@ -1428,11 +1444,15 @@ button.villageLocation:hover {
   object-fit: contain;
   filter: drop-shadow(0 12px 12px rgba(0,0,0,.42));
   -webkit-user-drag: none;
+  transition: transform .28s ease, filter .28s ease;
 }
+button.villageLocation:hover .villageLocationArt img { transform: scale(1.035); filter: drop-shadow(0 13px 13px rgba(0,0,0,.52)) saturate(1.06); }
 #townShopBtn .villageLocationArt img { width: 88%; height: 88%; }
-.villageLocationCopy { display: flex; flex-direction: column; gap: 5px; padding: 14px 16px 16px; }
+.villageLocationCopy { position: relative; display: flex; flex-direction: column; gap: 5px; padding: 14px 42px 16px 16px; }
+.villageLocationCopy::after { content: '›'; position: absolute; right: 17px; top: 50%; color: #776a51; font-size: 24px; transform: translateY(-50%); transition: color .2s, transform .2s; }
+button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; transform: translate(3px,-50%); }
 .villageLocationCopy b { color: #f0d08a; font-size: 17px; }
-.villageLocationCopy small { color: #929aa2; font-size: 10px; }
+.villageLocationCopy small { color: #a4abb0; font-size: 11px; line-height: 1.45; }
 .villageLocationMissing { opacity: .45; }
 .villageLocationMissing .villageLocationArt {
   margin: 18px;
@@ -1628,6 +1648,8 @@ button.villageLocation:hover {
 #expeditionView #actionArea { padding-top: 2px; }
 
 @media (max-width: 850px) {
+  .headerLead { gap: 10px; }
+  .brandCopy small { display: none; }
   #villageView { min-height: 0; padding: 15px; }
   .villageLocations { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .villageLocation:last-child:nth-child(odd) { grid-column: 1 / -1; }
@@ -1637,6 +1659,15 @@ button.villageLocation:hover {
 }
 
 @media (max-width: 520px) {
+  body { padding-top: 6px; }
+  #app { width: calc(100vw - 10px); padding: 6px; border-radius: 11px; }
+  #header { min-height: 46px; padding-inline: 3px; }
+  .brandSigil { width: 27px; height: 27px; font-size: 19px; }
+  .brandCopy b { font-size: 12px; }
+  .headerLead { gap: 7px; }
+  #goldLabel { font-size: 11px; }
+  #bagBtn { padding: 4px 6px; font-size: 12px; }
+  #debugToggleBtn { max-width: 54px; padding: 4px; font-size: 10px; }
   #villageView { padding: 12px; }
   .villageIntro { margin-bottom: 14px; }
   .villageLocations { grid-template-columns: 1fr; }

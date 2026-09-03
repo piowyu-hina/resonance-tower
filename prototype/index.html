@@ -2,16 +2,24 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>爬塔掛機 原型</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b1e20">
+<title>共鳴之塔｜Resonance Tower</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="app">
   <div id="header">
-    <div class="headerLeft">
-      <span id="floorLabel">史萊姆叢林</span>
-      <span id="goldLabel"></span>
+    <div class="headerLead">
+      <div class="gameBrand" aria-label="共鳴之塔">
+        <span class="brandSigil" aria-hidden="true">◇</span>
+        <span class="brandCopy"><b>共鳴之塔</b><small>RESONANCE TOWER</small></span>
+      </div>
+      <div class="headerLeft">
+        <span id="floorLabel">史萊姆叢林</span>
+        <span id="goldLabel"></span>
+      </div>
     </div>
     <div class="headerActions">
       <button id="bagBtn" aria-label="開啟背包"><img src="assets/ui/bag.png" alt="">背包</button>
@@ -38,6 +46,7 @@
   <div class="panel" id="prepView">
     <div id="villageView">
       <div class="villageIntro">
+        <div class="sceneKicker">安全據點 · WAYFARER'S REST</div>
         <div class="prepHeading">村莊</div>
         <div class="prepMsg">回家整備、到商店補給，或從村口展開遠征。</div>
       </div>
