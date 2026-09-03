@@ -1,0 +1,199 @@
+// --- 桌面版手動存檔 ---
+// Only permanent progression is serialized. An expedition in progress must be
+// resolved first, so combat timers and transient DOM state never enter a save.
+const SAVE_FORMAT_VERSION = 1;
+const RESONANCE_SAVE_STATES = new Set([
+  'encountering', 'following', 'villageReturn', 'goHome', 'bookPending',
+  'bookReading', 'oathReady', 'contracting', 'contracted',
+]);
+let saveStatusTimer = null;
+
+function saveSlot(entry) {
+  if (!entry || !ITEM_DEFS[entry.itemId]) return null;
+  const qty = Math.max(1, Math.min(999999, Math.floor(Number(entry.qty) || 0)));
+  return qty > 0 ? { itemId: entry.itemId, qty } : null;
+}
+
+function normalizedSlots(value, count) {
+  const source = Array.isArray(value) ? value : [];
+  return Array.from({ length: count }, (_, index) => saveSlot(source[index]));
+}
+
+function permanentCharacterData(character) {
+  return {
+    id: character.id,
+    level: character.level,
+    xp: character.xp,
+    lineLevels: { ...character.lineLevels },
+    loadout: { activeItemId: character.loadout && character.loadout.activeItemId || null },
+  };
+}
+
+function createSaveData() {
+  syncCoinItem();
+  return {
+    format: 'resonance-tower-save',
+    version: SAVE_FORMAT_VERSION,
+    savedAt: new Date().toISOString(),
+    progression: {
+      bankedGold,
+      slimeKillCount,
+      potionUseCount,
+      unlockedChars: [...unlockedChars],
+      resonanceState: { ...resonanceState },
+      roster: roster.map(permanentCharacterData),
+      party: [...party],
+      inventory: inventory.map(saveSlot),
+      storage: storage.map(saveSlot),
+      ownedSkins: [...ownedSkins],
+      equippedSkinByCharacter: { ...equippedSkinByCharacter },
+    },
+  };
+}
+
+function safeInteger(value, fallback, max = 999999999) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, Math.min(max, Math.floor(number))) : fallback;
+}
+
+function normalizeSaveData(raw) {
+  if (!raw || raw.format !== 'resonance-tower-save' || raw.version !== SAVE_FORMAT_VERSION || !raw.progression) {
+    throw new Error('不支援的存檔格式');
+  }
+  const source = raw.progression;
+  const unlocked = new Set((Array.isArray(source.unlockedChars) ? source.unlockedChars : []).filter(id => CHAR_DEFS[id]));
+  unlocked.add('wuming');
+  const normalizedResonance = {};
+  Object.entries(source.resonanceState || {}).forEach(([id, value]) => {
+    if (CHAR_DEFS[id] && RESONANCE_SAVE_STATES.has(value)) normalizedResonance[id] = value;
+  });
+  if (normalizedResonance.xiaochu === 'contracted') unlocked.add('xiaochu');
+
+  const characters = new Map();
+  (Array.isArray(source.roster) ? source.roster : []).forEach(saved => {
+    if (!saved || !CHAR_DEFS[saved.id]) return;
+    const level = Math.max(1, safeInteger(saved.level, 1, 9999));
+    const lineLevels = {};
+    ['atk', 'def', 'speed', 'skill0', 'skill1', 'skill2', 'action'].forEach(key => {
+      lineLevels[key] = safeInteger(saved.lineLevels && saved.lineLevels[key], 0, STAT_LINE_MAX);
+    });
+    const activeItemId = saved.loadout && saved.loadout.activeItemId;
+    characters.set(saved.id, {
+      level,
+      xp: safeInteger(saved.xp, 0, Math.max(0, xpToNext(level) - 1)),
+      lineLevels,
+      activeItemId: ITEM_DEFS[activeItemId] && ITEM_DEFS[activeItemId].equipSlot === 'charm' ? activeItemId : null,
+    });
+  });
+
+  const owned = new Set((Array.isArray(source.ownedSkins) ? source.ownedSkins : []).filter(id => SKIN_DEFS[id]));
+  Object.values(DEFAULT_SKIN_BY_CHARACTER).forEach(id => owned.add(id));
+  const equipped = { ...DEFAULT_SKIN_BY_CHARACTER };
+  Object.entries(source.equippedSkinByCharacter || {}).forEach(([characterId, skinId]) => {
+    const skin = SKIN_DEFS[skinId];
+    if (skin && skin.characterId === characterId && owned.has(skinId)) equipped[characterId] = skinId;
+  });
+  const savedParty = (Array.isArray(source.party) ? source.party : []).filter(id => unlocked.has(id) && CHAR_DEFS[id]);
+
+  return {
+    bankedGold: safeInteger(source.bankedGold, 0),
+    slimeKillCount: safeInteger(source.slimeKillCount, 0),
+    potionUseCount: safeInteger(source.potionUseCount, 0),
+    unlocked,
+    resonanceState: normalizedResonance,
+    characters,
+    party: savedParty.slice(0, SOLO_PARTY_LIMIT),
+    inventory: normalizedSlots(source.inventory, INVENTORY_SLOT_COUNT),
+    storage: normalizedSlots(source.storage, STORAGE_SLOT_COUNT),
+    ownedSkins: owned,
+    equippedSkinByCharacter: equipped,
+  };
+}
+
+function canManageSave() {
+  return phase === 'prepFloor' && !partyLocked && activeOverlay === null && !contractStoryLocked();
+}
+
+function showSaveStatus(message, error = false) {
+  const status = document.getElementById('saveStatus');
+  clearTimeout(saveStatusTimer);
+  status.textContent = message;
+  status.classList.toggle('error', error);
+  status.classList.add('visible');
+  saveStatusTimer = setTimeout(() => status.classList.remove('visible'), 3200);
+}
+
+function renderSaveControls() {
+  const enabled = canManageSave();
+  document.getElementById('saveGameBtn').disabled = !enabled;
+  document.getElementById('loadGameBtn').disabled = !enabled;
+}
+
+function downloadSaveFile() {
+  if (!canManageSave()) return showSaveStatus('請先結束遠征或目前劇情，再進行存檔。', true);
+  const json = JSON.stringify(createSaveData(), null, 2);
+  const date = new Date().toISOString().slice(0, 10);
+  const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `resonance-tower-save-${date}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+  showSaveStatus('存檔已下載。可將 JSON 檔保存到 Google Drive。');
+}
+
+function applySaveData(data) {
+  initGame();
+  bankedGold = data.bankedGold;
+  slimeKillCount = data.slimeKillCount;
+  potionUseCount = data.potionUseCount;
+  unlockedChars = data.unlocked;
+  resonanceState = data.resonanceState;
+  inventory = data.inventory;
+  storage = data.storage;
+  ownedSkins = data.ownedSkins;
+  equippedSkinByCharacter = data.equippedSkinByCharacter;
+  roster.forEach(character => {
+    const saved = data.characters.get(character.id);
+    if (!saved) return;
+    character.level = saved.level;
+    character.xp = saved.xp;
+    character.lineLevels = saved.lineLevels;
+    character.loadout = { activeItemId: saved.activeItemId };
+    recomputeStats(character);
+    character.curHp = character.maxHp;
+  });
+  party = data.party.length ? data.party : ['wuming'];
+  prepLocation = 'village';
+  homeMode = 'menu';
+  syncCoinItem();
+  render();
+}
+
+async function loadSaveFile(file) {
+  if (!file || !canManageSave()) return;
+  try {
+    const raw = JSON.parse(await file.text());
+    const data = normalizeSaveData(raw);
+    applySaveData(data);
+    showSaveStatus('讀檔完成，永久進度已恢復。');
+  } catch (error) {
+    console.error('Load failed:', error);
+    showSaveStatus(`讀檔失敗：${error.message || '檔案內容不正確'}`, true);
+  }
+}
+
+function initSaveSystem() {
+  const input = document.getElementById('loadGameInput');
+  document.getElementById('saveGameBtn').addEventListener('click', downloadSaveFile);
+  document.getElementById('loadGameBtn').addEventListener('click', () => {
+    if (!canManageSave()) return showSaveStatus('請先結束遠征或目前劇情，再進行讀檔。', true);
+    input.click();
+  });
+  input.addEventListener('change', async () => {
+    await loadSaveFile(input.files && input.files[0]);
+    input.value = '';
+  });
+}

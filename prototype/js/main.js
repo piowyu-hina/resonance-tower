@@ -24,6 +24,7 @@ document.addEventListener('contextmenu', event => event.preventDefault());
 initGame();
 buildUI();
 initDebugTools();
+initSaveSystem();
 render();
 runContractPreviewFromUrl();
 setInterval(tick, MASTER_TICK_MS);

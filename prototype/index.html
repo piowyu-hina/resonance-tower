@@ -25,10 +25,16 @@
       </div>
     </div>
     <div class="headerActions">
+      <div class="saveActions" aria-label="遊戲存檔">
+        <button id="saveGameBtn" type="button" title="下載存檔檔案">存檔</button>
+        <button id="loadGameBtn" type="button" title="讀取存檔檔案">讀檔</button>
+        <input id="loadGameInput" type="file" accept="application/json,.json" hidden>
+      </div>
       <button id="bagBtn" aria-label="開啟背包" title="背包"><img src="assets/ui/bag.png" alt=""></button>
       <button id="debugToggleBtn" type="button" hidden aria-expanded="false" aria-controls="debugPanel">開發工具</button>
     </div>
   </div>
+  <div id="saveStatus" class="saveStatus" role="status" aria-live="polite"></div>
 
   <section id="debugPanel" hidden aria-label="開發工具">
     <div class="debugPanelHeader">
@@ -362,6 +368,7 @@
 <script src="js/story.js?v=20260903-7"></script>
 <script src="js/ui.js?v=20260903-38"></script>
 <script src="js/debug.js?v=20260903-5"></script>
-<script src="js/main.js?v=20260903-33"></script>
+<script src="js/save.js?v=20260903-1"></script>
+<script src="js/main.js?v=20260903-34"></script>
 </body>
 </html>

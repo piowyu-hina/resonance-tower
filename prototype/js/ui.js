@@ -1468,6 +1468,7 @@ function render() {
   logEl.style.display = phase === 'combat' ? 'block' : 'none';
   logEl.innerHTML = logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('');
   logEl.scrollTop = logEl.scrollHeight;
+  if (typeof renderSaveControls === 'function') renderSaveControls();
 }
 
 function renderPrepView() {

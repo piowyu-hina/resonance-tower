@@ -77,6 +77,23 @@ img {
 #header .headerLeft { display: flex; flex-direction: column; gap: 3px; }
 #floorLabel { color: #cbd0d1; font-size: 12px; }
 .headerActions { display: flex; align-items: center; gap: 6px; }
+.saveActions { display: flex; align-items: center; gap: 5px; }
+.saveActions button {
+  min-width: 58px;
+  padding: 7px 10px;
+  border: 1px solid #59646a;
+  border-radius: 6px;
+  background: linear-gradient(#343b40,#293036);
+  color: #cfd8db;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.saveActions button:hover:not(:disabled) { border-color: #9b824f; color: #f1d08b; background: linear-gradient(#41433e,#30343a); }
+.saveActions button:disabled { opacity: .35; cursor: not-allowed; }
+.saveStatus { min-height: 0; max-height: 0; margin: 0 10px; overflow: hidden; border-radius: 6px; color: #dbe9df; font-size: 13px; text-align: center; opacity: 0; transition: max-height .2s ease, padding .2s ease, margin-bottom .2s ease, opacity .2s ease; }
+.saveStatus.visible { max-height: 42px; margin-bottom: 8px; padding: 7px 10px; background: #26352d; border: 1px solid #476653; opacity: 1; }
+.saveStatus.error { color: #f0c9c4; background: #3b2929; border-color: #714848; }
 #debugToggleBtn { border-color: #887044; background: #4b402c; color: #ffd27a; }
 #debugPanel { margin: 0 10px 10px; padding: 10px; border: 1px dashed #8b7449; border-radius: 7px; background: #28251f; }
 #debugPanel[hidden] { display: none; }
