@@ -1,6 +1,17 @@
-function setCharacterDetailOpen(open, characterId = null) {
+import { CHAR_DEFS, GENERAL_STAT_LINES, STAT_LINE_MAX, RARITY_DEFS, ITEM_DEFS } from './constants.js';
+import {
+  gameState, lineLevel, lineBookId, isCharUnlocked, characterSkins, equippedSkin,
+  characterFullArtPath, equipCharacterSkin, xpToNext, useExpBookOnLine, skillLineKey,
+} from './state.js';
+import { closeOtherOverlays, overlayUiState } from './ui-overlays.js';
+import { hideTooltip, inventoryItemCount } from './ui-loadout.js';
+import { flushCombat } from './ui-combat-effects.js';
+import { toggleParty } from './combat.js';
+import { render } from './ui-main.js';
+
+export function setCharacterDetailOpen(open, characterId = null) {
   if (open) closeOtherOverlays('characterDetail');
-  activeOverlay = open ? 'characterDetail' : (activeOverlay === 'characterDetail' ? null : activeOverlay);
+  gameState.activeOverlay = open ? 'characterDetail' : (gameState.activeOverlay === 'characterDetail' ? null : gameState.activeOverlay);
   const overlay = document.getElementById('characterDetailOverlay');
   overlay.classList.toggle('open', open);
   overlay.setAttribute('aria-hidden', String(!open));
@@ -10,7 +21,7 @@ function setCharacterDetailOpen(open, characterId = null) {
   renderCharacterDetail(characterId);
 }
 
-function attachCharacterCardPress(card, characterId) {
+export function attachCharacterCardPress(card, characterId) {
   const holdMs = 450;
   const moveTolerance = 8;
   let timer = null;
@@ -80,13 +91,13 @@ function attachCharacterCardPress(card, characterId) {
 
 // small "Lv N" badge shown directly on a stat tile / skill icon, instead of
 // a separate row list - see design.md 經驗書／技能點強化 (UI redesign note).
-function lineBadgeHTML(c, lineKey) {
+export function lineBadgeHTML(c, lineKey) {
   return `<span class="lineBadge" data-line="${lineKey}">${lineLevel(c, lineKey)}</span>`;
 }
 
 // press = 1 level, holding repeats `tick()` until released/it returns false.
 // `tick` should perform one level-up attempt and return whether to continue.
-function attachHoldRepeat(el, tick, onStop) {
+export function attachHoldRepeat(el, tick, onStop) {
   const REPEAT_MS = 90;
   let timer = null;
   const stop = () => {
@@ -106,7 +117,7 @@ function attachHoldRepeat(el, tick, onStop) {
 
 let selectedGrowthLine = 'atk';
 
-function growthLineMeta(characterId, lineKey) {
+export function growthLineMeta(characterId, lineKey) {
   const def = CHAR_DEFS[characterId];
   const general = GENERAL_STAT_LINES.find(line => line.key === lineKey);
   if (general) return { name: general.label, icon: lineKey === 'atk' ? '⚔' : lineKey === 'def' ? '◈' : '⌛', kind: '基礎能力' };
@@ -118,7 +129,7 @@ function growthLineMeta(characterId, lineKey) {
 // 1 decimal place everywhere (not Math.round) so 目前→下一級 visibly moves
 // even between adjacent low levels, instead of both sides showing the same
 // rounded integer and reading as "did this even do anything?".
-function growthLineValue(c, lineKey, level) {
+export function growthLineValue(c, lineKey, level) {
   const def = CHAR_DEFS[c.id];
   const scale = 1 + level / STAT_LINE_MAX;
   if (lineKey === 'atk') return `${(c.atk * scale).toFixed(1)} 攻擊力`;
@@ -143,7 +154,7 @@ function growthLineValue(c, lineKey, level) {
   return skill.desc;
 }
 
-function growthCardHTML(c, lineKey, imagePath = '') {
+export function growthCardHTML(c, lineKey, imagePath = '') {
   const meta = growthLineMeta(c.id, lineKey);
   const selected = selectedGrowthLine === lineKey ? ' selected' : '';
   const maxed = lineLevel(c, lineKey) >= STAT_LINE_MAX ? ' maxed' : '';
@@ -160,7 +171,7 @@ function growthCardHTML(c, lineKey, imagePath = '') {
 // orphan attachHoldRepeat's running interval/pointer listeners. This is why
 // holding used to look like it "jumped" straight to wherever it stopped -
 // nothing on screen updated until the final render on release.
-function updateGrowthPanelLive(c, lineKey) {
+export function updateGrowthPanelLive(c, lineKey) {
   const level = lineLevel(c, lineKey);
   const bookId = lineBookId(lineKey);
   const bookCount = inventoryItemCount(bookId);
@@ -194,12 +205,12 @@ function updateGrowthPanelLive(c, lineKey) {
   }
 }
 
-function renderCharacterDetail(characterId) {
-  const c = roster.find(member => member.id === characterId);
+export function renderCharacterDetail(characterId) {
+  const c = gameState.roster.find(member => member.id === characterId);
   const def = CHAR_DEFS[characterId];
   if (!c || !def) return;
   const unlocked = isCharUnlocked(characterId);
-  const selected = party.includes(characterId);
+  const selected = gameState.party.includes(characterId);
   const rarity = RARITY_DEFS[def.rarity];
   const skins = characterSkins(characterId);
   const currentSkin = equippedSkin(characterId);
@@ -232,7 +243,7 @@ function renderCharacterDetail(characterId) {
       <div class="detailSectionTitle detailSectionHeading"><span>共鳴外觀</span><small>目前：${currentSkin.name} · 持有 ${skins.length}</small></div>
       <div class="skinPicker">
         ${skins.map(skin => `
-          <button type="button" aria-pressed="${equippedSkinByCharacter[characterId] === skin.skinId}" class="skinOption${equippedSkinByCharacter[characterId] === skin.skinId ? ' selected' : ''}" data-skin-id="${skin.skinId}">
+          <button type="button" aria-pressed="${gameState.equippedSkinByCharacter[characterId] === skin.skinId}" class="skinOption${gameState.equippedSkinByCharacter[characterId] === skin.skinId ? ' selected' : ''}" data-skin-id="${skin.skinId}">
             <span class="skinPreview"><img src="assets/characters/${skin.portrait}.png" alt="${skin.name}"><i aria-hidden="true">✓</i></span><span>${skin.name}</span>
           </button>`).join('')}
       </div>
@@ -283,9 +294,9 @@ function renderCharacterDetail(characterId) {
 
   const selectBtn = document.getElementById('characterDetailSelectBtn');
   const isWuming = characterId === 'wuming';
-  selectBtn.textContent = !unlocked ? '尚未締結契約' : selected ? (isWuming ? '目前出戰中' : '目前附身中') : partyLocked ? '本次遠征角色已鎖定' : (isWuming ? '設為出戰角色' : '設為附身對象');
-  selectBtn.disabled = !unlocked || selected || partyLocked;
-  selectBtn.style.display = prepLocation === 'home' ? 'none' : '';
+  selectBtn.textContent = !unlocked ? '尚未締結契約' : selected ? (isWuming ? '目前出戰中' : '目前附身中') : gameState.partyLocked ? '本次遠征角色已鎖定' : (isWuming ? '設為出戰角色' : '設為附身對象');
+  selectBtn.disabled = !unlocked || selected || gameState.partyLocked;
+  selectBtn.style.display = overlayUiState.prepLocation === 'home' ? 'none' : '';
   selectBtn.addEventListener('click', () => {
     toggleParty(characterId);
     renderCharacterDetail(characterId);
@@ -293,13 +304,15 @@ function renderCharacterDetail(characterId) {
   });
 }
 
-let shopDialogueIndex = 0;
-let lastShopDialogueMode = null;
-let shopTab = 'buy';
-let lastShopTabMode = null;
-let wasShopOpen = false;
+export const shopUiState = {
+  shopDialogueIndex: 0,
+  lastShopDialogueMode: null,
+  shopTab: 'buy',
+  lastShopTabMode: null,
+  wasShopOpen: false,
+};
 
-const SHOP_DIALOGUE_KEYS = {
+export const SHOP_DIALOGUE_KEYS = {
   town: ['shop.dialogue.town.0', 'shop.dialogue.town.1', 'shop.dialogue.town.2'],
   dungeon: ['shop.dialogue.dungeon.0', 'shop.dialogue.dungeon.1', 'shop.dialogue.dungeon.2'],
 };

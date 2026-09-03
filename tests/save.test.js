@@ -1,17 +1,9 @@
-const fs = require('node:fs');
-const vm = require('node:vm');
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
 global.window = { location: { search: '' } };
+global.document = { getElementById: () => null, addEventListener: () => {}, dispatchEvent: () => {}, documentElement: {} };
 
-const source = [
-  'prototype/js/constants.js',
-  'prototype/js/state.js',
-  'prototype/js/save.js',
-].map(file => fs.readFileSync(file, 'utf8')).join('\n');
-
-vm.runInThisContext(`${source}\nglobalThis.__saveTestApi = { normalizeSaveData };`);
-const { normalizeSaveData } = globalThis.__saveTestApi;
+const { normalizeSaveData } = await import('../prototype/js/save.js');
 
 const normalized = normalizeSaveData({
   format: 'resonance-tower-save',

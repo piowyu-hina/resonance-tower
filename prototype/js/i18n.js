@@ -6,7 +6,7 @@ const RT_LOCALES = { 'zh-Hant': zhHant, en };
 const DEFAULT_LOCALE = 'zh-Hant';
 let currentLocale = DEFAULT_LOCALE;
 
-function resolveLocale(requestedLocale) {
+export function resolveLocale(requestedLocale) {
   const locales = RT_LOCALES;
   if (locales[requestedLocale]) return requestedLocale;
   const language = String(requestedLocale || '').split('-')[0].toLowerCase();

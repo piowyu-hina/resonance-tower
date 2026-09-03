@@ -1,5 +1,11 @@
-function charTooltipHTML(id) {
-  const c = roster.find(r => r.id === id);
+import { CHAR_DEFS, localizedItemDef, ITEM_DEFS } from './constants.js';
+import { gameState, calcDef, xpToNext, PHASES, isPrepPhase, characterPortraitPath } from './state.js';
+import { t, formatLocaleNumber } from './i18n.js';
+import { closeOtherOverlays } from './ui-overlays.js';
+import { render } from './ui-main.js';
+
+export function charTooltipHTML(id) {
+  const c = gameState.roster.find(r => r.id === id);
   const def = CHAR_DEFS[id];
   if (!c) return '';
   const effectiveDef = calcDef(c);
@@ -12,7 +18,7 @@ function charTooltipHTML(id) {
   `;
 }
 
-function skillTooltipHTML(skill) {
+export function skillTooltipHTML(skill) {
   return `
     <div class="ttName">${skill.name}</div>
     <div class="ttStat">冷卻：${skill.cd} 秒</div>
@@ -20,7 +26,7 @@ function skillTooltipHTML(skill) {
   `;
 }
 
-function characterActionTooltipHTML(action) {
+export function characterActionTooltipHTML(action) {
   return `
     <div class="ttName">${action.name}</div>
     <div class="ttStat">手動操作・冷卻 ${action.cooldown} 秒</div>
@@ -28,13 +34,13 @@ function characterActionTooltipHTML(action) {
   `;
 }
 
-function attachCharacterActionTooltip(el, action) {
+export function attachCharacterActionTooltip(el, action) {
   el.addEventListener('mouseenter', e => showTooltipContent(characterActionTooltipHTML(action), e));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-function statusTooltipHTML(status, missingImage = false, remainingMs = 0) {
+export function statusTooltipHTML(status, missingImage = false, remainingMs = 0) {
   return `
     <div class="ttName">${status.label}</div>
     <div class="ttStat">${status.desc}</div>
@@ -43,7 +49,7 @@ function statusTooltipHTML(status, missingImage = false, remainingMs = 0) {
   `;
 }
 
-function monsterTooltipHTML(m) {
+export function monsterTooltipHTML(m) {
   if (!m) return '';
   return `
     <div class="ttName">${m.name}　Lv.${m.level}</div>
@@ -52,59 +58,59 @@ function monsterTooltipHTML(m) {
   `;
 }
 
-function positionTooltip(e) {
+export function positionTooltip(e) {
   // Game-style cursor tooltip: keep the panel close enough to read as attached
   // to the pointer, with only a small gap so it never sits under the cursor.
   const verticalGap = 5;
   const horizontalGap = 9;
   const edge = 8;
-  const width = tooltipEl.offsetWidth;
-  const height = tooltipEl.offsetHeight;
+  const width = gameState.tooltipEl.offsetWidth;
+  const height = gameState.tooltipEl.offsetHeight;
   let x = e.clientX + horizontalGap;
   if (x + width > window.innerWidth - edge) x = e.clientX - width - horizontalGap;
   x = Math.max(edge, x);
   const y = Math.max(edge, e.clientY - height - verticalGap);
-  tooltipEl.style.left = Math.round(x) + 'px';
-  tooltipEl.style.top = Math.round(y) + 'px';
+  gameState.tooltipEl.style.left = Math.round(x) + 'px';
+  gameState.tooltipEl.style.top = Math.round(y) + 'px';
 }
 
-function showTooltipContent(html, e) {
+export function showTooltipContent(html, e) {
   if (!html) return;
-  tooltipEl.innerHTML = html;
-  tooltipEl.style.display = 'block';
+  gameState.tooltipEl.innerHTML = html;
+  gameState.tooltipEl.style.display = 'block';
   positionTooltip(e);
 }
 
-function hideTooltip() {
-  tooltipEl.style.display = 'none';
+export function hideTooltip() {
+  gameState.tooltipEl.style.display = 'none';
 }
 
-function attachTextTooltip(el, heading, detail) {
+export function attachTextTooltip(el, heading, detail) {
   const html = `<div class="ttName">${heading}</div>${detail ? `<div class="ttStat">${detail}</div>` : ''}`;
   el.addEventListener('mouseenter', event => showTooltipContent(html, event));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-function attachCharTooltip(el, id) {
+export function attachCharTooltip(el, id) {
   el.addEventListener('mouseenter', (e) => showTooltipContent(charTooltipHTML(id), e));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-function attachMonsterTooltip(el, m) {
+export function attachMonsterTooltip(el, m) {
   el.addEventListener('mouseenter', (e) => showTooltipContent(monsterTooltipHTML(m), e));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-function attachSkillTooltip(el, skill) {
+export function attachSkillTooltip(el, skill) {
   el.addEventListener('mouseenter', (e) => showTooltipContent(skillTooltipHTML(skill), e));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-function attachStatusTooltip(el, status, character) {
+export function attachStatusTooltip(el, status, character) {
   el.addEventListener('mouseenter', e => {
     const missingImage = el.querySelector('.statusIcon').classList.contains('missing');
     const remainingMs = status.remaining ? status.remaining(character) : 0;
@@ -114,7 +120,7 @@ function attachStatusTooltip(el, status, character) {
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-function itemTooltipHTML(item, entry) {
+export function itemTooltipHTML(item, entry) {
   return `
     <div class="ttName">${item.name}</div>
     <div class="ttStat">${t('tooltip.rarity', { rarity: item.rarity })}</div>
@@ -123,13 +129,13 @@ function itemTooltipHTML(item, entry) {
   `;
 }
 
-function attachItemTooltip(el, item, entry) {
+export function attachItemTooltip(el, item, entry) {
   el.addEventListener('mouseenter', e => showTooltipContent(itemTooltipHTML(item, entry), e));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-function attachCombatActionTooltip(el, getItemId) {
+export function attachCombatActionTooltip(el, getItemId) {
   el.addEventListener('mouseenter', e => {
     const itemId = getItemId();
     const item = localizedItemDef(itemId);
@@ -142,7 +148,7 @@ function attachCombatActionTooltip(el, getItemId) {
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-function attachActiveRelicTooltip(el, character) {
+export function attachActiveRelicTooltip(el, character) {
   el.addEventListener('mouseenter', e => {
     const item = localizedItemDef(character.loadout.activeItemId);
     const html = item
@@ -154,13 +160,11 @@ function attachActiveRelicTooltip(el, character) {
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-let inventoryDragFrom = null;
-
-function inventoryItemCount(itemId) {
-  return inventory.reduce((total, entry) => total + (entry && entry.itemId === itemId ? entry.qty : 0), 0);
+export function inventoryItemCount(itemId) {
+  return gameState.inventory.reduce((total, entry) => total + (entry && entry.itemId === itemId ? entry.qty : 0), 0);
 }
 
-function loadoutItemHTML(itemId, fallbackIcon, fallbackLabel) {
+export function loadoutItemHTML(itemId, fallbackIcon, fallbackLabel) {
   const item = itemId && localizedItemDef(itemId);
   if (!item) return `<span class="quickFallback">${fallbackIcon}</span><span class="quickLabel">${fallbackLabel}</span>`;
   const qty = item.equipSlot === 'potion' ? inventoryItemCount(itemId) : null;
@@ -171,16 +175,16 @@ function loadoutItemHTML(itemId, fallbackIcon, fallbackLabel) {
   `;
 }
 
-function renderActiveRelicSlot(slot, character) {
+export function renderActiveRelicSlot(slot, character) {
   const itemId = character.loadout.activeItemId;
   slot.innerHTML = loadoutItemHTML(itemId, '◇', t('loadout.charmSlot'));
   slot.classList.toggle('equipped', !!itemId);
 }
 
-function renderCharmPicker(character) {
+export function renderCharmPicker(character) {
   const list = document.getElementById('charmPickerList');
   list.innerHTML = '';
-  inventory.forEach(entry => {
+  gameState.inventory.forEach(entry => {
     if (!entry) return;
     const item = localizedItemDef(entry.itemId);
     if (!item || item.equipSlot !== 'charm') return;
@@ -213,7 +217,7 @@ function renderCharmPicker(character) {
 // Keep compact loadout menus visually attached to the game surface. Using the
 // viewport alone let them hang below #app on roomy desktop screens, which made
 // them look detached even though they were technically still on-screen.
-function positionPickerNearAnchor(picker, anchor) {
+export function positionPickerNearAnchor(picker, anchor) {
   const anchorRect = anchor.getBoundingClientRect();
   const pickerRect = picker.getBoundingClientRect();
   const appRect = document.getElementById('app')?.getBoundingClientRect();
@@ -229,9 +233,9 @@ function positionPickerNearAnchor(picker, anchor) {
   picker.style.top = `${top}px`;
 }
 
-function setCharmPickerOpen(open, anchor = null, character = null) {
+export function setCharmPickerOpen(open, anchor = null, character = null) {
   if (open) closeOtherOverlays('charmPicker');
-  activeOverlay = open ? 'charmPicker' : (activeOverlay === 'charmPicker' ? null : activeOverlay);
+  gameState.activeOverlay = open ? 'charmPicker' : (gameState.activeOverlay === 'charmPicker' ? null : gameState.activeOverlay);
   const picker = document.getElementById('charmPicker');
   picker.classList.toggle('open', open);
   picker.setAttribute('aria-hidden', String(!open));
@@ -241,16 +245,16 @@ function setCharmPickerOpen(open, anchor = null, character = null) {
   positionPickerNearAnchor(picker, anchor);
 }
 
-function renderExpeditionSelectedSummary() {
+export function renderExpeditionSelectedSummary() {
   const summary = document.getElementById('expeditionSelectedSummary');
   if (!summary) return;
-  const character = roster.find(member => party.includes(member.id));
+  const character = gameState.roster.find(member => gameState.party.includes(member.id));
   if (!character) {
     summary.innerHTML = `<div class="expeditionEmptySelection">${t('loadout.notSelected')}</div>`;
     return;
   }
   const def = CHAR_DEFS[character.id];
-  const bossIdentity = phase === PHASES.PREP_BOSS ? `
+  const bossIdentity = gameState.phase === PHASES.PREP_BOSS ? `
     <div class="expeditionSelectedIdentity bossSelectedIdentity">
       <img src="${characterPortraitPath(character.id)}" alt="${def.name}">
       <div><small>${t(character.id === 'wuming' ? 'loadout.currentDeployment' : 'loadout.currentPossession')}</small><b>${def.name}</b><span>${t('format.level', { level: formatLocaleNumber(character.level) })}</span></div>
@@ -265,14 +269,14 @@ function renderExpeditionSelectedSummary() {
       </div>
     </div>`;
   const combatSlot = summary.querySelector('.combatItemQuickSlot');
-  combatSlot.innerHTML = loadoutItemHTML(equippedCombatItemId, '＋', t('picker.potion'));
-  combatSlot.classList.toggle('equipped', !!equippedCombatItemId);
-  combatSlot.classList.toggle('locked', phase === PHASES.COMBAT);
-  attachCombatActionTooltip(combatSlot, () => equippedCombatItemId);
+  combatSlot.innerHTML = loadoutItemHTML(gameState.equippedCombatItemId, '＋', t('picker.potion'));
+  combatSlot.classList.toggle('equipped', !!gameState.equippedCombatItemId);
+  combatSlot.classList.toggle('locked', gameState.phase === PHASES.COMBAT);
+  attachCombatActionTooltip(combatSlot, () => gameState.equippedCombatItemId);
   const openPicker = event => {
     event.stopPropagation();
     if (!isPrepPhase()) return;
-    if (activeOverlay === 'combatItemPicker') {
+    if (gameState.activeOverlay === 'combatItemPicker') {
       setCombatItemPickerOpen(false);
       return;
     }
@@ -292,7 +296,7 @@ function renderExpeditionSelectedSummary() {
   const openCharmPicker = event => {
     event.stopPropagation();
     if (!isPrepPhase()) return;
-    if (activeOverlay === 'charmPicker') {
+    if (gameState.activeOverlay === 'charmPicker') {
       setCharmPickerOpen(false);
       return;
     }
@@ -306,7 +310,7 @@ function renderExpeditionSelectedSummary() {
   });
 }
 
-function renderCombatItemPicker() {
+export function renderCombatItemPicker() {
   const list = document.getElementById('combatItemPickerList');
   list.innerHTML = '';
   Object.keys(ITEM_DEFS).forEach(itemId => {
@@ -315,7 +319,7 @@ function renderCombatItemPicker() {
     const qty = inventoryItemCount(itemId);
     const option = document.createElement('button');
     option.type = 'button';
-    option.className = `pickerItem${equippedCombatItemId === itemId ? ' selected' : ''}${qty <= 0 ? ' unavailable' : ''}`;
+    option.className = `pickerItem${gameState.equippedCombatItemId === itemId ? ' selected' : ''}${qty <= 0 ? ' unavailable' : ''}`;
     option.innerHTML = `
       <img src="assets/item/${item.img}.png" alt="${item.name}">
       <span>${item.name}</span>
@@ -324,7 +328,7 @@ function renderCombatItemPicker() {
     option.addEventListener('click', event => {
       event.stopPropagation();
       if (qty <= 0) return;
-      equippedCombatItemId = itemId;
+      gameState.equippedCombatItemId = itemId;
       setCombatItemPickerOpen(false);
       render();
     });
@@ -338,16 +342,16 @@ function renderCombatItemPicker() {
   emptyOption.innerHTML = `<span class="pickerEmptyIcon">◇</span><span>${t('picker.nonePotion')}</span>`;
   emptyOption.addEventListener('click', event => {
     event.stopPropagation();
-    equippedCombatItemId = null;
+    gameState.equippedCombatItemId = null;
     setCombatItemPickerOpen(false);
     render();
   });
   list.appendChild(emptyOption);
 }
 
-function setCombatItemPickerOpen(open, anchor = null) {
+export function setCombatItemPickerOpen(open, anchor = null) {
   if (open) closeOtherOverlays('combatItemPicker');
-  activeOverlay = open ? 'combatItemPicker' : (activeOverlay === 'combatItemPicker' ? null : activeOverlay);
+  gameState.activeOverlay = open ? 'combatItemPicker' : (gameState.activeOverlay === 'combatItemPicker' ? null : gameState.activeOverlay);
   const picker = document.getElementById('combatItemPicker');
   picker.classList.toggle('open', open);
   picker.setAttribute('aria-hidden', String(!open));

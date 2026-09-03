@@ -1,13 +1,25 @@
-function renderShopDialogue() {
-  if (lastShopDialogueMode !== shopMode) {
-    shopDialogueIndex = 0;
-    lastShopDialogueMode = shopMode;
+import { SHOP_ITEMS, localizedItemDef, SHOP_MONSTER_CRYSTAL_SELL_PRICE } from './constants.js';
+import { gameState } from './state.js';
+import { t, formatLocaleNumber } from './i18n.js';
+import { shopUiState, SHOP_DIALOGUE_KEYS } from './ui-character.js';
+import { buyShopItem, sellMonsterCrystals, toggleShopAutoLeave, leaveShop, resetShopIdleTimer, shopGold } from './shop.js';
+import { attachItemTooltip, inventoryItemCount, hideTooltip } from './ui-loadout.js';
+import { closeOtherOverlays } from './ui-overlays.js';
+
+// Drag-reorder state for the inventory grid - purely a UI concern local to
+// this file's drag handlers, not shared game state.
+let inventoryDragFrom = null;
+
+export function renderShopDialogue() {
+  if (shopUiState.lastShopDialogueMode !== gameState.shopMode) {
+    shopUiState.shopDialogueIndex = 0;
+    shopUiState.lastShopDialogueMode = gameState.shopMode;
   }
-  const lines = SHOP_DIALOGUE_KEYS[shopMode] || SHOP_DIALOGUE_KEYS.town;
-  document.getElementById('shopDialogueText').textContent = t(lines[shopDialogueIndex % lines.length]);
+  const lines = SHOP_DIALOGUE_KEYS[gameState.shopMode] || SHOP_DIALOGUE_KEYS.town;
+  document.getElementById('shopDialogueText').textContent = t(lines[shopUiState.shopDialogueIndex % lines.length]);
 }
 
-function buildShopUI() {
+export function buildShopUI() {
   const buyList = document.getElementById('shopBuyList');
   SHOP_ITEMS.forEach(offer => {
     const item = localizedItemDef(offer.itemId);
@@ -32,52 +44,52 @@ function buildShopUI() {
     if (event.target.id === 'shopOverlay') leaveShop(false);
   });
   document.getElementById('shopBuyTab').addEventListener('click', () => {
-    shopTab = 'buy';
+    shopUiState.shopTab = 'buy';
     resetShopIdleTimer();
     renderShopView();
   });
   document.getElementById('shopSellTab').addEventListener('click', () => {
-    shopTab = 'sell';
+    shopUiState.shopTab = 'sell';
     resetShopIdleTimer();
     renderShopView();
   });
   document.querySelector('.shopKeeperPanel').addEventListener('click', () => {
-    shopDialogueIndex += 1;
+    shopUiState.shopDialogueIndex += 1;
     renderShopDialogue();
   });
 }
 
-function renderShopView() {
-  const shopOpen = activeOverlay === 'shop';
+export function renderShopView() {
+  const shopOpen = gameState.activeOverlay === 'shop';
   const overlay = document.getElementById('shopOverlay');
   overlay.classList.toggle('open', shopOpen);
   overlay.setAttribute('aria-hidden', String(!shopOpen));
   if (!shopOpen) {
-    wasShopOpen = false;
+    shopUiState.wasShopOpen = false;
     return;
   }
-  if (!wasShopOpen || lastShopTabMode !== shopMode) {
-    shopTab = 'buy';
-    lastShopTabMode = shopMode;
+  if (!shopUiState.wasShopOpen || shopUiState.lastShopTabMode !== gameState.shopMode) {
+    shopUiState.shopTab = 'buy';
+    shopUiState.lastShopTabMode = gameState.shopMode;
   }
-  wasShopOpen = true;
-  document.getElementById('shopTitle').textContent = t(shopMode === 'town' ? 'shop.town' : 'shop.dungeon');
+  shopUiState.wasShopOpen = true;
+  document.getElementById('shopTitle').textContent = t(gameState.shopMode === 'town' ? 'shop.town' : 'shop.dungeon');
   const shopWallet = document.getElementById('shopWallet');
   const shopCoinIcon = 'coin.png';
   shopWallet.innerHTML = `<img src="assets/item/${shopCoinIcon}" alt="">${shopGold()}`;
   const buyTab = document.getElementById('shopBuyTab');
   const sellTab = document.getElementById('shopSellTab');
-  buyTab.classList.toggle('active', shopTab === 'buy');
-  sellTab.classList.toggle('active', shopTab === 'sell');
-  buyTab.setAttribute('aria-selected', String(shopTab === 'buy'));
-  sellTab.setAttribute('aria-selected', String(shopTab === 'sell'));
-  document.getElementById('shopBuySection').hidden = shopTab !== 'buy';
-  document.getElementById('shopSellSection').hidden = shopTab !== 'sell';
+  buyTab.classList.toggle('active', shopUiState.shopTab === 'buy');
+  sellTab.classList.toggle('active', shopUiState.shopTab === 'sell');
+  buyTab.setAttribute('aria-selected', String(shopUiState.shopTab === 'buy'));
+  sellTab.setAttribute('aria-selected', String(shopUiState.shopTab === 'sell'));
+  document.getElementById('shopBuySection').hidden = shopUiState.shopTab !== 'buy';
+  document.getElementById('shopSellSection').hidden = shopUiState.shopTab !== 'sell';
   renderShopDialogue();
-  document.getElementById('shopCountdown').textContent = shopMode === 'town'
+  document.getElementById('shopCountdown').textContent = gameState.shopMode === 'town'
     ? ''
-    : (shopAutoLeave
-      ? t('shop.autoLeaveIn', { seconds: formatLocaleNumber(Math.ceil(shopCountdown / 1000)) })
+    : (gameState.shopAutoLeave
+      ? t('shop.autoLeaveIn', { seconds: formatLocaleNumber(Math.ceil(gameState.shopCountdown / 1000)) })
       : t('shop.autoLeaveOff'));
   const crystalQty = inventoryItemCount('monsterCrystal');
   document.getElementById('shopMonsterCrystalQty').textContent = t('shop.owned', {
@@ -92,8 +104,8 @@ function renderShopView() {
   sellOneBtn.innerHTML = `<img class="shopPriceCoin" src="assets/item/${shopCoinIcon}" alt="">${SHOP_MONSTER_CRYSTAL_SELL_PRICE}`;
   sellOneBtn.disabled = crystalQty <= 0;
   const autoLeaveBtn = document.getElementById('shopAutoLeaveBtn');
-  autoLeaveBtn.style.display = shopMode === 'dungeon' ? '' : 'none';
-  autoLeaveBtn.textContent = t(shopAutoLeave ? 'shop.disableCountdown' : 'shop.enableCountdown');
+  autoLeaveBtn.style.display = gameState.shopMode === 'dungeon' ? '' : 'none';
+  autoLeaveBtn.textContent = t(gameState.shopAutoLeave ? 'shop.disableCountdown' : 'shop.enableCountdown');
   SHOP_ITEMS.forEach(offer => {
     const row = document.querySelector(`.shopBuyRow[data-item-id="${offer.itemId}"]`);
     const item = localizedItemDef(offer.itemId);
@@ -109,9 +121,9 @@ function renderShopView() {
   });
 }
 
-function attachInventoryDrag(slot, index) {
+export function attachInventoryDrag(slot, index) {
   slot.addEventListener('dragstart', e => {
-    if (!inventory[index]) {
+    if (!gameState.inventory[index]) {
       e.preventDefault();
       return;
     }
@@ -133,7 +145,7 @@ function attachInventoryDrag(slot, index) {
     slot.classList.remove('dragTarget');
     if (inventoryDragFrom === null) return;
     if (inventoryDragFrom === index) return;
-    [inventory[inventoryDragFrom], inventory[index]] = [inventory[index], inventory[inventoryDragFrom]];
+    [gameState.inventory[inventoryDragFrom], gameState.inventory[index]] = [gameState.inventory[index], gameState.inventory[inventoryDragFrom]];
     inventoryDragFrom = null;
     renderInventory();
   });
@@ -143,9 +155,9 @@ function attachInventoryDrag(slot, index) {
   });
 }
 
-function renderItemGrid(grid) {
+export function renderItemGrid(grid) {
   grid.innerHTML = '';
-  inventory.forEach((entry, index) => {
+  gameState.inventory.forEach((entry, index) => {
     const slot = document.createElement('div');
     slot.className = `inventorySlot${entry ? '' : ' empty'}`;
     slot.dataset.slotIndex = index;
@@ -165,34 +177,34 @@ function renderItemGrid(grid) {
   });
 }
 
-function syncCoinItem() {
+export function syncCoinItem() {
   const coinEntries = [];
-  inventory.forEach((entry, index) => {
+  gameState.inventory.forEach((entry, index) => {
     if (entry && entry.itemId === 'coin') coinEntries.push(index);
   });
-  if (bankedGold <= 0) {
-    coinEntries.forEach(index => { inventory[index] = null; });
+  if (gameState.bankedGold <= 0) {
+    coinEntries.forEach(index => { gameState.inventory[index] = null; });
     return;
   }
   if (coinEntries.length > 0) {
-    inventory[coinEntries[0]].qty = bankedGold;
-    coinEntries.slice(1).forEach(index => { inventory[index] = null; });
+    gameState.inventory[coinEntries[0]].qty = gameState.bankedGold;
+    coinEntries.slice(1).forEach(index => { gameState.inventory[index] = null; });
     return;
   }
-  const emptyIndex = inventory.findIndex(entry => !entry);
-  if (emptyIndex >= 0) inventory[emptyIndex] = { itemId: 'coin', qty: bankedGold };
-  else inventory.push({ itemId: 'coin', qty: bankedGold });
+  const emptyIndex = gameState.inventory.findIndex(entry => !entry);
+  if (emptyIndex >= 0) gameState.inventory[emptyIndex] = { itemId: 'coin', qty: gameState.bankedGold };
+  else gameState.inventory.push({ itemId: 'coin', qty: gameState.bankedGold });
 }
 
-function renderInventory() {
+export function renderInventory() {
   syncCoinItem();
   document.getElementById('inventoryTitle').textContent = t('inventory.title');
   renderItemGrid(document.getElementById('inventoryGrid'));
 }
 
-function setInventoryOpen(open) {
+export function setInventoryOpen(open) {
   if (open) closeOtherOverlays('inventory');
-  activeOverlay = open ? 'inventory' : (activeOverlay === 'inventory' ? null : activeOverlay);
+  gameState.activeOverlay = open ? 'inventory' : (gameState.activeOverlay === 'inventory' ? null : gameState.activeOverlay);
   const overlay = document.getElementById('inventoryOverlay');
   overlay.classList.toggle('open', open);
   overlay.setAttribute('aria-hidden', String(!open));

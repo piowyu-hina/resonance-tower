@@ -1,9 +1,43 @@
-const assert = require('node:assert/strict');
-const path = require('node:path');
-const { pathToFileURL } = require('node:url');
-const { chromium } = require('playwright-core');
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import fs from 'node:fs';
+import http from 'node:http';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright-core';
 
-const prototypeUrl = pathToFileURL(path.resolve(__dirname, '..', 'prototype', 'index.html')).href;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const prototypeDir = path.resolve(__dirname, '..', 'prototype');
+let prototypeUrl; // set once the local static server (started in the IIFE below) is listening
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css',
+  '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2',
+};
+
+// Real ES modules (see index.html's <script type="module">) can't load over
+// file:// - Chromium blocks it as a cross-origin request. Serve the
+// prototype directory over a throwaway local HTTP server for the duration
+// of this test run instead, same as the manual browser checks used all
+// session (python -m http.server), just embedded so this file has no
+// external dependency.
+function startServer() {
+  return new Promise((resolve, reject) => {
+    const server = http.createServer((req, res) => {
+      const urlPath = decodeURIComponent(req.url.split('?')[0]);
+      const relative = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
+      const filePath = path.join(prototypeDir, relative);
+      if (!filePath.startsWith(prototypeDir)) { res.writeHead(403); res.end(); return; }
+      fs.readFile(filePath, (err, data) => {
+        if (err) { res.writeHead(404); res.end(); return; }
+        res.writeHead(200, { 'Content-Type': MIME_TYPES[path.extname(filePath)] || 'application/octet-stream' });
+        res.end(data);
+      });
+    });
+    server.on('error', reject);
+    server.listen(0, '127.0.0.1', () => resolve(server));
+  });
+}
 
 function near(actual, expected, message) {
   assert.ok(Math.abs(actual - expected) < 0.5, `${message}: expected ${expected}, got ${actual}`);
@@ -67,7 +101,7 @@ async function testDungeonEntry(browser) {
   const page = await openView(browser, 'dungeon-entry');
   await page.waitForTimeout(900);
   const covered = await page.evaluate(() => ({
-    phase,
+    phase: window.__debugHooks.gameState.phase,
     rect: document.getElementById('combatView').getBoundingClientRect().toJSON(),
     entering: document.getElementById('combatView').classList.contains('surfaceEntering'),
     monsterCount: document.querySelectorAll('#monsterSide .monsterCard').length,
@@ -81,7 +115,7 @@ async function testDungeonEntry(browser) {
     const overlay = document.getElementById('dungeonEntryOverlay');
     const style = getComputedStyle(overlay);
     return {
-      phase,
+      phase: window.__debugHooks.gameState.phase,
       rect: document.getElementById('combatView').getBoundingClientRect().toJSON(),
       entering: document.getElementById('combatView').classList.contains('surfaceEntering'),
       overlayOpacity: style.opacity,
@@ -102,31 +136,32 @@ async function testDungeonEntry(browser) {
 async function testBossTransition(browser) {
   const page = await openView(browser, 'expedition');
   await page.evaluate(() => {
-    prepLocation = 'expedition';
-    phase = 'prepBoss';
-    partyLocked = true;
-    mobsCleared = MOBS_PER_FLOOR;
-    monsters = [makeMob(), makeMob()];
-    monsters.forEach(monster => {
+    const hooks = window.__debugHooks;
+    hooks.overlayUiState.prepLocation = 'expedition';
+    hooks.gameState.phase = 'prepBoss';
+    hooks.gameState.partyLocked = true;
+    hooks.gameState.mobsCleared = hooks.MOBS_PER_FLOOR;
+    hooks.gameState.monsters = [hooks.makeMob(), hooks.makeMob()];
+    hooks.gameState.monsters.forEach(monster => {
       monster.alive = false;
       monster.hp = 0;
     });
-    buildBattleRoster();
-    buildMonsterCards();
-    Object.values(monsterEls).forEach(refs => refs.card.classList.add('down', 'dying'));
-    render();
-    startBtnEl.click();
+    hooks.buildBattleRoster();
+    hooks.buildMonsterCards();
+    Object.values(hooks.gameState.monsterEls).forEach(refs => refs.card.classList.add('down', 'dying'));
+    hooks.render();
+    hooks.gameState.startBtnEl.click();
   });
 
   const intro = await page.evaluate(() => ({
-    phase,
+    phase: window.__debugHooks.gameState.phase,
     bossCards: document.querySelectorAll('#monsterSide .monsterCard.boss').length,
     dyingCards: document.querySelectorAll('#monsterSide .monsterCard.dying').length,
     allCards: document.querySelectorAll('#monsterSide .monsterCard').length,
   }));
   assert.deepEqual(intro, { phase: 'bossIntro', bossCards: 1, dyingCards: 0, allCards: 1 });
 
-  await page.waitForFunction(() => phase === 'combat', null, { timeout: 6500 });
+  await page.waitForFunction(() => window.__debugHooks.gameState.phase === 'combat', null, { timeout: 6500 });
   const active = await page.evaluate(() => ({
     bossCards: document.querySelectorAll('#monsterSide .monsterCard.boss').length,
     dyingCards: document.querySelectorAll('#monsterSide .monsterCard.dying').length,
@@ -170,11 +205,12 @@ async function testSameSpeakerDialogue(browser) {
 async function testOverlayExclusivity(browser) {
   const page = await openView(browser, 'journal');
   await page.evaluate(() => {
-    resonanceState.xiaochu = 'oathReady';
-    openContractPanel();
+    const hooks = window.__debugHooks;
+    hooks.gameState.resonanceState.xiaochu = 'oathReady';
+    hooks.openContractPanel();
   });
   const state = await page.evaluate(() => ({
-    activeOverlay,
+    activeOverlay: window.__debugHooks.gameState.activeOverlay,
     journalOpen: document.getElementById('journalOverlay').classList.contains('open'),
     contractOpen: document.getElementById('contractOverlay').classList.contains('open'),
   }));
@@ -184,6 +220,9 @@ async function testOverlayExclusivity(browser) {
 }
 
 (async () => {
+  const server = await startServer();
+  const { port } = server.address();
+  prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
     await testMajorViewsRender(browser);
@@ -194,6 +233,7 @@ async function testOverlayExclusivity(browser) {
     console.log('ui-regression.test.js: all browser assertions passed');
   } finally {
     await browser.close();
+    await new Promise(resolve => server.close(resolve));
   }
 })().catch(error => {
   console.error(error);

@@ -1,5 +1,12 @@
+import { CHAR_DEFS, RARITY_DEFS } from './constants.js';
+import { gameState, unlockChar, characterFullArtPath } from './state.js';
+import { closeOtherOverlays } from './ui-overlays.js';
+import { render } from './ui-main.js';
+import { playTransientAnimation } from './transitions.js';
+import { t, formatLocaleNumber } from './i18n.js';
+
 // --- 對話與契約演出 ---
-const DIALOGUE_DEFS = {
+export const DIALOGUE_DEFS = {
   xiaochu_encounter: [
     { speaker: 'xiaochu_orb', text: '哇，好厲害！' },
     { speaker: 'wuming', text: '誰、誰在說話？' },
@@ -84,57 +91,59 @@ const DIALOGUE_DEFS = {
   ],
 };
 
-const DIALOGUE_PRESENTATION = {
+export const DIALOGUE_PRESENTATION = {
   xiaochu_oath: {
     outro: 'contractFormed',
     partner: 'xiaochu',
   },
 };
 
-const STORY_SPEAKERS = {
+export const STORY_SPEAKERS = {
   xiaochu_orb: { name: '小初', art: 'assets/story/xiaochu_resonance_orb.png', orb: true },
   xiaochu_kiss: { name: '', art: 'assets/story/xiaochu_kiss.png', scene: true },
   narrator: { name: '', narration: true },
 };
 
-const JOURNAL_PAGES = [
+export const JOURNAL_PAGES = [
   `很久以前，曾經有一位被稱為「靈魂使者」的人。\n\n戰鬥時，他會不斷變換身形。前一刻還握著劍，下一刻卻可能拿著法杖，甚至連說話的聲音和舉止都判若兩人。\n\n因為這副怪異的模樣，人們厭惡他、排斥他，甚至不願意靠近他。\n\n即便如此，當魔物侵襲城鎮時，他仍然選擇挺身而出。最後，他獨自封印了魔王。\n\n不過……他最後還是遭到王室殺害。`,
   `有人曾經看見他的家中發出不同顏色的光。\n\n紅色、黃色、黑色、白色……每次出現的光芒都不相同。\n\n發光以前，好像還能聽見他念著某種誓言。聽起來，簡直就像結婚誓詞一樣。\n\n「我在此立誓，從今以後，無論生老病死，我都將與你共同進退。」\n\n「你若生存，我也生存；你若死亡，我也將死亡。」`,
   `誓言結束後，整棟房子便會被光芒籠罩。\n\n光是把這些話寫下來，我都覺得渾身發麻……他到底是怎麼當面念出來的？\n\n城裡的人都討厭他。他偶爾會獨自發笑，也經常在沒有其他人的房間裡自言自語。\n\n有時，人們還會看見不同的人從他家中走出來。直到他封印魔王以後，大家才終於知道，那些看似不同的人，其實一直使用著同一具身體。`,
   `我覺得他很厲害。\n\n明明一直被大家討厭，他最後還是使用自己的能力保護了所有人。\n\n我討厭王室。\n\n他救了所有人的性命，王室卻選擇殺死他。\n\n——緋雨`,
 ];
-let journalPage = 0;
 
-let dialogueQueue = [];
-let dialogueScript = null;
-let dialogueScriptId = null;
-let dialogueLineIndex = 0;
-let dialogueOnDone = null;
-let dialoguePhase = 'closed';
-let lastDialogueSpeaker = null;
+export const storyState = {
+  journalPage: 0,
+  dialogueQueue: [],
+  dialogueScript: null,
+  dialogueScriptId: null,
+  dialogueLineIndex: 0,
+  dialogueOnDone: null,
+  dialoguePhase: 'closed',
+  lastDialogueSpeaker: null,
+};
 
-function queueDialogue(scriptId, onDone = null) {
+export function queueDialogue(scriptId, onDone = null) {
   if (!DIALOGUE_DEFS[scriptId]) return;
-  dialogueQueue.push({ scriptId, onDone });
-  if (activeOverlay !== 'dialogue') playNextQueuedDialogue();
+  storyState.dialogueQueue.push({ scriptId, onDone });
+  if (gameState.activeOverlay !== 'dialogue') playNextQueuedDialogue();
 }
 
-function playNextQueuedDialogue() {
-  if (dialogueQueue.length === 0) return;
-  const next = dialogueQueue.shift();
+export function playNextQueuedDialogue() {
+  if (storyState.dialogueQueue.length === 0) return;
+  const next = storyState.dialogueQueue.shift();
   startDialogue(next.scriptId, next.onDone);
 }
 
-function startDialogue(scriptId, onDone) {
+export function startDialogue(scriptId, onDone) {
   const script = DIALOGUE_DEFS[scriptId];
   if (!script || script.length === 0) return;
   closeOtherOverlays('dialogue');
-  activeOverlay = 'dialogue';
-  dialogueScriptId = scriptId;
-  dialogueScript = script;
-  dialogueLineIndex = 0;
-  lastDialogueSpeaker = null;
-  dialogueOnDone = onDone || null;
+  gameState.activeOverlay = 'dialogue';
+  storyState.dialogueScriptId = scriptId;
+  storyState.dialogueScript = script;
+  storyState.dialogueLineIndex = 0;
+  storyState.lastDialogueSpeaker = null;
+  storyState.dialogueOnDone = onDone || null;
   const overlay = document.getElementById('dialogueOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
@@ -143,11 +152,11 @@ function startDialogue(scriptId, onDone) {
   else beginDialogueLines();
 }
 
-function startSoulResonance() {
-  dialoguePhase = 'intro';
+export function startSoulResonance() {
+  storyState.dialoguePhase = 'intro';
   document.getElementById('dialogueModal').classList.add('presentationHidden');
   const intro = document.getElementById('soulResonance');
-  const presentation = DIALOGUE_PRESENTATION[dialogueScriptId] || {};
+  const presentation = DIALOGUE_PRESENTATION[storyState.dialogueScriptId] || {};
   const orb = document.getElementById('soulResonanceOrb');
   orb.src = `assets/story/${presentation.resonanceArt || 'resonance_orb'}.png`;
   intro.classList.remove('playing');
@@ -157,23 +166,23 @@ function startSoulResonance() {
   intro.focus();
 }
 
-function finishSoulResonance() {
-  if (dialoguePhase !== 'intro') return;
+export function finishSoulResonance() {
+  if (storyState.dialoguePhase !== 'intro') return;
   const intro = document.getElementById('soulResonance');
   intro.classList.remove('playing');
   intro.setAttribute('aria-hidden', 'true');
   beginDialogueLines();
 }
 
-function beginDialogueLines() {
-  dialoguePhase = 'dialogue';
+export function beginDialogueLines() {
+  storyState.dialoguePhase = 'dialogue';
   document.getElementById('dialogueModal').classList.remove('presentationHidden');
   renderDialogueLine();
 }
 
-function renderDialogueLine() {
-  const line = dialogueScript[dialogueLineIndex];
-  const speakerChanged = line.speaker !== lastDialogueSpeaker;
+export function renderDialogueLine() {
+  const line = storyState.dialogueScript[storyState.dialogueLineIndex];
+  const speakerChanged = line.speaker !== storyState.lastDialogueSpeaker;
   const def = CHAR_DEFS[line.speaker];
   const special = STORY_SPEAKERS[line.speaker];
   document.getElementById('dialogueSpeakerName').textContent = def ? def.name : (special ? special.name : '');
@@ -203,35 +212,35 @@ function renderDialogueLine() {
   }
   if (speakerChanged && !frame.classList.contains('narration')) playTransientAnimation(img, 'lineEntering');
   playTransientAnimation(text, 'lineEntering');
-  lastDialogueSpeaker = line.speaker;
+  storyState.lastDialogueSpeaker = line.speaker;
 }
 
-function startCharacterEncounter(characterId, onDone) {
+export function startCharacterEncounter(characterId, onDone) {
   if (characterId !== 'xiaochu') return onDone();
   queueDialogue('xiaochu_encounter', () => {
-    resonanceState.xiaochu = 'following';
+    gameState.resonanceState.xiaochu = 'following';
     if (onDone) onDone();
   });
 }
 
-function renderJournalPage() {
+export function renderJournalPage() {
   const page = document.getElementById('journalPageText');
-  page.textContent = JOURNAL_PAGES[journalPage];
+  page.textContent = JOURNAL_PAGES[storyState.journalPage];
   playTransientAnimation(page, 'pageTurning');
   document.getElementById('journalPageNumber').textContent = t('format.page', {
-    current: formatLocaleNumber(journalPage + 1),
+    current: formatLocaleNumber(storyState.journalPage + 1),
     total: formatLocaleNumber(JOURNAL_PAGES.length),
   });
   document.getElementById('journalNextBtn').textContent = t(
-    journalPage === JOURNAL_PAGES.length - 1 ? 'journal.done' : 'journal.next',
+    storyState.journalPage === JOURNAL_PAGES.length - 1 ? 'journal.done' : 'journal.next',
   );
 }
 
-function openTravelJournal() {
+export function openTravelJournal() {
   closeOtherOverlays('journal');
-  activeOverlay = 'journal';
-  journalPage = 0;
-  if (resonanceState.xiaochu === 'bookPending') resonanceState.xiaochu = 'bookReading';
+  gameState.activeOverlay = 'journal';
+  storyState.journalPage = 0;
+  if (gameState.resonanceState.xiaochu === 'bookPending') gameState.resonanceState.xiaochu = 'bookReading';
   renderJournalPage();
   const overlay = document.getElementById('journalOverlay');
   overlay.classList.add('open');
@@ -239,33 +248,33 @@ function openTravelJournal() {
   document.getElementById('journalNextBtn').focus();
 }
 
-function closeTravelJournal(finished = false) {
+export function closeTravelJournal(finished = false) {
   const overlay = document.getElementById('journalOverlay');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
-  if (activeOverlay === 'journal') activeOverlay = null;
-  if (resonanceState.xiaochu === 'bookReading' && finished) {
+  if (gameState.activeOverlay === 'journal') gameState.activeOverlay = null;
+  if (gameState.resonanceState.xiaochu === 'bookReading' && finished) {
     queueDialogue('xiaochu_after_book', () => {
-      resonanceState.xiaochu = 'oathReady';
+      gameState.resonanceState.xiaochu = 'oathReady';
       render();
     });
   }
 }
 
-function advanceTravelJournal() {
-  if (journalPage < JOURNAL_PAGES.length - 1) {
-    journalPage++;
+export function advanceTravelJournal() {
+  if (storyState.journalPage < JOURNAL_PAGES.length - 1) {
+    storyState.journalPage++;
     renderJournalPage();
   } else {
     closeTravelJournal(true);
   }
 }
 
-function openContractPanel() {
-  const hasPendingSoul = resonanceState.xiaochu === 'oathReady';
-  if (!hasPendingSoul && resonanceState.xiaochu !== 'contracted') return;
+export function openContractPanel() {
+  const hasPendingSoul = gameState.resonanceState.xiaochu === 'oathReady';
+  if (!hasPendingSoul && gameState.resonanceState.xiaochu !== 'contracted') return;
   closeOtherOverlays('contract');
-  activeOverlay = 'contract';
+  gameState.activeOverlay = 'contract';
   const panel = document.querySelector('#contractOverlay .contractPanel');
   panel.classList.remove('confirming');
   document.getElementById('contractConfirm').hidden = true;
@@ -279,45 +288,45 @@ function openContractPanel() {
   (hasPendingSoul ? document.getElementById('xiaochuSoulBtn') : document.getElementById('contractCloseBtn')).focus();
 }
 
-function beginContractPreparation() {
-  if (resonanceState.xiaochu === 'contracted') return openContractPanel();
-  if (resonanceState.xiaochu !== 'oathReady') return;
+export function beginContractPreparation() {
+  if (gameState.resonanceState.xiaochu === 'contracted') return openContractPanel();
+  if (gameState.resonanceState.xiaochu !== 'oathReady') return;
   queueDialogue('xiaochu_contract_prepare', openContractPanel);
 }
 
-function closeContractPanel() {
+export function closeContractPanel() {
   const overlay = document.getElementById('contractOverlay');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
-  if (activeOverlay === 'contract') activeOverlay = null;
+  if (gameState.activeOverlay === 'contract') gameState.activeOverlay = null;
 }
 
-function confirmXiaochuContract() {
-  if (resonanceState.xiaochu !== 'oathReady') return;
+export function confirmXiaochuContract() {
+  if (gameState.resonanceState.xiaochu !== 'oathReady') return;
   closeContractPanel();
-  resonanceState.xiaochu = 'contracting';
+  gameState.resonanceState.xiaochu = 'contracting';
   queueDialogue('xiaochu_oath', () => {
     queueDialogue('xiaochu_first_possession', () => {
-      resonanceState.xiaochu = 'contracted';
+      gameState.resonanceState.xiaochu = 'contracted';
       unlockChar('xiaochu');
       render();
     });
   });
 }
 
-function advanceDialogue() {
-  if (dialoguePhase !== 'dialogue' || !dialogueScript) return;
-  dialogueLineIndex++;
-  if (dialogueLineIndex < dialogueScript.length) return renderDialogueLine();
-  const presentation = DIALOGUE_PRESENTATION[dialogueScriptId];
+export function advanceDialogue() {
+  if (storyState.dialoguePhase !== 'dialogue' || !storyState.dialogueScript) return;
+  storyState.dialogueLineIndex++;
+  if (storyState.dialogueLineIndex < storyState.dialogueScript.length) return renderDialogueLine();
+  const presentation = DIALOGUE_PRESENTATION[storyState.dialogueScriptId];
   if (presentation && presentation.outro === 'contractFormed') startContractFormed(presentation.partner);
   else closeDialogue();
 }
 
-function startContractFormed(characterId) {
+export function startContractFormed(characterId) {
   const def = CHAR_DEFS[characterId];
   if (!def) return closeDialogue();
-  dialoguePhase = 'outro';
+  storyState.dialoguePhase = 'outro';
   document.getElementById('dialogueModal').classList.add('presentationHidden');
   const img = document.getElementById('contractFormedCharacter');
   img.src = characterFullArtPath(characterId);
@@ -342,11 +351,11 @@ function startContractFormed(characterId) {
   outro.focus();
 }
 
-function finishContractFormed() {
-  if (dialoguePhase === 'outro') closeDialogue();
+export function finishContractFormed() {
+  if (storyState.dialoguePhase === 'outro') closeDialogue();
 }
 
-function closeDialogue() {
+export function closeDialogue() {
   document.getElementById('soulResonance').classList.remove('playing');
   document.getElementById('soulResonance').setAttribute('aria-hidden', 'true');
   document.getElementById('contractFormed').classList.remove('playing');
@@ -355,35 +364,35 @@ function closeDialogue() {
   const overlay = document.getElementById('dialogueOverlay');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
-  if (activeOverlay === 'dialogue') activeOverlay = null;
-  dialoguePhase = 'closed';
-  dialogueScript = null;
-  dialogueScriptId = null;
-  lastDialogueSpeaker = null;
-  const cb = dialogueOnDone;
-  dialogueOnDone = null;
+  if (gameState.activeOverlay === 'dialogue') gameState.activeOverlay = null;
+  storyState.dialoguePhase = 'closed';
+  storyState.dialogueScript = null;
+  storyState.dialogueScriptId = null;
+  storyState.lastDialogueSpeaker = null;
+  const cb = storyState.dialogueOnDone;
+  storyState.dialogueOnDone = null;
   if (cb) cb();
   playNextQueuedDialogue();
 }
 
-function previewContract(characterId) {
+export function previewContract(characterId) {
   if (characterId !== 'xiaochu') return;
-  if (activeOverlay === 'dialogue') closeDialogue();
+  if (gameState.activeOverlay === 'dialogue') closeDialogue();
   queueDialogue('xiaochu_oath', () => queueDialogue('xiaochu_first_possession'));
 }
 
-function runContractPreviewFromUrl() {
+export function runContractPreviewFromUrl() {
   const characterId = new URLSearchParams(window.location.search).get('testContract');
   if (characterId) previewContract(characterId);
 }
 
-function bindDialogueUI() {
+export function bindDialogueUI() {
   const orb = document.getElementById('soulResonanceOrb');
   orb.addEventListener('error', () => document.getElementById('soulResonance').classList.add('missingArt'));
   orb.addEventListener('load', () => document.getElementById('soulResonance').classList.remove('missingArt'));
   document.getElementById('dialogueOverlay').addEventListener('click', event => {
     if (event.target.closest('#soulResonance, #contractFormed')) return;
-    if (dialoguePhase === 'dialogue') advanceDialogue();
+    if (storyState.dialoguePhase === 'dialogue') advanceDialogue();
   });
   document.getElementById('soulResonance').addEventListener('click', finishSoulResonance);
   document.getElementById('contractFormed').addEventListener('click', finishContractFormed);
@@ -406,19 +415,19 @@ function bindDialogueUI() {
   });
   document.getElementById('contractConfirmBtn').addEventListener('click', confirmXiaochuContract);
   document.addEventListener('keydown', event => {
-    if ((event.key === 'Enter' || event.key === ' ') && activeOverlay === 'dialogue') {
+    if ((event.key === 'Enter' || event.key === ' ') && gameState.activeOverlay === 'dialogue') {
       event.preventDefault();
-      if (dialoguePhase === 'intro') finishSoulResonance();
-      else if (dialoguePhase === 'dialogue') advanceDialogue();
-      else if (dialoguePhase === 'outro') finishContractFormed();
+      if (storyState.dialoguePhase === 'intro') finishSoulResonance();
+      else if (storyState.dialoguePhase === 'dialogue') advanceDialogue();
+      else if (storyState.dialoguePhase === 'outro') finishContractFormed();
       return;
     }
-    if (event.key === 'Escape' && activeOverlay === 'journal') {
+    if (event.key === 'Escape' && gameState.activeOverlay === 'journal') {
       event.preventDefault();
       closeTravelJournal(false);
       return;
     }
-    if (event.key === 'Escape' && activeOverlay === 'contract') {
+    if (event.key === 'Escape' && gameState.activeOverlay === 'contract') {
       event.preventDefault();
       closeContractPanel();
       return;

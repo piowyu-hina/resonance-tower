@@ -1,5 +1,29 @@
-function buildUI() {
-  tooltipEl = document.getElementById('tooltip');
+import { CHAR_DEFS, RARITY_DEFS, regionName, localizedRegionDef, MOBS_PER_FLOOR, SOLO_PARTY_LIMIT, GOO_SKILL_CD_MS, ITEM_DEFS } from './constants.js';
+import {
+  gameState, PHASES, STATUS_DEFS, isPrepPhase, isCombatSurfacePhase, contractStoryLocked, isCharUnlocked,
+  characterPortraitPath, characterSkins, equippedSkin, unlockReqText, aliveMonsters,
+} from './state.js';
+import { t, formatLocaleNumber } from './i18n.js';
+import {
+  attachTextTooltip, attachCharTooltip, attachSkillTooltip, attachCharacterActionTooltip, attachActiveRelicTooltip,
+  attachStatusTooltip, attachMonsterTooltip, attachCombatActionTooltip, hideTooltip, positionTooltip,
+  showTooltipContent, inventoryItemCount, loadoutItemHTML, renderActiveRelicSlot, renderExpeditionSelectedSummary,
+  setCombatItemPickerOpen, setCharmPickerOpen,
+} from './ui-loadout.js';
+import { buildShopUI, setInventoryOpen, renderShopView } from './ui-commerce.js';
+import { bindDialogueUI, queueDialogue } from './story.js';
+import {
+  OVERLAY_CLOSERS, overlayUiState, restartAfterDefeat, returnToVillageAfterDefeat, confirmVictory, showBossIntro,
+  showDungeonEntry, prepareBossCombat, prepareDungeonCombat, activatePreparedCombat, animateSurfaceChange,
+} from './ui-overlays.js';
+import { setCharacterDetailOpen } from './ui-character.js';
+import { resetBossEntryCooldowns, doRetreat, toggleParty, canUseCharacterAction, isCharacterActionLocked, useCharacterAction } from './combat.js';
+import { openTownShop, useCombatItem, canUseCombatItem } from './shop.js';
+import { flushCombat, updateMonsterSkillIcons } from './ui-combat-effects.js';
+import { renderSaveControls } from './save.js';
+
+export function buildUI() {
+  gameState.tooltipEl = document.getElementById('tooltip');
   attachTextTooltip(document.getElementById('saveGameBtn'), '存檔', '下載目前的永久進度檔案');
   attachTextTooltip(document.getElementById('loadGameBtn'), '讀檔', '從電腦選擇進度檔案');
   buildShopUI();
@@ -7,50 +31,50 @@ function buildUI() {
 
   document.getElementById('townShopBtn').addEventListener('click', openTownShop);
   document.getElementById('homeLocationBtn').addEventListener('click', () => {
-    if (resonanceState.xiaochu === 'goHome') {
-      prepLocation = 'home';
-      homeMode = 'menu';
+    if (gameState.resonanceState.xiaochu === 'goHome') {
+      overlayUiState.prepLocation = 'home';
+      overlayUiState.homeMode = 'menu';
       render();
       queueDialogue('xiaochu_home_search', () => {
-        resonanceState.xiaochu = 'bookPending';
+        gameState.resonanceState.xiaochu = 'bookPending';
         render();
       });
       return;
     }
     if (contractStoryLocked()) return;
-    prepLocation = 'home';
-    homeMode = 'menu';
+    overlayUiState.prepLocation = 'home';
+    overlayUiState.homeMode = 'menu';
     render();
   });
   document.getElementById('homeBackBtn').addEventListener('click', () => {
     if (contractStoryLocked()) return;
-    prepLocation = 'village';
+    overlayUiState.prepLocation = 'village';
     render();
   });
   document.getElementById('homeGrowthBtn').addEventListener('click', () => {
     if (contractStoryLocked()) return;
-    homeMode = 'growth';
+    overlayUiState.homeMode = 'growth';
     render();
   });
   document.getElementById('homeGrowthBackBtn').addEventListener('click', () => {
-    homeMode = 'menu';
+    overlayUiState.homeMode = 'menu';
     render();
   });
   document.getElementById('expeditionLocationBtn').addEventListener('click', () => {
-    if (phase !== PHASES.PREP_FLOOR || partyLocked) return;
-    prepLocation = 'regions';
+    if (gameState.phase !== PHASES.PREP_FLOOR || gameState.partyLocked) return;
+    overlayUiState.prepLocation = 'regions';
     render();
   });
   document.getElementById('regionBackBtn').addEventListener('click', () => {
-    prepLocation = 'village';
+    overlayUiState.prepLocation = 'village';
     render();
   });
   document.getElementById('forestRegionBtn').addEventListener('click', () => {
-    prepLocation = 'expedition';
+    overlayUiState.prepLocation = 'expedition';
     render();
   });
   document.getElementById('expeditionBackBtn').addEventListener('click', () => {
-    prepLocation = 'regions';
+    overlayUiState.prepLocation = 'regions';
     render();
   });
 
@@ -65,11 +89,11 @@ function buildUI() {
     if (e.target.id === 'inventoryOverlay') setInventoryOpen(false);
   });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && activeOverlay === 'dialogue') {
+    if (e.key === 'Escape' && gameState.activeOverlay === 'dialogue') {
       e.preventDefault();
       return;
     }
-    if (e.key === 'Escape' && activeOverlay) OVERLAY_CLOSERS[activeOverlay]();
+    if (e.key === 'Escape' && gameState.activeOverlay) OVERLAY_CLOSERS[gameState.activeOverlay]();
   });
   document.addEventListener('click', event => {
     if (!event.target.closest('#combatItemPicker') && !event.target.closest('.combatItemQuickSlot')) {
@@ -85,12 +109,12 @@ function buildUI() {
   });
 
   const actionArea = document.getElementById('actionArea');
-  startBtnEl = document.createElement('button');
-  startBtnEl.id = 'startBtn';
-  startBtnEl.addEventListener('click', () => {
-    if (party.length === 0) return; // need at least one character to fight with
-    if (phase === PHASES.PREP_FLOOR || phase === PHASES.PREP_BOSS) {
-      if (phase === PHASES.PREP_BOSS) {
+  gameState.startBtnEl = document.createElement('button');
+  gameState.startBtnEl.id = 'startBtn';
+  gameState.startBtnEl.addEventListener('click', () => {
+    if (gameState.party.length === 0) return; // need at least one character to fight with
+    if (gameState.phase === PHASES.PREP_FLOOR || gameState.phase === PHASES.PREP_BOSS) {
+      if (gameState.phase === PHASES.PREP_BOSS) {
         resetBossEntryCooldowns();
         // Replace the finished mob wave before the combat view becomes visible.
         // Otherwise display:none -> block restarts every retained death animation
@@ -102,20 +126,20 @@ function buildUI() {
       }
     }
   });
-  retreatBtnEl = document.createElement('button');
-  retreatBtnEl.id = 'retreatBtn';
-  retreatBtnEl.textContent = '返回村莊';
-  retreatBtnEl.addEventListener('click', () => {
+  gameState.retreatBtnEl = document.createElement('button');
+  gameState.retreatBtnEl.id = 'retreatBtn';
+  gameState.retreatBtnEl.textContent = '返回村莊';
+  gameState.retreatBtnEl.addEventListener('click', () => {
     doRetreat();
     flushCombat();
   });
-  actionArea.appendChild(startBtnEl);
-  actionArea.appendChild(retreatBtnEl);
+  actionArea.appendChild(gameState.startBtnEl);
+  actionArea.appendChild(gameState.retreatBtnEl);
 
   // Expedition is a quick possession choice; detailed growth stays at Home.
   const prepRosterEl = document.getElementById('prepRoster');
   prepRosterEl.innerHTML = '';
-  roster.forEach(c => {
+  gameState.roster.forEach(c => {
     const def = CHAR_DEFS[c.id];
     const card = document.createElement('button');
     card.type = 'button';
@@ -140,7 +164,7 @@ function buildUI() {
     `;
     prepRosterEl.appendChild(card);
 
-    prepEls[c.id] = {
+    gameState.prepEls[c.id] = {
       card,
       lvl: card.querySelector('.lvl'),
       lockReq: card.querySelector('.lockReq'),
@@ -152,7 +176,7 @@ function buildUI() {
 
   const homeRosterEl = document.getElementById('homeRoster');
   homeRosterEl.innerHTML = '';
-  roster.forEach(c => {
+  gameState.roster.forEach(c => {
     const def = CHAR_DEFS[c.id];
     const rarity = RARITY_DEFS[def.rarity];
     const card = document.createElement('button');
@@ -178,18 +202,18 @@ function buildUI() {
       setCharacterDetailOpen(true, c.id);
     });
     homeRosterEl.appendChild(card);
-    homeEls[c.id] = { card, lvl: card.querySelector('.lvl'), portrait: card.querySelector('.homeGrowthPortrait img') };
+    overlayUiState.homeEls[c.id] = { card, lvl: card.querySelector('.lvl'), portrait: card.querySelector('.homeGrowthPortrait img') };
   });
 }
 
 // battle roster: ONLY the characters currently in `party`, shown as a row
 // below the monster. Rebuilt fresh every time a fight starts (prepFloor/prepBoss
 // -> combat) - benched characters never appear here at all while fighting.
-function buildBattleRoster() {
-  charEls = {};
+export function buildBattleRoster() {
+  gameState.charEls = {};
   const partySideEl = document.getElementById('partySide');
   partySideEl.innerHTML = '';
-  party.forEach(id => {
+  gameState.party.forEach(id => {
     const def = CHAR_DEFS[id];
     const card = document.createElement('div');
     card.className = 'charCard';
@@ -230,7 +254,7 @@ function buildBattleRoster() {
     attachTextTooltip(card.querySelector('.atkLabel'), '行動倒數', '進度填滿後進行下一次行動');
     const skillIconEls = Array.from(card.querySelectorAll('.skillIcon'));
     skillIconEls.forEach((iconEl, i) => attachSkillTooltip(iconEl, def.skills[i]));
-    charEls[id] = {
+    gameState.charEls[id] = {
       card,
       portraitEl,
       hpText: card.querySelector('.hpText'),
@@ -249,9 +273,9 @@ function buildBattleRoster() {
 // Player-manual action row. Potions are a standalone combat command and are
 // deliberately not attached to any character; passive charms still belong to
 // their equipped character and gain one slot per party member.
-function buildCombatActionBar() {
+export function buildCombatActionBar() {
   const barEl = document.getElementById('combatActionBar');
-  const itemId = equippedCombatItemId;
+  const itemId = gameState.equippedCombatItemId;
   barEl.innerHTML = `
     <span class="actionBarTitle">戰鬥操作</span>
     <button class="combatItemButton combatItemAction" type="button" aria-label="使用藥水">
@@ -263,11 +287,11 @@ function buildCombatActionBar() {
   `;
   const relicActions = barEl.querySelector('.relicActions');
   const combatItemAction = barEl.querySelector('.combatItemAction');
-  attachCombatActionTooltip(combatItemAction, () => equippedCombatItemId);
+  attachCombatActionTooltip(combatItemAction, () => gameState.equippedCombatItemId);
   combatItemAction.addEventListener('click', () => {
-    if (equippedCombatItemId) useCombatItem(equippedCombatItemId);
+    if (gameState.equippedCombatItemId) useCombatItem(gameState.equippedCombatItemId);
   });
-  party.forEach(id => {
+  gameState.party.forEach(id => {
     const action = CHAR_DEFS[id].action;
     const group = document.createElement('div');
     group.className = 'actionBarGroup';
@@ -284,16 +308,16 @@ function buildCombatActionBar() {
     `;
     relicActions.appendChild(group);
     if (action) {
-      charEls[id].manualActionButton = group.querySelector('.charActionButton');
-      charEls[id].manualActionButton.addEventListener('click', () => { useCharacterAction(id); flushCombat(); });
-      attachCharacterActionTooltip(charEls[id].manualActionButton, action);
+      gameState.charEls[id].manualActionButton = group.querySelector('.charActionButton');
+      gameState.charEls[id].manualActionButton.addEventListener('click', () => { useCharacterAction(id); flushCombat(); });
+      attachCharacterActionTooltip(gameState.charEls[id].manualActionButton, action);
     }
-    charEls[id].activeQuickSlot = group.querySelector('.activeQuickSlot');
-    attachActiveRelicTooltip(charEls[id].activeQuickSlot, roster.find(c => c.id === id));
+    gameState.charEls[id].activeQuickSlot = group.querySelector('.activeQuickSlot');
+    attachActiveRelicTooltip(gameState.charEls[id].activeQuickSlot, gameState.roster.find(c => c.id === id));
   });
 }
 
-function renderCharacterStatuses(c, container) {
+export function renderCharacterStatuses(c, container) {
   const active = STATUS_DEFS.filter(status => status.isActive(c));
   const visible = active.slice(0, 4);
   const activeIds = new Set(visible.map(status => status.id));
@@ -365,11 +389,11 @@ function renderCharacterStatuses(c, container) {
 // monster row: everyone currently in `monsters` (2~3 mobs, or the lone
 // boss), shown side by side above the party row. Rebuilt fresh every time a
 // new wave spawns, mirroring buildBattleRoster()'s pattern for the party.
-function buildMonsterCards() {
-  monsterEls = {};
+export function buildMonsterCards() {
+  gameState.monsterEls = {};
   const monsterSideEl = document.getElementById('monsterSide');
   monsterSideEl.innerHTML = '';
-  monsters.forEach(m => {
+  gameState.monsters.forEach(m => {
     const card = document.createElement('div');
     card.className = `monsterCard${m.isBoss ? ' boss' : ''}`;
     card.innerHTML = `
@@ -396,7 +420,7 @@ function buildMonsterCards() {
 
     const portraitEl = card.querySelector('.portrait');
     attachTextTooltip(card.querySelector('.atkLabel'), '行動倒數', '進度填滿後進行下一次行動');
-    monsterEls[m.id] = {
+    gameState.monsterEls[m.id] = {
       card,
       portraitEl,
       nameEl: card.querySelector('.name'),
@@ -414,41 +438,41 @@ function buildMonsterCards() {
   });
 }
 
-function floorLabelText() {
-  const region = regionName(floor);
-    if (phase === PHASES.PREP_FLOOR && !partyLocked) {
-    if (prepLocation === 'village') return t('village.title');
-    if (prepLocation === 'home') return t('home.title');
-    if (prepLocation === 'regions') return t('region.title');
+export function floorLabelText() {
+  const region = regionName(gameState.floor);
+    if (gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked) {
+    if (overlayUiState.prepLocation === 'village') return t('village.title');
+    if (overlayUiState.prepLocation === 'home') return t('home.title');
+    if (overlayUiState.prepLocation === 'regions') return t('region.title');
     return region;
   }
-  if (isCombatSurfacePhase() && monsters.length > 0) {
-    const boss = monsters.find(m => m.isBoss);
+  if (isCombatSurfacePhase() && gameState.monsters.length > 0) {
+    const boss = gameState.monsters.find(m => m.isBoss);
     return boss
       ? t('combat.bossBattle', { region })
       : t('combat.mobProgress', {
         region,
-        current: formatLocaleNumber(mobsCleared + 1),
+        current: formatLocaleNumber(gameState.mobsCleared + 1),
         total: formatLocaleNumber(MOBS_PER_FLOOR),
       });
   }
   return region;
 }
 
-function render() {
+export function render() {
   const inPrep = isPrepPhase();
   document.getElementById('app').classList.toggle('combatActive', !inPrep);
-  const inFreeVillage = phase === PHASES.PREP_FLOOR && !partyLocked;
+  const inFreeVillage = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked;
   const floorLabelEl = document.getElementById('floorLabel');
   floorLabelEl.textContent = floorLabelText();
   floorLabelEl.style.display = inPrep ? 'none' : '';
   const goldLabel = document.getElementById('goldLabel');
   goldLabel.style.display = inFreeVillage ? 'none' : '';
-  goldLabel.innerHTML = inFreeVillage ? '' : `<img src="assets/item/coin.png" alt="遠征金幣">${runGold}`;
+  goldLabel.innerHTML = inFreeVillage ? '' : `<img src="assets/item/coin.png" alt="遠征金幣">${gameState.runGold}`;
   const bagBtn = document.getElementById('bagBtn');
   bagBtn.setAttribute('aria-label', t('header.openBag'));
   const townShopBtn = document.getElementById('townShopBtn');
-  townShopBtn.style.display = (phase === PHASES.PREP_FLOOR && !partyLocked) ? '' : 'none';
+  townShopBtn.style.display = (gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked) ? '' : 'none';
   renderShopView();
 
   document.getElementById('prepView').style.display = inPrep ? 'block' : 'none';
@@ -459,9 +483,9 @@ function render() {
   } else {
     renderCombatView();
   }
-  const atVillageSurface = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'village';
-  const atHomeSurface = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'home';
-  const atRegionSurface = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'regions';
+  const atVillageSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'village';
+  const atHomeSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'home';
+  const atRegionSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'regions';
   const visibleSurface = !inPrep
     ? document.getElementById('combatView')
     : atVillageSurface
@@ -471,7 +495,7 @@ function render() {
         : atRegionSurface
           ? document.getElementById('regionView')
           : document.getElementById('expeditionView');
-  const surfaceKey = !inPrep ? 'combat' : `${phase}:${prepLocation}:${atHomeSurface ? homeMode : ''}`;
+  const surfaceKey = !inPrep ? 'combat' : `${gameState.phase}:${overlayUiState.prepLocation}:${atHomeSurface ? overlayUiState.homeMode : ''}`;
   animateSurfaceChange(visibleSurface, surfaceKey);
 
   const logEl = document.getElementById('log');
@@ -483,33 +507,33 @@ function render() {
   // Keeping the log mounted prevents the whole surface from changing height on
   // the first visible frame after either entrance.
   logEl.style.display = inPrep ? 'none' : 'block';
-  const logMarkup = `<div class="logHeading"><span>${t('combat.log')}</span></div>${logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('')}`;
+  const logMarkup = `<div class="logHeading"><span>${t('combat.log')}</span></div>${gameState.logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('')}`;
   if (logEl.innerHTML !== logMarkup) {
     logEl.innerHTML = logMarkup;
     logEl.scrollTop = logWasAtBottom ? logEl.scrollHeight : previousLogScrollTop;
   }
-  if (typeof renderSaveControls === 'function') renderSaveControls();
+  renderSaveControls();
 }
 
-function renderPrepView() {
+export function renderPrepView() {
   const headingEl = document.getElementById('prepHeading');
   const msgEl = document.getElementById('prepMsg');
-  const atVillage = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'village';
-  const atHome = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'home';
-  const atRegions = phase === PHASES.PREP_FLOOR && !partyLocked && prepLocation === 'regions';
+  const atVillage = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'village';
+  const atHome = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'home';
+  const atRegions = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'regions';
   renderRegionContext();
   document.getElementById('villageView').style.display = atVillage ? '' : 'none';
   const homeView = document.getElementById('homeView');
   homeView.style.display = atHome ? '' : 'none';
-  homeView.classList.toggle('showingGrowth', atHome && homeMode === 'growth');
-  document.getElementById('homeMenu').hidden = !atHome || homeMode !== 'menu';
-  document.getElementById('homeGrowthView').hidden = !atHome || homeMode !== 'growth';
+  homeView.classList.toggle('showingGrowth', atHome && overlayUiState.homeMode === 'growth');
+  document.getElementById('homeMenu').hidden = !atHome || overlayUiState.homeMode !== 'menu';
+  document.getElementById('homeGrowthView').hidden = !atHome || overlayUiState.homeMode !== 'growth';
   const storyLocked = contractStoryLocked();
-  const waitingForBook = ['bookPending', 'bookReading'].includes(resonanceState.xiaochu);
-  const oathReady = resonanceState.xiaochu === 'oathReady';
-  const mustGoHome = resonanceState.xiaochu === 'goHome';
-  const journalUnlocked = ['bookPending', 'bookReading', 'oathReady', 'contracting', 'contracted'].includes(resonanceState.xiaochu);
-  const contractAvailable = ['oathReady', 'contracting', 'contracted'].includes(resonanceState.xiaochu);
+  const waitingForBook = ['bookPending', 'bookReading'].includes(gameState.resonanceState.xiaochu);
+  const oathReady = gameState.resonanceState.xiaochu === 'oathReady';
+  const mustGoHome = gameState.resonanceState.xiaochu === 'goHome';
+  const journalUnlocked = ['bookPending', 'bookReading', 'oathReady', 'contracting', 'contracted'].includes(gameState.resonanceState.xiaochu);
+  const contractAvailable = ['oathReady', 'contracting', 'contracted'].includes(gameState.resonanceState.xiaochu);
   document.getElementById('travelJournalBtn').hidden = !journalUnlocked;
   document.getElementById('contractFacilityBtn').hidden = !contractAvailable;
   const visibleHomeFacilities = [...document.querySelectorAll('#homeMenu .homeFacilityBtn')]
@@ -519,7 +543,7 @@ function renderPrepView() {
   document.getElementById('contractFacilityBtn').classList.toggle('storyRequired', oathReady);
   document.getElementById('homeLocationBtn').classList.toggle('storyRequired', mustGoHome);
   document.getElementById('homeGuideHina').hidden = !mustGoHome;
-  document.body.classList.toggle('storyOperationLock', storyLocked && !['villageReturn', 'contracting'].includes(resonanceState.xiaochu));
+  document.body.classList.toggle('storyOperationLock', storyLocked && !['villageReturn', 'contracting'].includes(gameState.resonanceState.xiaochu));
   document.querySelectorAll('.storyFocusTarget').forEach(element => element.classList.remove('storyFocusTarget'));
   if (mustGoHome) document.getElementById('homeLocationBtn').classList.add('storyFocusTarget');
   if (waitingForBook) document.getElementById('travelJournalBtn').classList.add('storyFocusTarget');
@@ -533,48 +557,48 @@ function renderPrepView() {
   document.getElementById('bagBtn').disabled = storyLocked;
   document.getElementById('regionView').style.display = atRegions ? '' : 'none';
   document.getElementById('expeditionView').style.display = (atVillage || atHome || atRegions) ? 'none' : '';
-  Object.entries(homeEls).forEach(([id, refs]) => {
-    const c = roster.find(entry => entry.id === id);
+  Object.entries(overlayUiState.homeEls).forEach(([id, refs]) => {
+    const c = gameState.roster.find(entry => entry.id === id);
     refs.lvl.textContent = c.level;
     refs.portrait.src = characterPortraitPath(id);
     refs.card.classList.toggle('charLocked', !isCharUnlocked(id));
   });
   if (atVillage || atHome || atRegions) return;
 
-  if (phase === PHASES.PREP_FLOOR) {
-    headingEl.textContent = t('expedition.preparation', { region: regionName(floor) });
-    if (partyLocked) {
-      msgEl.textContent = t('expedition.lockedParty', { region: regionName(floor) });
-      startBtnEl.textContent = t('expedition.continue');
-    } else if (party.length === 0) {
+  if (gameState.phase === PHASES.PREP_FLOOR) {
+    headingEl.textContent = t('expedition.preparation', { region: regionName(gameState.floor) });
+    if (gameState.partyLocked) {
+      msgEl.textContent = t('expedition.lockedParty', { region: regionName(gameState.floor) });
+      gameState.startBtnEl.textContent = t('expedition.continue');
+    } else if (gameState.party.length === 0) {
       msgEl.textContent = t('expedition.chooseSoul', { limit: formatLocaleNumber(SOLO_PARTY_LIMIT) });
-      startBtnEl.textContent = t('expedition.start');
+      gameState.startBtnEl.textContent = t('expedition.start');
     } else {
       msgEl.textContent = ''; // party already picked - the highlighted card already shows that, no need to say it again
-      startBtnEl.textContent = t('expedition.start');
+      gameState.startBtnEl.textContent = t('expedition.start');
     }
-    retreatBtnEl.style.display = partyLocked ? '' : 'none';
+    gameState.retreatBtnEl.style.display = gameState.partyLocked ? '' : 'none';
   } else {
     headingEl.textContent = t('expedition.bossPrep');
     msgEl.textContent = t('expedition.bossPrepDesc');
-    startBtnEl.textContent = t('expedition.challengeBoss');
-    retreatBtnEl.style.display = '';
+    gameState.startBtnEl.textContent = t('expedition.challengeBoss');
+    gameState.retreatBtnEl.style.display = '';
   }
-  startBtnEl.disabled = (party.length === 0);
+  gameState.startBtnEl.disabled = (gameState.party.length === 0);
   document.getElementById('actionArea').style.display = '';
-  const choosingCharacter = phase !== PHASES.PREP_BOSS;
+  const choosingCharacter = gameState.phase !== PHASES.PREP_BOSS;
   document.getElementById('expeditionBackBtn').style.display = choosingCharacter ? '' : 'none';
   document.getElementById('expeditionCharacterHeading').style.display = choosingCharacter ? '' : 'none';
   document.getElementById('prepRoster').style.display = choosingCharacter ? '' : 'none';
 
-  roster.forEach(c => {
-    const refs = prepEls[c.id];
-    const inParty = party.includes(c.id);
+  gameState.roster.forEach(c => {
+    const refs = gameState.prepEls[c.id];
+    const inParty = gameState.party.includes(c.id);
     const unlocked = isCharUnlocked(c.id);
     // once locked, only the chosen party is even shown - nothing else to pick
-    refs.card.style.display = (!partyLocked || inParty) ? '' : 'none';
+    refs.card.style.display = (!gameState.partyLocked || inParty) ? '' : 'none';
     refs.card.classList.toggle('inParty', inParty);
-    refs.card.classList.toggle('runLocked', partyLocked);
+    refs.card.classList.toggle('runLocked', gameState.partyLocked);
     refs.card.classList.toggle('charLocked', !unlocked);
     refs.lockReq.textContent = unlockReqText(c.id);
     refs.lvl.textContent = c.level;
@@ -583,8 +607,8 @@ function renderPrepView() {
   renderExpeditionSelectedSummary();
 }
 
-function renderRegionContext() {
-  const region = localizedRegionDef(floor);
+export function renderRegionContext() {
+  const region = localizedRegionDef(gameState.floor);
   const tagHTML = values => values.map(value => `<span>${value}</span>`).join('');
   document.getElementById('forestRegionName').textContent = region.name;
   document.getElementById('forestRegionLevel').textContent = t('format.recommendedLevel', {
@@ -606,12 +630,12 @@ function renderRegionContext() {
   document.getElementById('expeditionRegionThreats').textContent = region.threats.join('・');
 }
 
-function renderCombatView() {
-  const boss = monsters.find(m => m.isBoss);
+export function renderCombatView() {
+  const boss = gameState.monsters.find(m => m.isBoss);
   document.getElementById('bossArena').classList.toggle('active', !!boss);
 
   aliveMonsters().forEach(m => {
-    const refs = monsterEls[m.id];
+    const refs = gameState.monsterEls[m.id];
     if (!refs) return;
     refs.nameEl.textContent = m.name;
     refs.lvlEl.textContent = m.level;
@@ -628,14 +652,14 @@ function renderCombatView() {
       refs.skill2CdOverlayEl.style.height = Math.max(0, Math.min(100, skill2CdPct)) + '%';
     }
     if (refs.skill3CdOverlayEl) {
-      const skill3CdPct = Math.round((gooSpawnCountdown / GOO_SKILL_CD_MS) * 100);
+      const skill3CdPct = Math.round((gameState.gooSpawnCountdown / GOO_SKILL_CD_MS) * 100);
       refs.skill3CdOverlayEl.style.height = Math.max(0, Math.min(100, skill3CdPct)) + '%';
     }
   });
 
-  party.forEach(id => {
-    const c = roster.find(r => r.id === id);
-    const refs = charEls[id];
+  gameState.party.forEach(id => {
+    const c = gameState.roster.find(r => r.id === id);
+    const refs = gameState.charEls[id];
     // Transitional/debug/server-restored states may render before their battle
     // cards are mounted. The next build/render pass will populate them.
     if (!c || !refs) return;
@@ -666,9 +690,9 @@ function renderCombatView() {
 
   const combatItemAction = document.querySelector('#combatActionBar .combatItemAction');
   if (combatItemAction) {
-    const itemId = equippedCombatItemId;
+    const itemId = gameState.equippedCombatItemId;
     const item = ITEM_DEFS[itemId];
-    const cooldown = combatItemCooldowns[itemId] || 0;
+    const cooldown = gameState.combatItemCooldowns[itemId] || 0;
     const cooldownMax = item ? item.combatAction.cooldown * 1000 : 1;
     combatItemAction.querySelector('.itemCdOverlay').style.height = `${Math.round((cooldown / cooldownMax) * 100)}%`;
     combatItemAction.querySelector('.itemCdText').textContent = cooldown > 0 ? Math.ceil(cooldown / 1000) : '';
@@ -680,6 +704,6 @@ function renderCombatView() {
   }
 }
 
-function clampPct(v, max) {
+export function clampPct(v, max) {
   return Math.max(0, Math.min(100, (v / max) * 100));
 }

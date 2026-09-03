@@ -1,3 +1,9 @@
+import { ITEM_DEFS, INVENTORY_SLOT_COUNT, CHAR_DEFS, STAT_LINE_MAX, SKIN_DEFS, DEFAULT_SKIN_BY_CHARACTER, SOLO_PARTY_LIMIT } from './constants.js';
+import { gameState, xpToNext, PHASES, contractStoryLocked, recomputeStats, initGame } from './state.js';
+import { syncCoinItem } from './ui-commerce.js';
+import { render } from './ui-main.js';
+import { overlayUiState } from './ui-overlays.js';
+
 // --- 桌面版手動存檔 ---
 // Only permanent progression is serialized. An expedition in progress must be
 // resolved first, so combat timers and transient DOM state never enter a save.
@@ -8,13 +14,13 @@ const RESONANCE_SAVE_STATES = new Set([
 ]);
 let saveStatusTimer = null;
 
-function saveSlot(entry) {
+export function saveSlot(entry) {
   if (!entry || !ITEM_DEFS[entry.itemId]) return null;
   const qty = Math.max(1, Math.min(999999, Math.floor(Number(entry.qty) || 0)));
   return qty > 0 ? { itemId: entry.itemId, qty } : null;
 }
 
-function normalizedInventory(source) {
+export function normalizedInventory(source) {
   const result = Array.from({ length: INVENTORY_SLOT_COUNT }, () => null);
   const legacyCollections = [source.inventory, source.storage]
     .filter(Array.isArray)
@@ -44,7 +50,7 @@ function normalizedInventory(source) {
   return result;
 }
 
-function permanentCharacterData(character) {
+export function permanentCharacterData(character) {
   return {
     id: character.id,
     level: character.level,
@@ -54,33 +60,33 @@ function permanentCharacterData(character) {
   };
 }
 
-function createSaveData() {
+export function createSaveData() {
   syncCoinItem();
   return {
     format: 'resonance-tower-save',
     version: SAVE_FORMAT_VERSION,
     savedAt: new Date().toISOString(),
     progression: {
-      bankedGold,
-      slimeKillCount,
-      potionUseCount,
-      unlockedChars: [...unlockedChars],
-      resonanceState: { ...resonanceState },
-      roster: roster.map(permanentCharacterData),
-      party: [...party],
-      inventory: inventory.map(saveSlot),
-      ownedSkins: [...ownedSkins],
-      equippedSkinByCharacter: { ...equippedSkinByCharacter },
+      bankedGold: gameState.bankedGold,
+      slimeKillCount: gameState.slimeKillCount,
+      potionUseCount: gameState.potionUseCount,
+      unlockedChars: [...gameState.unlockedChars],
+      resonanceState: { ...gameState.resonanceState },
+      roster: gameState.roster.map(permanentCharacterData),
+      party: [...gameState.party],
+      inventory: gameState.inventory.map(saveSlot),
+      ownedSkins: [...gameState.ownedSkins],
+      equippedSkinByCharacter: { ...gameState.equippedSkinByCharacter },
     },
   };
 }
 
-function safeInteger(value, fallback, max = 999999999) {
+export function safeInteger(value, fallback, max = 999999999) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.max(0, Math.min(max, Math.floor(number))) : fallback;
 }
 
-function normalizeSaveData(raw) {
+export function normalizeSaveData(raw) {
   if (!raw || raw.format !== 'resonance-tower-save' || raw.version !== SAVE_FORMAT_VERSION || !raw.progression) {
     throw new Error('不支援的存檔格式');
   }
@@ -133,11 +139,11 @@ function normalizeSaveData(raw) {
   };
 }
 
-function canManageSave() {
-  return phase === PHASES.PREP_FLOOR && !partyLocked && activeOverlay === null && !contractStoryLocked();
+export function canManageSave() {
+  return gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && gameState.activeOverlay === null && !contractStoryLocked();
 }
 
-function showSaveStatus(message, error = false) {
+export function showSaveStatus(message, error = false) {
   const status = document.getElementById('saveStatus');
   clearTimeout(saveStatusTimer);
   status.textContent = message;
@@ -146,13 +152,13 @@ function showSaveStatus(message, error = false) {
   saveStatusTimer = setTimeout(() => status.classList.remove('visible'), 3200);
 }
 
-function renderSaveControls() {
+export function renderSaveControls() {
   const enabled = canManageSave();
   document.getElementById('saveGameBtn').disabled = !enabled;
   document.getElementById('loadGameBtn').disabled = !enabled;
 }
 
-function downloadSaveFile() {
+export function downloadSaveFile() {
   if (!canManageSave()) return showSaveStatus('請先結束遠征或目前劇情，再進行存檔。', true);
   const json = JSON.stringify(createSaveData(), null, 2);
   const date = new Date().toISOString().slice(0, 10);
@@ -167,17 +173,17 @@ function downloadSaveFile() {
   showSaveStatus('存檔已下載。可將 JSON 檔保存到 Google Drive。');
 }
 
-function applySaveData(data) {
+export function applySaveData(data) {
   initGame();
-  bankedGold = data.bankedGold;
-  slimeKillCount = data.slimeKillCount;
-  potionUseCount = data.potionUseCount;
-  unlockedChars = data.unlocked;
-  resonanceState = data.resonanceState;
-  inventory = data.inventory;
-  ownedSkins = data.ownedSkins;
-  equippedSkinByCharacter = data.equippedSkinByCharacter;
-  roster.forEach(character => {
+  gameState.bankedGold = data.bankedGold;
+  gameState.slimeKillCount = data.slimeKillCount;
+  gameState.potionUseCount = data.potionUseCount;
+  gameState.unlockedChars = data.unlocked;
+  gameState.resonanceState = data.resonanceState;
+  gameState.inventory = data.inventory;
+  gameState.ownedSkins = data.ownedSkins;
+  gameState.equippedSkinByCharacter = data.equippedSkinByCharacter;
+  gameState.roster.forEach(character => {
     const saved = data.characters.get(character.id);
     if (!saved) return;
     character.level = saved.level;
@@ -187,14 +193,14 @@ function applySaveData(data) {
     recomputeStats(character);
     character.curHp = character.maxHp;
   });
-  party = data.party.length ? data.party : ['wuming'];
-  prepLocation = 'village';
-  homeMode = 'menu';
+  gameState.party = data.party.length ? data.party : ['wuming'];
+  overlayUiState.prepLocation = 'village';
+  overlayUiState.homeMode = 'menu';
   syncCoinItem();
   render();
 }
 
-async function loadSaveFile(file) {
+export async function loadSaveFile(file) {
   if (!file || !canManageSave()) return;
   try {
     const raw = JSON.parse(await file.text());
@@ -207,7 +213,7 @@ async function loadSaveFile(file) {
   }
 }
 
-function initSaveSystem() {
+export function initSaveSystem() {
   const input = document.getElementById('loadGameInput');
   document.getElementById('saveGameBtn').addEventListener('click', downloadSaveFile);
   document.getElementById('loadGameBtn').addEventListener('click', () => {

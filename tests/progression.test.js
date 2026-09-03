@@ -1,42 +1,26 @@
-const fs = require('node:fs');
-const vm = require('node:vm');
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const context = vm.createContext({
-  URLSearchParams,
-  window: { location: { search: '' } },
-  document: { getElementById: () => null },
-});
-context.globalThis = context;
+global.window = { location: { search: '' } };
+global.document = { getElementById: () => null, addEventListener: () => {}, dispatchEvent: () => {}, documentElement: {} };
 
-for (const file of ['prototype/js/constants.js', 'prototype/js/state.js', 'prototype/js/combat-events.js', 'prototype/js/combat.js', 'prototype/js/shop.js']) {
-  vm.runInContext(fs.readFileSync(file, 'utf8'), context, { filename: file });
-}
+const { INVENTORY_SLOT_COUNT } = await import('../prototype/js/constants.js');
+const { gameState } = await import('../prototype/js/state.js');
+const { endRun } = await import('../prototype/js/combat.js');
+const { addInventoryItem } = await import('../prototype/js/shop.js');
 
-vm.runInContext(`
-  clearGooArena = () => {};
-  inventory = Array.from({ length: INVENTORY_SLOT_COUNT }, () => ({ itemId: 'potion', qty: 99 }));
-  addInventoryItem('potion', 1, true);
-  bankedGold = 40;
-  runGold = 21;
-  endRun();
-  globalThis.__result = {
-    inventoryLength: inventory.length,
-    finalStack: inventory.at(-1),
-    potionCount: inventory.reduce((total, entry) => total + (entry && entry.itemId === 'potion' ? entry.qty : 0), 0),
-    bankedGold,
-    runGold,
-    runItemGains: { ...runItemGains },
-    phase,
-  };
-`, context);
+gameState.inventory = Array.from({ length: INVENTORY_SLOT_COUNT }, () => ({ itemId: 'potion', qty: 99 }));
+addInventoryItem('potion', 1, true);
+gameState.bankedGold = 40;
+gameState.runGold = 21;
+endRun();
 
-assert.equal(context.__result.inventoryLength, 17);
-assert.deepEqual({ ...context.__result.finalStack }, { itemId: 'potion', qty: 1 });
-assert.equal(context.__result.potionCount, 16 * 99 + 1);
-assert.equal(context.__result.bankedGold, 61);
-assert.equal(context.__result.runGold, 0);
-assert.equal(Object.keys(context.__result.runItemGains).length, 0);
-assert.equal(context.__result.phase, 'prepFloor');
+assert.equal(gameState.inventory.length, 17);
+assert.deepEqual({ ...gameState.inventory.at(-1) }, { itemId: 'potion', qty: 1 });
+const potionCount = gameState.inventory.reduce((total, entry) => total + (entry && entry.itemId === 'potion' ? entry.qty : 0), 0);
+assert.equal(potionCount, 16 * 99 + 1);
+assert.equal(gameState.bankedGold, 61);
+assert.equal(gameState.runGold, 0);
+assert.equal(Object.keys(gameState.runItemGains).length, 0);
+assert.equal(gameState.phase, 'prepFloor');
 
 console.log('progression.test.js: all assertions passed');

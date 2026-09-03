@@ -1,39 +1,28 @@
-const fs = require('node:fs');
-const vm = require('node:vm');
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const context = vm.createContext({
-  URLSearchParams,
-  window: { location: { search: '' } },
-  document: { getElementById: () => null },
-});
-context.globalThis = context;
+global.window = { location: { search: '' } };
+global.document = { getElementById: () => null, addEventListener: () => {}, dispatchEvent: () => {}, documentElement: {} };
 
-for (const file of ['prototype/js/constants.js', 'prototype/js/state.js']) {
-  vm.runInContext(fs.readFileSync(file, 'utf8'), context, { filename: file });
-}
+const { PHASES, gameState, setPhase, isPrepPhase, isCombatSurfacePhase } = await import('../prototype/js/state.js');
 
-vm.runInContext(`
-  globalThis.__phases = { ...PHASES };
-  globalThis.__initial = { phase, prep: isPrepPhase(), combatSurface: isCombatSurfacePhase() };
-  setPhase(PHASES.DUNGEON_INTRO);
-  globalThis.__dungeon = { phase, prep: isPrepPhase(), combatSurface: isCombatSurfacePhase() };
-  setPhase(PHASES.COMBAT);
-  setPhase(PHASES.PREP_BOSS);
-  setPhase(PHASES.BOSS_INTRO);
-  setPhase(PHASES.COMBAT);
-  globalThis.__finalPhase = phase;
-`, context);
+const initial = { phase: gameState.phase, prep: isPrepPhase(), combatSurface: isCombatSurfacePhase() };
+setPhase(PHASES.DUNGEON_INTRO);
+const dungeon = { phase: gameState.phase, prep: isPrepPhase(), combatSurface: isCombatSurfacePhase() };
+setPhase(PHASES.COMBAT);
+setPhase(PHASES.PREP_BOSS);
+setPhase(PHASES.BOSS_INTRO);
+setPhase(PHASES.COMBAT);
+const finalPhase = gameState.phase;
 
-assert.deepEqual({ ...context.__initial }, { phase: 'prepFloor', prep: true, combatSurface: false });
-assert.deepEqual({ ...context.__dungeon }, { phase: 'dungeonIntro', prep: false, combatSurface: true });
-assert.equal(context.__finalPhase, 'combat');
+assert.deepEqual(initial, { phase: 'prepFloor', prep: true, combatSurface: false });
+assert.deepEqual(dungeon, { phase: 'dungeonIntro', prep: false, combatSurface: true });
+assert.equal(finalPhase, 'combat');
 assert.throws(
-  () => vm.runInContext("setPhase(PHASES.BOSS_INTRO)", context),
+  () => setPhase(PHASES.BOSS_INTRO),
   /Illegal game phase transition: combat -> bossIntro/,
 );
 assert.throws(
-  () => vm.runInContext("setPhase('typo')", context),
+  () => setPhase('typo'),
   /Unknown game phase/,
 );
 

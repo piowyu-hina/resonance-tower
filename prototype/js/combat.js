@@ -1,3 +1,22 @@
+import {
+  FLOOR1_MOB_POOL, MONSTER_DEFS, MOB_ATK_INTERVAL, BOSS_ATK_INTERVAL, BOSS_ENTRY_GRACE_MS,
+  BOSS_SKILL_CD, MONSTER_SLOW_MULT, MONSTER_SLOW_MS, BOSS_SUMMON_OPENING_MS, BOSS_SUMMON_CD_MS,
+  BOSS_SUMMON_MAX, GOO_SKILL_CD_MS, GOO_BATCH_SIZE, MOBS_PER_FLOOR, CHAR_DEFS, MAX_IMPLEMENTED_FLOOR,
+  BOSS_XP_SHARE, MOB_XP_SHARE, SLIME_MONSTER_CRYSTAL_DROP_CHANCE, SLIME_STAT_BOOK_DROP_CHANCE,
+  SLIME_SKILL_BOOK_DROP_CHANCE, MASTER_TICK_MS, SHOP_IDLE_MS, regionName, MONSTER_DEATH_ANIMATION_MS,
+} from './constants.js';
+import {
+  gameState, PHASES, STATUS_DEFS, setPhase, log, aliveMonsters, activeAliveMembers, calcDef, calcAtk,
+  rollDamage, skillLineScale, lineScale, speedLineIntervalMult, actionLineCooldownMult, addXp,
+  goldForKill, xpPoolForFloor, checkThresholdUnlocks, checkResonanceTriggers, isCharUnlocked,
+  startPendingVillageContracts,
+} from './state.js';
+import { OVERLAY_CLOSERS, closeOtherOverlays, overlayUiState } from './ui-overlays.js';
+import { emitCombatEvent } from './combat-events.js';
+import { clearGooArena, gooTick } from './goo.js';
+import { tickShopIdle, addInventoryItem } from './shop.js';
+import { startCharacterEncounter } from './story.js';
+
 // This file only mutates game state and queues one-shot effects via
 // emitCombatEvent() (combat-events.js) - it never touches the DOM, calls
 // popup/flash/showSkillCastEffect, or calls render() itself. Callers (click
@@ -5,48 +24,48 @@
 // flushCombat() (ui-combat-effects.js) afterward to play queued effects and
 // re-render. This keeps combat logic testable headless - see
 // tests/combat-events.test.js.
-function enterPrepFloor() {
+export function enterPrepFloor() {
   setPhase(PHASES.PREP_FLOOR);
-  prepLocation = 'village';
+  overlayUiState.prepLocation = 'village';
   // retreating out of prepBoss leaves its auto-opened shop overlay active
   // otherwise - close whatever's open on this clean state transition.
-  if (activeOverlay) OVERLAY_CLOSERS[activeOverlay]();
+  if (gameState.activeOverlay) OVERLAY_CLOSERS[gameState.activeOverlay]();
 }
-function enterPrepBoss() {
+export function enterPrepBoss() {
   setPhase(PHASES.PREP_BOSS);
   closeOtherOverlays('shop');
-  activeOverlay = 'shop';
-  shopMode = 'dungeon';
-  shopAutoLeave = true;
-  shopCountdown = SHOP_IDLE_MS;
+  gameState.activeOverlay = 'shop';
+  gameState.shopMode = 'dungeon';
+  gameState.shopAutoLeave = true;
+  gameState.shopCountdown = SHOP_IDLE_MS;
 }
 
-function resetBossEntryCooldowns() {
-  party.forEach(id => {
-    const character = roster.find(member => member.id === id);
+export function resetBossEntryCooldowns() {
+  gameState.party.forEach(id => {
+    const character = gameState.roster.find(member => member.id === id);
     if (!character) return;
     character.skillCds = character.skillCds.map(() => 0);
     character.manualActionCd = 0;
   });
-  combatItemCooldowns = {};
+  gameState.combatItemCooldowns = {};
 }
 
 // mob-wave stat baselines got roughly halved from their old single-mob values
 // because 2~3 of them now hit the party simultaneously - still a rough first
 // pass (see design.md "平衡尚待調整"), tune freely later.
-function makeMob(defId = FLOOR1_MOB_POOL[Math.floor(Math.random() * FLOOR1_MOB_POOL.length)]) {
+export function makeMob(defId = FLOOR1_MOB_POOL[Math.floor(Math.random() * FLOOR1_MOB_POOL.length)]) {
   const def = MONSTER_DEFS[defId];
-  const maxHp = 9 + Math.round(floor * 6);
+  const maxHp = 9 + Math.round(gameState.floor * 6);
   return {
-    id: 'm' + (monsterIdCounter++),
+    id: 'm' + (gameState.monsterIdCounter++),
     defId,
     name: def.name,
-    level: floor,
+    level: gameState.floor,
     isBoss: false,
     img: def.img,
     maxHp,
     hp: maxHp,
-    atk: 1 + Math.floor(floor * 0.7),
+    atk: 1 + Math.floor(gameState.floor * 0.7),
     atkInterval: MOB_ATK_INTERVAL,
     actionCountdown: MOB_ATK_INTERVAL,
     alive: true,
@@ -56,16 +75,16 @@ function makeMob(defId = FLOOR1_MOB_POOL[Math.floor(Math.random() * FLOOR1_MOB_P
   };
 }
 
-function makeBoss() {
+export function makeBoss() {
   return {
-    id: 'm' + (monsterIdCounter++),
+    id: 'm' + (gameState.monsterIdCounter++),
     name: '史萊姆王',
-    level: floor,
+    level: gameState.floor,
     isBoss: true,
     img: 'floor1/slime_boss',
-    maxHp: 60 + floor * 40,
-    hp: 60 + floor * 40,
-    atk: 6 + Math.floor(floor * 3),
+    maxHp: 60 + gameState.floor * 40,
+    hp: 60 + gameState.floor * 40,
+    atk: 6 + Math.floor(gameState.floor * 3),
     atkInterval: BOSS_ATK_INTERVAL,
     // Separate the first real hit from the end of the intro. Without this
     // short grace period, its red damage flash reads like a transition glitch.
@@ -91,16 +110,16 @@ function makeBoss() {
 // then a single boss wave. Scope note: a future "kill 10 mobs -> event, kill
 // 100 -> boss" flow (see design.md) needs the event system designed first -
 // this stays the simpler wave-based gate until then.
-function spawnWave() {
+export function spawnWave() {
   clearGooArena();
-  gooDebuffStacks = 0;
-  monsters = [];
-  if (mobsCleared < MOBS_PER_FLOOR) {
+  gameState.gooDebuffStacks = 0;
+  gameState.monsters = [];
+  if (gameState.mobsCleared < MOBS_PER_FLOOR) {
     const count = 2 + Math.floor(Math.random() * 2); // 2~3 mobs
-    for (let i = 0; i < count; i++) monsters.push(makeMob());
+    for (let i = 0; i < count; i++) gameState.monsters.push(makeMob());
   } else {
-    monsters.push(makeBoss());
-    gooSpawnCountdown = 800; // faster opening spawn than the steady-state cooldown, so the fight doesn't feel dead at the start
+    gameState.monsters.push(makeBoss());
+    gameState.gooSpawnCountdown = 800; // faster opening spawn than the steady-state cooldown, so the fight doesn't feel dead at the start
   }
   emitCombatEvent({ type: 'waveSpawned' });
 }
@@ -108,7 +127,7 @@ function spawnWave() {
 // (updateMonsterSkillIcons moved to ui-combat-effects.js - pure DOM
 // construction, no battle logic, so it doesn't belong here.)
 
-function bossSummonTick(boss) {
+export function bossSummonTick(boss) {
   boss.skill2Cd = Math.max(0, boss.skill2Cd - MASTER_TICK_MS);
   if (boss.skill2Cd > 0) return;
 
@@ -118,12 +137,12 @@ function bossSummonTick(boss) {
   boss.skill2Cd = BOSS_SUMMON_CD_MS;
   const summoned = makeMob();
   summoned.isSummoned = true;
-  monsters.push(summoned);
+  gameState.monsters.push(summoned);
   log(`${boss.name} 使用【${boss.skill2.name}】，召喚了 ${summoned.name}！`, 'enemy');
   emitCombatEvent({ type: 'monsterSummoned', bossId: boss.id, skill: boss.skill2 });
 }
 
-function selectMonsterSkillTarget(skill) {
+export function selectMonsterSkillTarget(skill) {
   if (skill.target === 'lowestHpMonster') {
     const injured = aliveMonsters().filter(m => m.hp < m.maxHp);
     if (injured.length === 0) return null;
@@ -135,7 +154,7 @@ function selectMonsterSkillTarget(skill) {
 
 // Generic interpreter for monster skill data. Returns false when a skill has
 // no valid target (for example, a healer whose whole side is already full).
-function performMonsterSkill(m) {
+export function performMonsterSkill(m) {
   const skill = m.skill;
   const target = selectMonsterSkillTarget(skill);
   if (!target) return false;
@@ -189,7 +208,7 @@ function performMonsterSkill(m) {
   return true;
 }
 
-function performCharmedAction(c) {
+export function performCharmedAction(c) {
   const others = activeAliveMembers().filter(member => member.id !== c.id);
   const target = others.length > 0 ? others[Math.floor(Math.random() * others.length)] : c;
   const base = Math.max(1, calcAtk(c) - calcDef(target));
@@ -205,7 +224,7 @@ function performCharmedAction(c) {
   }
 }
 
-function performSkill(c, skill, idx, target) {
+export function performSkill(c, skill, idx, target) {
   c.skillCds[idx] = skill.cd * 1000; // skill.cd is authored in seconds
   const name = CHAR_DEFS[c.id].name;
   // cast flourish plays on whoever the skill actually affects - the enemy
@@ -235,15 +254,15 @@ function performSkill(c, skill, idx, target) {
     emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: healTarget.id, skill });
     emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: healTarget.id, text: '+' + heal, cls: 'heal' });
   } else if (skill.type === 'buffAtk') {
-    partyBuff.mult = 1 + skill.pct * lineScaleForThisSkill;
-    partyBuff.until = skill.duration * 1000; // skill.duration is authored in seconds
+    gameState.partyBuff.mult = 1 + skill.pct * lineScaleForThisSkill;
+    gameState.partyBuff.until = skill.duration * 1000; // skill.duration is authored in seconds
     log(`${name} 使用【${skill.name}】，隊伍攻擊力提升 ${Math.round(skill.pct * lineScaleForThisSkill * 100)}%`, 'party');
     emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill });
     emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: 'ATK UP', cls: 'buff' });
   } else if (skill.type === 'buffDefParty') {
-    partyDefense.bonus = Math.round(skill.amount * lineScaleForThisSkill);
-    partyDefense.until = skill.duration * 1000; // skill.duration is authored in seconds
-    log(`${name} 使用【${skill.name}】，隊伍防禦提升 ${partyDefense.bonus} 點`, 'party');
+    gameState.partyDefense.bonus = Math.round(skill.amount * lineScaleForThisSkill);
+    gameState.partyDefense.until = skill.duration * 1000; // skill.duration is authored in seconds
+    log(`${name} 使用【${skill.name}】，隊伍防禦提升 ${gameState.partyDefense.bonus} 點`, 'party');
     emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill });
     emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: 'DEF UP', cls: 'buff' });
   } else if (skill.type === 'hasteSelf') {
@@ -267,22 +286,22 @@ function performSkill(c, skill, idx, target) {
 // fires once per monster death, whoever/whatever caused it (a party attack,
 // a skill, or a goo pop) - tick() sweeps for hp<=0 monsters after every
 // action source so this only ever needs to run in one place.
-function onMonsterDefeated(m) {
+export function onMonsterDefeated(m) {
   if (!m.alive) return;
   m.alive = false;
   m.hp = 0;
   emitCombatEvent({ type: 'monsterDefeated', monsterId: m.id, maxHp: m.maxHp });
 
   const alive = activeAliveMembers();
-  const gold = goldForKill(m.isBoss, floor);
-  runGold += gold;
+  const gold = goldForKill(m.isBoss, gameState.floor);
+  gameState.runGold += gold;
   const xpShare = m.isBoss ? BOSS_XP_SHARE : MOB_XP_SHARE;
-  const xpGain = Math.round((xpPoolForFloor(floor) * xpShare) / Math.max(1, alive.length));
+  const xpGain = Math.round((xpPoolForFloor(gameState.floor) * xpShare) / Math.max(1, alive.length));
   alive.forEach(c => addXp(c, xpGain));
   log(m.isBoss ? `擊敗首領！獲得 ${gold} 金幣` : `擊敗 ${m.name}！獲得 ${gold} 金幣`, 'good');
 
   if (!m.isBoss && !m.isSummoned) {
-    slimeKillCount++; // all floor-1 mobs are slimes for now - see design.md 角色解鎖系統
+    gameState.slimeKillCount++; // all floor-1 mobs are slimes for now - see design.md 角色解鎖系統
     checkThresholdUnlocks();
     if (Math.random() < SLIME_MONSTER_CRYSTAL_DROP_CHANCE) {
       addInventoryItem('monsterCrystal', 1, true);
@@ -303,23 +322,23 @@ function onMonsterDefeated(m) {
     // for a future dual-boss fight: victory waits until every boss is down.
     if (aliveMonsters().some(other => other.isBoss)) return;
     const clearedIds = [];
-    monsters.filter(other => other.alive && !other.isBoss).forEach(other => {
+    gameState.monsters.filter(other => other.alive && !other.isBoss).forEach(other => {
       other.alive = false;
       clearedIds.push(other.id);
     });
     if (clearedIds.length > 0) emitCombatEvent({ type: 'bossVictoryCleanup', clearedIds });
-    const expectedRunId = runId;
+    const expectedRunId = gameState.runId;
     setTimeout(() => {
-      if (runId !== expectedRunId) return; // player retreated during the death animation - this run is gone
-      log(`${regionName(floor)}制霸！`, 'good');
-      if (floor >= MAX_IMPLEMENTED_FLOOR) {
-        const securedGold = runGold;
+      if (gameState.runId !== expectedRunId) return; // player retreated during the death animation - this run is gone
+      log(`${regionName(gameState.floor)}制霸！`, 'good');
+      if (gameState.floor >= MAX_IMPLEMENTED_FLOOR) {
+        const securedGold = gameState.runGold;
         log(`目前開放的區域已全部完成，本次取得 ${securedGold} 金幣！`, 'good');
         setPhase(PHASES.VICTORY);
         emitCombatEvent({ type: 'victory', securedGold });
       } else {
-        floor++;
-        mobsCleared = 0;
+        gameState.floor++;
+        gameState.mobsCleared = 0;
         enterPrepFloor();
       }
       // No render()/flushCombat() here: this fires async, up to 100ms later
@@ -332,10 +351,10 @@ function onMonsterDefeated(m) {
   if (m.isSummoned) return; // add deaths never advance the pre-boss wave counter
   if (aliveMonsters().length > 0) return; // rest of this regular wave is still alive
 
-  const expectedRunId = runId;
+  const expectedRunId = gameState.runId;
   setTimeout(() => {
-    if (runId !== expectedRunId) return; // player retreated during the death animation - this run is gone
-    mobsCleared++; // one full wave of mobs cleared
+    if (gameState.runId !== expectedRunId) return; // player retreated during the death animation - this run is gone
+    gameState.mobsCleared++; // one full wave of mobs cleared
     const encounterId = checkResonanceTriggers();
     if (encounterId) {
       startCharacterEncounter(encounterId, continueAfterClearedWave);
@@ -345,8 +364,8 @@ function onMonsterDefeated(m) {
   }, MONSTER_DEATH_ANIMATION_MS);
 }
 
-function continueAfterClearedWave() {
-  if (mobsCleared >= MOBS_PER_FLOOR) {
+export function continueAfterClearedWave() {
+  if (gameState.mobsCleared >= MOBS_PER_FLOOR) {
     enterPrepBoss();
   } else {
     spawnWave();
@@ -355,17 +374,17 @@ function continueAfterClearedWave() {
 
 // Every way an expedition ends keeps its rewards. Defeat only costs time and
 // floor progress, which keeps unattended play productive instead of punitive.
-function endRun() {
-  runId++; // invalidate any in-flight onMonsterDefeated() timeout from the run just ending
-  bankedGold += runGold;
-  runItemGains = {};
-  runGold = 0;
-  floor = 1;
-  mobsCleared = 0;
-  partyLocked = false; // a fresh run - free to pick a new party again
-  gooDebuffStacks = 0;
+export function endRun() {
+  gameState.runId++; // invalidate any in-flight onMonsterDefeated() timeout from the run just ending
+  gameState.bankedGold += gameState.runGold;
+  gameState.runItemGains = {};
+  gameState.runGold = 0;
+  gameState.floor = 1;
+  gameState.mobsCleared = 0;
+  gameState.partyLocked = false; // a fresh run - free to pick a new party again
+  gameState.gooDebuffStacks = 0;
   clearGooArena();
-  roster.forEach(c => {
+  gameState.roster.forEach(c => {
     c.curHp = c.maxHp; // resting before the next expedition - both paths heal
     c.alive = true;
     c.skillCds = [0, 0, 0];
@@ -379,9 +398,9 @@ function endRun() {
     c.sleepUntilAction = false;
     c.charmedUntilAction = false;
   });
-  partyBuff = { mult: 1, until: 0 };
-  partyDefense = { bonus: 0, until: 0 };
-  combatItemCooldowns = {};
+  gameState.partyBuff = { mult: 1, until: 0 };
+  gameState.partyDefense = { bonus: 0, until: 0 };
+  gameState.combatItemCooldowns = {};
   enterPrepFloor();
   startPendingVillageContracts();
 }
@@ -389,26 +408,26 @@ function endRun() {
 // Shop, inventory, and combat-item logic lives in shop.js - not battle-tick
 // logic, so it doesn't belong in this file. grantHaste stays here since
 // performSkill's hasteSelf branch (below) is a core combat use of it too.
-function grantHaste(target, mult, durationSeconds) {
+export function grantHaste(target, mult, durationSeconds) {
   // Stronger/longer haste wins, so a short character skill cannot overwrite
   // and weaken an active 30-second speed potion.
   target.hasteMult = Math.min(target.hasteMult || 1, mult);
   target.hasteUntil = Math.max(target.hasteUntil || 0, durationSeconds * 1000);
 }
 
-function canUseCharacterAction(characterId) {
-  const c = roster.find(member => member.id === characterId);
+export function canUseCharacterAction(characterId) {
+  const c = gameState.roster.find(member => member.id === characterId);
   const action = CHAR_DEFS[characterId] && CHAR_DEFS[characterId].action;
-  return phase === PHASES.COMBAT && !!c && c.alive && !!action && !isCharacterActionLocked(c) && c.manualActionCd <= 0 && aliveMonsters().length > 0;
+  return gameState.phase === PHASES.COMBAT && !!c && c.alive && !!action && !isCharacterActionLocked(c) && c.manualActionCd <= 0 && aliveMonsters().length > 0;
 }
 
-function isCharacterActionLocked(character) {
+export function isCharacterActionLocked(character) {
   return STATUS_DEFS.some(status => status.blocksCharacterAction && status.isActive(character));
 }
 
-function useCharacterAction(characterId) {
+export function useCharacterAction(characterId) {
   if (!canUseCharacterAction(characterId)) return;
-  const c = roster.find(member => member.id === characterId);
+  const c = gameState.roster.find(member => member.id === characterId);
   const def = CHAR_DEFS[characterId];
   const action = def.action;
   c.manualActionCd = action.cooldown * 1000 * actionLineCooldownMult(c);
@@ -425,34 +444,34 @@ function useCharacterAction(characterId) {
     // 強化線放大幅度（design.md 98：專屬操作本身有數值時比照技能線疊倍率），
     // 冷卻縮短則走 actionLineCooldownMult，兩者是各自獨立的加成。
     const scale = lineScale(c, 'action');
-    partyBuff.mult = 1 + action.atkPct * scale;
-    partyBuff.until = action.duration * 1000;
-    partyDefense.bonus = Math.round(action.defAmount * scale);
-    partyDefense.until = action.duration * 1000;
+    gameState.partyBuff.mult = 1 + action.atkPct * scale;
+    gameState.partyBuff.until = action.duration * 1000;
+    gameState.partyDefense.bonus = Math.round(action.defAmount * scale);
+    gameState.partyDefense.until = action.duration * 1000;
     log(`${def.name} 發動【${action.name}】，攻擊力與防禦力同時提升！`, 'party');
     emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: characterId, skill: action });
     emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: characterId, text: 'ATK/DEF UP', cls: 'buff' });
   }
 }
 
-function doWipeReset() {
-  if (phase === PHASES.DEFEAT) return;
+export function doWipeReset() {
+  if (gameState.phase === PHASES.DEFEAT) return;
   setPhase(PHASES.DEFEAT);
   emitCombatEvent({ type: 'defeat' });
 }
 
-function doRetreat() {
-  log(`結束遠征，本次取得的 ${runGold} 金幣與物品全部保留。回家休息，全隊回滿血`, 'good');
+export function doRetreat() {
+  log(`結束遠征，本次取得的 ${gameState.runGold} 金幣與物品全部保留。回家休息，全隊回滿血`, 'good');
   endRun();
 }
 
-function tick() {
+export function tick() {
   tickShopIdle(); // shop.js - the dungeon shop's auto-leave countdown runs independent of COMBAT phase
-  if (activeOverlay === 'dialogue') return;
-  if (phase !== PHASES.COMBAT) return; // waiting on the player to confirm prepFloor/prepBoss
+  if (gameState.activeOverlay === 'dialogue') return;
+  if (gameState.phase !== PHASES.COMBAT) return; // waiting on the player to confirm prepFloor/prepBoss
 
-  Object.keys(combatItemCooldowns).forEach(itemId => {
-    combatItemCooldowns[itemId] = Math.max(0, combatItemCooldowns[itemId] - MASTER_TICK_MS);
+  Object.keys(gameState.combatItemCooldowns).forEach(itemId => {
+    gameState.combatItemCooldowns[itemId] = Math.max(0, gameState.combatItemCooldowns[itemId] - MASTER_TICK_MS);
   });
 
   const alive = activeAliveMembers();
@@ -468,10 +487,10 @@ function tick() {
 
   // centralized death sweep - catches monsters killed by attacks, skills, or
   // (via popGoo, which runs outside this loop on click) a goo pop.
-  monsters.filter(m => m.alive && m.hp <= 0).forEach(m => onMonsterDefeated(m));
+  gameState.monsters.filter(m => m.alive && m.hp <= 0).forEach(m => onMonsterDefeated(m));
 }
 
-function tickCharacters(alive) {
+export function tickCharacters(alive) {
   alive.forEach(c => {
     if (!c.alive) return;
     const skills = CHAR_DEFS[c.id].skills;
@@ -533,26 +552,26 @@ function tickCharacters(alive) {
   });
 }
 
-function tickBuffs() {
-  if (partyBuff.until > 0) {
-    partyBuff.until -= MASTER_TICK_MS;
-    if (partyBuff.until <= 0) {
-      partyBuff.mult = 1;
+export function tickBuffs() {
+  if (gameState.partyBuff.until > 0) {
+    gameState.partyBuff.until -= MASTER_TICK_MS;
+    if (gameState.partyBuff.until <= 0) {
+      gameState.partyBuff.mult = 1;
       log('戰吼效果結束');
     }
   }
 
-  if (partyDefense.until > 0) {
-    partyDefense.until -= MASTER_TICK_MS;
-    if (partyDefense.until <= 0) {
-      partyDefense.bonus = 0;
+  if (gameState.partyDefense.until > 0) {
+    gameState.partyDefense.until -= MASTER_TICK_MS;
+    if (gameState.partyDefense.until <= 0) {
+      gameState.partyDefense.bonus = 0;
       log('防禦提升效果結束');
     }
   }
 }
 
-function tickMonsters() {
-  const boss = monsters.find(m => m.isBoss);
+export function tickMonsters() {
+  const boss = gameState.monsters.find(m => m.isBoss);
   if (boss && boss.alive) {
     gooTick(boss);
     bossSummonTick(boss);
@@ -594,10 +613,10 @@ function tickMonsters() {
 // the single slot to them - no deselecting down to an empty party, no being
 // blocked because "the slot is full". Multiplayer will need a real
 // add/remove toggle again once SOLO_PARTY_LIMIT goes away.
-function toggleParty(id) {
-  if (phase === PHASES.COMBAT) return; // locked once the fight has started
-  if (partyLocked) return; // locked for the whole run once you've entered the dungeon
+export function toggleParty(id) {
+  if (gameState.phase === PHASES.COMBAT) return; // locked once the fight has started
+  if (gameState.partyLocked) return; // locked for the whole run once you've entered the dungeon
   if (!isCharUnlocked(id)) return; // can't take a locked character into the dungeon
-  if (party.includes(id)) return; // already the chosen one - clicking it again does nothing
-  party = [id];
+  if (gameState.party.includes(id)) return; // already the chosen one - clicking it again does nothing
+  gameState.party = [id];
 }

@@ -1,12 +1,25 @@
+import { localizedItemDef, DEFEAT_RESTART_DELAY_MS, CHAR_DEFS, localizedRegionDef } from './constants.js';
+import { gameState, PHASES, log, contractStoryLocked, setPhase, speedLineIntervalMult } from './state.js';
+import { t, formatLocaleNumber } from './i18n.js';
+import { playTransientAnimation, beginManagedTransition, afterAnimationPaint, removeAfterAnimation } from './transitions.js';
+import { leaveShop } from './shop.js';
+import { setCombatItemPickerOpen, setCharmPickerOpen } from './ui-loadout.js';
+import { setInventoryOpen } from './ui-commerce.js';
+import { setCharacterDetailOpen } from './ui-character.js';
+import { closeDialogue, closeTravelJournal, closeContractPanel } from './story.js';
+import { endRun, spawnWave } from './combat.js';
+import { render, buildBattleRoster } from './ui-main.js';
+import { flushCombat } from './ui-combat-effects.js';
+
 // build the static DOM once; render() only ever mutates values afterwards
 // so popups/flash animations in flight never get wiped mid-way.
 
 // --- visual juice: floating numbers + hit flash, independent of render() ---
 // Registry of how to close each overlay by id, kept next to `activeOverlay`
-// (state.js) so there is exactly one place that knows how to tear each one
-// down - shop goes through leaveShop() for its log line/shopMode reset, the
-// rest just hide their DOM node and clear activeOverlay.
-const OVERLAY_CLOSERS = {
+// (state.js's gameState) so there is exactly one place that knows how to tear
+// each one down - shop goes through leaveShop() for its log line/shopMode
+// reset, the rest just hide their DOM node and clear activeOverlay.
+export const OVERLAY_CLOSERS = {
   shop: () => leaveShop(false),
   inventory: () => setInventoryOpen(false),
   combatItemPicker: () => setCombatItemPickerOpen(false),
@@ -19,33 +32,35 @@ const OVERLAY_CLOSERS = {
 
 // The preparation phase is a small location hub: village is the outer layer,
 // while character/loadout management lives inside the home location.
-let prepLocation = 'village';
-let homeMode = 'menu';
-let homeEls = {};
-let lastRenderedSurface = null;
-let defeatRestartTimer = null;
-let defeatRestartDeadline = 0;
+export const overlayUiState = {
+  prepLocation: 'village',
+  homeMode: 'menu',
+  homeEls: {},
+  lastRenderedSurface: null,
+  defeatRestartTimer: null,
+  defeatRestartDeadline: 0,
+};
 
 // Call before opening `nextId`: enforces "only one overlay/popover open at a
 // time" so callers never have to manually juggle every other overlay's flag.
-function closeOtherOverlays(nextId) {
-  if (activeOverlay && activeOverlay !== nextId) OVERLAY_CLOSERS[activeOverlay]();
+export function closeOtherOverlays(nextId) {
+  if (gameState.activeOverlay && gameState.activeOverlay !== nextId) OVERLAY_CLOSERS[gameState.activeOverlay]();
 }
 
-function animateSurfaceChange(surface, key) {
-  if (!surface || key === lastRenderedSurface) return;
-  lastRenderedSurface = key;
+export function animateSurfaceChange(surface, key) {
+  if (!surface || key === overlayUiState.lastRenderedSurface) return;
+  overlayUiState.lastRenderedSurface = key;
   playTransientAnimation(surface, 'surfaceEntering');
 }
 
-function renderRunResultSummary(targetId, gold) {
+export function renderRunResultSummary(targetId, gold) {
   const rewards = [];
   if (gold > 0) {
     const coin = localizedItemDef('coin');
     rewards.push({ name: coin.name, img: coin.img, qty: gold });
   }
 
-  Object.entries(runItemGains).forEach(([itemId, qty]) => {
+  Object.entries(gameState.runItemGains).forEach(([itemId, qty]) => {
     const item = localizedItemDef(itemId);
     if (!item || itemId === 'coin' || qty <= 0) return;
     rewards.push({ name: item.name, img: item.img, qty });
@@ -66,33 +81,33 @@ function renderRunResultSummary(targetId, gold) {
   `).join('');
 }
 
-function showDefeatOverlay() {
-  if (activeOverlay && OVERLAY_CLOSERS[activeOverlay]) OVERLAY_CLOSERS[activeOverlay]();
-  renderRunResultSummary('defeatSummary', runGold);
+export function showDefeatOverlay() {
+  if (gameState.activeOverlay && OVERLAY_CLOSERS[gameState.activeOverlay]) OVERLAY_CLOSERS[gameState.activeOverlay]();
+  renderRunResultSummary('defeatSummary', gameState.runGold);
   const overlay = document.getElementById('defeatOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
   clearDefeatRestartTimer();
-  defeatRestartDeadline = Date.now() + DEFEAT_RESTART_DELAY_MS;
+  overlayUiState.defeatRestartDeadline = Date.now() + DEFEAT_RESTART_DELAY_MS;
   updateDefeatRestartCountdown();
-  defeatRestartTimer = setInterval(updateDefeatRestartCountdown, 250);
+  overlayUiState.defeatRestartTimer = setInterval(updateDefeatRestartCountdown, 250);
 }
 
-function clearDefeatRestartTimer() {
-  if (defeatRestartTimer !== null) clearInterval(defeatRestartTimer);
-  defeatRestartTimer = null;
-  defeatRestartDeadline = 0;
+export function clearDefeatRestartTimer() {
+  if (overlayUiState.defeatRestartTimer !== null) clearInterval(overlayUiState.defeatRestartTimer);
+  overlayUiState.defeatRestartTimer = null;
+  overlayUiState.defeatRestartDeadline = 0;
 }
 
-function updateDefeatRestartCountdown() {
-  const seconds = Math.max(0, Math.ceil((defeatRestartDeadline - Date.now()) / 1000));
+export function updateDefeatRestartCountdown() {
+  const seconds = Math.max(0, Math.ceil((overlayUiState.defeatRestartDeadline - Date.now()) / 1000));
   document.getElementById('defeatRestartCountdown').textContent = t('result.autoRestartIn', {
     seconds: formatLocaleNumber(seconds),
   });
   if (seconds <= 0) restartAfterDefeat();
 }
 
-function settleDefeat() {
+export function settleDefeat() {
   clearDefeatRestartTimer();
   const overlay = document.getElementById('defeatOverlay');
   overlay.classList.remove('open');
@@ -101,31 +116,31 @@ function settleDefeat() {
   endRun();
 }
 
-function returnToVillageAfterDefeat() {
+export function returnToVillageAfterDefeat() {
   settleDefeat();
   render();
 }
 
-function restartAfterDefeat() {
-  if (phase !== PHASES.DEFEAT) return;
+export function restartAfterDefeat() {
+  if (gameState.phase !== PHASES.DEFEAT) return;
   settleDefeat();
-  if (contractStoryLocked() || party.length === 0) {
+  if (contractStoryLocked() || gameState.party.length === 0) {
     render();
     return;
   }
-  prepLocation = 'expedition';
+  overlayUiState.prepLocation = 'expedition';
   render();
   showDungeonEntry(prepareDungeonCombat, activatePreparedCombat);
 }
 
-function showVictoryOverlay(securedGold) {
+export function showVictoryOverlay(securedGold) {
   renderRunResultSummary('victorySummary', securedGold);
   const overlay = document.getElementById('victoryOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
 }
 
-function confirmVictory() {
+export function confirmVictory() {
   const overlay = document.getElementById('victoryOverlay');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
@@ -133,7 +148,7 @@ function confirmVictory() {
   render();
 }
 
-function showBossIntro(onComplete) {
+export function showBossIntro(onComplete) {
   const overlay = document.getElementById('bossIntroOverlay');
   if (overlay.classList.contains('open')) return;
   const transition = beginManagedTransition('bossIntro');
@@ -155,7 +170,7 @@ function showBossIntro(onComplete) {
   transition.after(5600, finish);
 }
 
-function showDungeonEntry(onCovered, onComplete = null) {
+export function showDungeonEntry(onCovered, onComplete = null) {
   const overlay = document.getElementById('dungeonEntryOverlay');
   if (overlay.classList.contains('open') && !overlay.classList.contains('finished')) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -164,7 +179,7 @@ function showDungeonEntry(onCovered, onComplete = null) {
     return;
   }
 
-  const region = localizedRegionDef(floor);
+  const region = localizedRegionDef(gameState.floor);
   const art = document.getElementById('dungeonEntryArt');
   art.src = `assets/ui/${region.image}.png`;
   art.alt = region.name;
@@ -197,32 +212,32 @@ function showDungeonEntry(onCovered, onComplete = null) {
   transition.after(2850, finish);
 }
 
-function prepareCombat(entryPhase) {
-  partyLocked = true;
+export function prepareCombat(entryPhase) {
+  gameState.partyLocked = true;
   setPhase(entryPhase);
   buildBattleRoster();
   spawnWave();
-  party.forEach(id => {
-    const c = roster.find(r => r.id === id);
+  gameState.party.forEach(id => {
+    const c = gameState.roster.find(r => r.id === id);
     c.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(c);
   });
   flushCombat();
 }
 
-function prepareDungeonCombat() {
+export function prepareDungeonCombat() {
   prepareCombat(PHASES.DUNGEON_INTRO);
 }
 
-function prepareBossCombat() {
+export function prepareBossCombat() {
   prepareCombat(PHASES.BOSS_INTRO);
 }
 
-function activatePreparedCombat() {
+export function activatePreparedCombat() {
   setPhase(PHASES.COMBAT);
   render();
 }
 
-function popup(portraitEl, text, cls) {
+export function popup(portraitEl, text, cls) {
   if (!portraitEl) return;
   const span = document.createElement('div');
   span.className = 'popup ' + cls;
@@ -234,7 +249,7 @@ function popup(portraitEl, text, cls) {
 // skill-cast flourish: briefly shows the skill's own icon fading over the
 // caster's portrait, so casting a skill reads visually distinct from a
 // plain auto-attack even before the damage/heal number lands.
-function showSkillCastEffect(portraitEl, skill) {
+export function showSkillCastEffect(portraitEl, skill) {
   if (!portraitEl) return;
   const el = document.createElement('div');
   el.className = 'castIcon';
@@ -246,9 +261,7 @@ function showSkillCastEffect(portraitEl, skill) {
   removeAfterAnimation(el, 850);
 }
 
-function flash(portraitEl) {
+export function flash(portraitEl) {
   if (!portraitEl) return;
   playTransientAnimation(portraitEl, 'hitFlash');
 }
-
-// --- hover tooltip: character/monster detailed stats ---

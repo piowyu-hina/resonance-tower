@@ -1,29 +1,22 @@
-function initGame() {
-  roster = Object.keys(CHAR_DEFS).map(id => {
-    const c = { id, level: 1, xp: 0, alive: true, skillCds: [0, 0, 0], manualActionCd: 0, actionCountdown: 0, hasteMult: 1, hasteUntil: 0, dodgeUntil: 0, slowMult: 1, slowUntil: 0, sleepUntilAction: false, charmedUntilAction: false, loadout: { activeItemId: null }, lineLevels: { atk: 0, def: 0, speed: 0, skill0: 0, skill1: 0, skill2: 0, action: 0 } };
-    recomputeStats(c);
-    c.curHp = c.maxHp;
-    return c;
-  });
-  party = ['wuming'];
-  floor = 1;
-  partyLocked = false;
-  mobsCleared = 0;
-  bankedGold = 0;
-  runGold = 0;
-  partyBuff = { mult: 1, until: 0 };
-  partyDefense = { bonus: 0, until: 0 };
-  logLines = [];
-  enterPrepFloor();
-}
+import { MASTER_TICK_MS } from './constants.js';
+import { gameState, PHASES, initGame } from './state.js';
+import { initI18n } from './i18n.js';
+import { render, buildUI } from './ui-main.js';
+import { renderJournalPage, runContractPreviewFromUrl } from './story.js';
+import { renderInventory } from './ui-commerce.js';
+import { initDebugTools } from './debug.js';
+import { initSaveSystem } from './save.js';
+import { flushCombat } from './ui-combat-effects.js';
+import { tick } from './combat.js';
+import { hasPendingCombatEvents } from './combat-events.js';
 
 // Game surface: suppress the browser context menu so right-clicks during
 // dragging/combat interaction do not interrupt play.
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('localechange', () => {
   render();
-  if (activeOverlay === 'journal') renderJournalPage();
-  if (activeOverlay === 'inventory') renderInventory();
+  if (gameState.activeOverlay === 'journal') renderJournalPage();
+  if (gameState.activeOverlay === 'inventory') renderInventory();
 });
 
 initI18n();
@@ -38,5 +31,5 @@ runContractPreviewFromUrl();
 // queued an event while phase had already moved off COMBAT (e.g. victory).
 setInterval(() => {
   tick();
-  if (phase === PHASES.COMBAT || combatEventQueue.length > 0) flushCombat();
+  if (gameState.phase === PHASES.COMBAT || hasPendingCombatEvents()) flushCombat();
 }, MASTER_TICK_MS);

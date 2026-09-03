@@ -1,9 +1,11 @@
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
+
 const translatedElement = {
   dataset: {
     i18n: 'header.bag',
@@ -23,34 +25,30 @@ const documentMock = {
   },
   dispatchEvent() {},
 };
-const context = vm.createContext({
-  Intl,
-  URLSearchParams,
-  location: { search: '' },
-  document: documentMock,
-  CustomEvent: class CustomEvent {
-    constructor(type, init) {
-      this.type = type;
-      this.detail = init.detail;
-    }
-  },
-});
-context.globalThis = context;
 
-for (const file of ['prototype/js/locales/zh-Hant.js', 'prototype/js/locales/en.js', 'prototype/js/i18n.js']) {
-  vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
-}
+global.document = documentMock;
+global.location = { search: '' };
+global.CustomEvent = class CustomEvent {
+  constructor(type, init) {
+    this.type = type;
+    this.detail = init.detail;
+  }
+};
 
-assert.equal(vm.runInContext("t('header.bag')", context), '物品庫');
-assert.equal(vm.runInContext("t('format.page', { current: 2, total: 5 })", context), '2／5');
-assert.equal(vm.runInContext("t('missing.translation')", context), 'missing.translation');
-assert.equal(vm.runInContext("resolveLocale('zh-TW')", context), 'zh-Hant');
+const { t, resolveLocale, setLocale, initI18n } = await import('../prototype/js/i18n.js');
+const zhHant = (await import('../prototype/js/locales/zh-Hant.js')).default;
+const en = (await import('../prototype/js/locales/en.js')).default;
 
-vm.runInContext("currentLocale = 'en'", context);
-assert.equal(vm.runInContext("t('header.bag')", context), 'Bag');
-assert.equal(vm.runInContext("t('journal.next')", context), 'Next Page');
+assert.equal(t('header.bag'), '物品庫');
+assert.equal(t('format.page', { current: 2, total: 5 }), '2／5');
+assert.equal(t('missing.translation'), 'missing.translation');
+assert.equal(resolveLocale('zh-TW'), 'zh-Hant');
 
-vm.runInContext("currentLocale = 'zh-Hant'; applyTranslations()", context);
+setLocale('en');
+assert.equal(t('header.bag'), 'Bag');
+assert.equal(t('journal.next'), 'Next Page');
+
+setLocale('zh-Hant');
 assert.equal(documentMock.title, '共鳴之塔｜Resonance Tower');
 assert.equal(documentMock.documentElement.lang, 'zh-Hant');
 assert.equal(translatedElement.textContent, '物品庫');
@@ -59,10 +57,8 @@ assert.equal(translatedElement.attributes['aria-label'], '開啟物品庫');
 const html = fs.readFileSync(path.join(root, 'prototype/index.html'), 'utf8');
 const markerPattern = /data-i18n(?:-(?:aria-label|alt|placeholder))?="([^"]+)"/g;
 const markerKeys = [...html.matchAll(markerPattern)].map(match => match[1]);
-const messages = context.RT_LOCALES['zh-Hant'];
-const englishMessages = context.RT_LOCALES.en;
-assert.deepEqual([...new Set(markerKeys.filter(key => !(key in messages)))], []);
-assert.deepEqual(Object.keys(messages).filter(key => !(key in englishMessages)), []);
+assert.deepEqual([...new Set(markerKeys.filter(key => !(key in zhHant)))], []);
+assert.deepEqual(Object.keys(zhHant).filter(key => !(key in en)), []);
 
 const sourceKeys = fs.readdirSync(path.join(root, 'prototype/js'))
   .filter(file => file.endsWith('.js'))
@@ -70,11 +66,11 @@ const sourceKeys = fs.readdirSync(path.join(root, 'prototype/js'))
     const source = fs.readFileSync(path.join(root, 'prototype/js', file), 'utf8');
     return [...source.matchAll(/\bt\(\s*['"]([^'"]+)['"]/g)].map(match => match[1]);
   });
-assert.deepEqual([...new Set(sourceKeys.filter(key => !(key in messages)))], []);
-assert.deepEqual([...new Set(sourceKeys.filter(key => !(key in englishMessages)))], []);
+assert.deepEqual([...new Set(sourceKeys.filter(key => !(key in zhHant)))], []);
+assert.deepEqual([...new Set(sourceKeys.filter(key => !(key in en)))], []);
 
-context.location.search = '?debug&lang=en';
-vm.runInContext('initI18n()', context);
+global.location.search = '?debug&lang=en';
+initI18n();
 assert.equal(documentMock.documentElement.lang, 'en');
 assert.equal(documentMock.title, 'Resonance Tower');
 assert.equal(translatedElement.textContent, 'Bag');

@@ -1,3 +1,9 @@
+import { gameState } from './state.js';
+import { drainCombatEvents } from './combat-events.js';
+import { popup, flash, showSkillCastEffect, showVictoryOverlay, showDefeatOverlay } from './ui-overlays.js';
+import { render, buildMonsterCards } from './ui-main.js';
+import { attachSkillTooltip } from './ui-loadout.js';
+
 // Consumes the combat-event queue (combat-events.js) that combat.js populates
 // instead of calling popup/flash/DOM functions directly. flushCombat() is the
 // one seam every combat-mutating call site uses: play whatever one-shot
@@ -6,7 +12,7 @@
 // both no-ops.
 
 function resolvePortraitEl(targetKind, targetId) {
-  const refs = targetKind === 'char' ? charEls[targetId] : monsterEls[targetId];
+  const refs = targetKind === 'char' ? gameState.charEls[targetId] : gameState.monsterEls[targetId];
   return refs && refs.portraitEl;
 }
 
@@ -28,7 +34,7 @@ function playCombatEvent(event) {
       // now-transparent card as a layout placeholder until the next wave
       // rebuild - removing it here makes every surviving enemy snap toward
       // the centre on the animation's final frame.
-      const refs = monsterEls[event.monsterId];
+      const refs = gameState.monsterEls[event.monsterId];
       if (refs) {
         refs.hpBar.style.width = '0%';
         refs.hpText.textContent = `0/${event.maxHp}`;
@@ -39,7 +45,7 @@ function playCombatEvent(event) {
     case 'bossVictoryCleanup':
       // Summons/remaining mobs don't linger once the boss is down.
       event.clearedIds.forEach(id => {
-        const card = monsterEls[id] && monsterEls[id].card;
+        const card = gameState.monsterEls[id] && gameState.monsterEls[id].card;
         if (card) card.remove();
       });
       break;
@@ -48,7 +54,7 @@ function playCombatEvent(event) {
       break;
     case 'monsterSummoned': {
       buildMonsterCards();
-      const bossPortrait = monsterEls[event.bossId] && monsterEls[event.bossId].portraitEl;
+      const bossPortrait = gameState.monsterEls[event.bossId] && gameState.monsterEls[event.bossId].portraitEl;
       showSkillCastEffect(bossPortrait, event.skill);
       popup(bossPortrait, 'SUMMON', 'buff');
       break;
@@ -66,7 +72,7 @@ function playCombatEvents(events) {
   events.forEach(playCombatEvent);
 }
 
-function flushCombat() {
+export function flushCombat() {
   playCombatEvents(drainCombatEvents());
   render();
 }
@@ -76,8 +82,8 @@ function flushCombat() {
 // basic attack. The boss additionally has skill3 (黏液陣, the arena minigame),
 // shown as a second icon with its own independent cooldown.
 // (Moved here from combat.js - pure DOM construction, no battle logic.)
-function updateMonsterSkillIcons(m) {
-  const refs = monsterEls[m.id];
+export function updateMonsterSkillIcons(m) {
+  const refs = gameState.monsterEls[m.id];
   const container = refs.skillsEl;
   container.innerHTML = '';
 
