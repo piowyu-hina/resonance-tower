@@ -862,6 +862,8 @@ function renderShopView() {
   });
 }
 
+let selectedTransferSlot = null;
+
 function attachInventoryDrag(slot, collectionName, index) {
   slot.addEventListener('dragstart', e => {
     const collection = collectionName === 'storage' ? storage : inventory;
@@ -896,6 +898,27 @@ function attachInventoryDrag(slot, collectionName, index) {
   slot.addEventListener('dragend', () => {
     inventoryDragFrom = null;
     document.querySelectorAll('.inventorySlot').forEach(el => el.classList.remove('dragging', 'dragTarget'));
+  });
+  slot.addEventListener('click', () => {
+    const modal = document.getElementById('inventoryModal');
+    if (!modal.classList.contains('warehouseOpen')) return;
+    const collection = collectionName === 'storage' ? storage : inventory;
+    if (!selectedTransferSlot) {
+      if (!collection[index]) return;
+      selectedTransferSlot = { collectionName, index };
+      slot.classList.add('transferSelected');
+      return;
+    }
+    if (selectedTransferSlot.collectionName === collectionName && selectedTransferSlot.index === index) {
+      selectedTransferSlot = null;
+      slot.classList.remove('transferSelected');
+      return;
+    }
+    const source = selectedTransferSlot.collectionName === 'storage' ? storage : inventory;
+    const target = collectionName === 'storage' ? storage : inventory;
+    [source[selectedTransferSlot.index], target[index]] = [target[index], source[selectedTransferSlot.index]];
+    selectedTransferSlot = null;
+    renderInventory();
   });
 }
 
@@ -953,6 +976,7 @@ function setInventoryOpen(open, title = '背包') {
   if (open) closeOtherOverlays('inventory');
   activeOverlay = open ? 'inventory' : (activeOverlay === 'inventory' ? null : activeOverlay);
   if (open) {
+    selectedTransferSlot = null;
     const warehouseOpen = title === '倉庫';
     document.getElementById('inventoryTitle').textContent = title;
     document.getElementById('inventoryModal').classList.toggle('warehouseOpen', warehouseOpen);
