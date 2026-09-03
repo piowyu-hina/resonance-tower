@@ -1004,7 +1004,12 @@ function buildUI() {
   document.getElementById('victoryConfirmBtn').addEventListener('click', confirmVictory);
   document.getElementById('inventoryCloseBtn').addEventListener('click', () => setInventoryOpen(false));
   document.getElementById('inventoryOverlay').addEventListener('click', e => {
-    if (e.target.id === 'inventoryOverlay') setInventoryOpen(false);
+    const modal = document.getElementById('inventoryModal');
+    const clickedBackdrop = e.target.id === 'inventoryOverlay';
+    const clickedWarehouseBlank = modal.classList.contains('warehouseOpen')
+      && !e.target.closest('.inventoryPane')
+      && !e.target.closest('#inventoryCloseBtn');
+    if (clickedBackdrop || clickedWarehouseBlank) setInventoryOpen(false);
   });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && activeOverlay) OVERLAY_CLOSERS[activeOverlay]();
