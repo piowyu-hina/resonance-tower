@@ -894,7 +894,6 @@ img {
 }
 .logHeading { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; margin: 0 -10px 6px; padding: 7px 10px; border-bottom: 1px solid #30353c; background: rgba(20,22,26,.96); }
 .logHeading span { color: #c6ccd1; font-size: 13px; font-weight: 800; letter-spacing: .08em; }
-.logHeading small { color: #69737c; font-size: 11px; }
 .columnHeading span { color: #d7dadd; font-size: 12px; }
 .columnHeading small { color: #717982; font-size: 8px; font-weight: normal; letter-spacing: .08em; }
 .partyColumn .columnHeading { border-bottom-color: #435353; }

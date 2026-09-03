@@ -1464,9 +1464,16 @@ function render() {
   }
 
   const logEl = document.getElementById('log');
+  const logWasVisible = logEl.style.display === 'block';
+  const logWasAtBottom = !logWasVisible
+    || logEl.scrollHeight - logEl.scrollTop - logEl.clientHeight <= 8;
+  const previousLogScrollTop = logEl.scrollTop;
   logEl.style.display = phase === 'combat' ? 'block' : 'none';
-  logEl.innerHTML = `<div class="logHeading"><span>戰鬥紀錄</span><small>最新動態</small></div>${logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('')}`;
-  logEl.scrollTop = logEl.scrollHeight;
+  const logMarkup = `<div class="logHeading"><span>戰鬥紀錄</span></div>${logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('')}`;
+  if (logEl.innerHTML !== logMarkup) {
+    logEl.innerHTML = logMarkup;
+    logEl.scrollTop = logWasAtBottom ? logEl.scrollHeight : previousLogScrollTop;
+  }
   if (typeof renderSaveControls === 'function') renderSaveControls();
 }
 
