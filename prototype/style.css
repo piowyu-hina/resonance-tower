@@ -1688,10 +1688,6 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .regionChoose i { font-size: 20px; font-style: normal; transition: transform .16s; }
 .regionCard:hover .regionChoose i { transform: translateX(3px); }
 #expeditionRegionBrief { display: grid; grid-template-columns: 100px minmax(150px,1fr) minmax(320px,1.4fr); align-items: center; gap: 14px; margin-bottom: 12px; padding: 10px 13px; border: 1px solid #4a5158; border-radius: 11px; background: linear-gradient(110deg, #20282a, #20242a 52%, #25282c); }
-.expeditionRuleNote { display: flex; align-items: flex-start; gap: 8px; margin: -3px 0 12px; padding: 8px 11px; border: 1px solid #4a554d; border-radius: 8px; background: #202721; color: #98a59b; }
-.expeditionRuleNote > span { color: #b6c8b9; font-size: 13px; }
-.expeditionRuleNote p { margin: 0; font-size: 10px; line-height: 1.55; }
-.expeditionRuleNote b { margin-right: 8px; color: #d1dccf; font-size: 10px; }
 #expeditionRegionImage { width: 100px; height: 78px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.45)); }
 .expeditionRegionMain { min-width: 0; display: grid; gap: 3px; }
 .regionBriefKicker { color: #718e82; font-size: 8px; font-weight: 700; letter-spacing: .16em; }
