@@ -1962,16 +1962,17 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .skinOption.selected .skinPreview i { display: grid; }
 
 #defeatOverlay { display: none; position: fixed; inset: 0; z-index: 1200; padding: 20px; background: rgba(7,8,11,.88); align-items: center; justify-content: center; }
-#defeatOverlay.open { display: flex; animation: defeatFadeIn .7s ease both; }
+#defeatOverlay.open { display: flex; animation: runResultBackdropIn .22s ease-out both; }
+#defeatOverlay.open #defeatModal { animation: runResultModalIn .32s cubic-bezier(.2,.78,.28,1) .05s both; }
 #defeatModal { width: min(470px, 100%); padding: 34px 28px 26px; border: 1px solid #59444a; border-radius: 14px; background: radial-gradient(circle at 50% 0, #302329, #17191e 58%); box-shadow: 0 18px 70px rgba(0,0,0,.65); color: #d7d9de; text-align: center; }
 .defeatMark { color: #b77882; font-size: 12px; font-weight: 800; letter-spacing: .28em; }
 #defeatModal h2 { margin: 14px 0 10px; color: #eee8ea; font-size: 24px; }
 #defeatModal p { margin: 0 0 16px; color: #9ea2aa; font-size: 12px; line-height: 1.8; }
 #defeatConfirmBtn { min-width: 150px; padding: 10px 20px; border: 1px solid #79545d; border-radius: 7px; background: #4b3138; color: #f2e8eb; cursor: pointer; }
 #defeatConfirmBtn:hover { background: #604049; }
-@keyframes defeatFadeIn { from { opacity: 0; } to { opacity: 1; } }
 #victoryOverlay { display: none; position: fixed; inset: 0; z-index: 1200; padding: 20px; background: rgba(7,9,10,.86); align-items: center; justify-content: center; }
-#victoryOverlay.open { display: flex; animation: defeatFadeIn .7s ease both; }
+#victoryOverlay.open { display: flex; animation: runResultBackdropIn .22s ease-out both; }
+#victoryOverlay.open #victoryModal { animation: runResultModalIn .32s cubic-bezier(.2,.78,.28,1) .05s both; }
 #victoryModal { width: min(470px, 100%); padding: 34px 28px 26px; border: 1px solid #857048; border-radius: 14px; background: radial-gradient(circle at 50% 0, #393323, #181a1d 58%); box-shadow: 0 18px 70px rgba(0,0,0,.65); color: #dedbd2; text-align: center; }
 .victoryMark { color: #d4b96f; font-size: 12px; font-weight: 800; letter-spacing: .28em; }
 #victoryModal h2 { margin: 14px 0 10px; color: #f1ead8; font-size: 24px; }
@@ -1989,6 +1990,11 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .runResultSummary.secured .runResultItem b { color: #dec477; }
 .runResultEmpty { grid-column: 1 / -1; padding: 16px; border: 1px dashed rgba(255,255,255,.1); border-radius: 8px; color: #858991; font-size: 12px; text-align: center; }
 .runResultFoot { margin: -7px 0 20px; color: #83868e; font-size: 11px; }
+@keyframes runResultBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes runResultModalIn {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 #bossIntroOverlay { display: none; position: fixed; inset: 0; z-index: 1250; overflow: hidden; background: radial-gradient(circle, rgba(82,84,88,.34), rgba(5,7,8,.97) 66%); align-items: center; justify-content: center; }
 #bossIntroOverlay::after { content: ''; position: absolute; left: 50%; top: 57%; width: 90px; height: 32px; border: 7px solid rgba(205,208,211,.9); border-radius: 50%; opacity: 0; transform: translate(-50%,-50%) scale(.15); box-shadow: 0 0 24px rgba(205,208,211,.45); pointer-events: none; }
 #bossIntroOverlay.open { display: flex; animation: bossIntroBackdrop .35s ease both; }
