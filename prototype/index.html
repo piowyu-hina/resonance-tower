@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-33">
+<link rel="stylesheet" href="style.css?v=20260903-34">
 </head>
 <body>
 
@@ -101,6 +101,16 @@
           <div class="prepMsg">選擇這次遠征要前往的地區。</div>
         </div>
       </div>
+      <aside id="expeditionGuide" class="expeditionGuide" aria-live="polite">
+        <button id="expeditionGuideCharacter" class="expeditionGuideCharacter" type="button" aria-label="聽 Hina 說明">
+          <img src="assets/characters/hina_guide.png" alt="Hina">
+        </button>
+        <div class="expeditionGuideBubble">
+          <b>Hina</b>
+          <p id="expeditionGuideText">歡迎來到共鳴之塔。</p>
+          <button id="expeditionGuideNextBtn" type="button">下一句</button>
+        </div>
+      </aside>
       <div class="regionGrid">
         <button id="forestRegionBtn" class="regionCard" type="button">
           <span class="regionArt"><img src="assets/ui/slime_forest.png" alt="史萊姆叢林"></span>
@@ -285,20 +295,6 @@
   </div>
 </div>
 
-<div id="guideOverlay" hidden>
-  <aside id="guideCard" role="dialog" aria-modal="true" aria-live="polite">
-    <img src="assets/characters/hina_guide.png" alt="Hina">
-    <div class="guideBubble">
-      <div class="guideName">Hina</div>
-      <div id="guideText"></div>
-      <div class="guideActions">
-        <button id="guideSkipBtn" type="button">略過教學</button>
-        <button id="guideCloseBtn" type="button">知道了</button>
-      </div>
-    </div>
-  </aside>
-</div>
-
 <!-- 對話系統：靈魂契約等劇情橋段用，見 design.md「契約角色與解鎖」 -->
 <div id="dialogueOverlay" aria-hidden="true">
   <div id="soulResonance" aria-hidden="true">
@@ -332,12 +328,12 @@
 </div>
 
 <script src="js/constants.js?v=20260903-17"></script>
-<script src="js/state.js?v=20260903-32"></script>
+<script src="js/state.js?v=20260903-33"></script>
 <script src="js/goo.js?v=20260903-1"></script>
-<script src="js/combat.js?v=20260903-32"></script>
+<script src="js/combat.js?v=20260903-33"></script>
 <script src="js/story.js?v=20260903-1"></script>
-<script src="js/ui.js?v=20260903-33"></script>
+<script src="js/ui.js?v=20260903-34"></script>
 <script src="js/debug.js?v=20260903-1"></script>
-<script src="js/main.js?v=20260903-32"></script>
+<script src="js/main.js?v=20260903-33"></script>
 </body>
 </html>

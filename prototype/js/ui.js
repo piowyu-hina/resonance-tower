@@ -15,25 +15,16 @@ const OVERLAY_CLOSERS = {
   dialogue: () => closeDialogue(),
 };
 
-const GUIDE_COPY = {
-  village: '先在村莊熟悉環境吧。家裡可以培養角色、整理倉庫；準備好後再從遠征入口出發。',
-  expedition: '依序確認區域、選擇附身角色，再配置藥水與護符。都準備好後就能開始出擊。',
-  expeditionGold: '遠征途中取得的金幣可以在地城商店使用；成功撤退或通關後，才會安全帶回村莊。',
-  dungeonShop: '地城商店分成購買與出售兩頁。離開前記得確認補給，倒數結束後商店會自動關閉。',
-};
+const EXPEDITION_GUIDE_LINES = [
+  '歡迎來到共鳴之塔。',
+  '先選擇區域，再決定要附身的角色。',
+  '遠征中的收穫，要成功回來才會保留喔。',
+];
+let expeditionGuideLine = 0;
 
-function hideGuide() {
-  activeGuideId = null;
-  document.getElementById('guideOverlay').hidden = true;
-}
-
-function showGuideOnce(id) {
-  if (guideSkipped || seenGuideIds.has(id) || !GUIDE_COPY[id]) return;
-  seenGuideIds.add(id);
-  activeGuideId = id;
-  document.getElementById('guideText').textContent = GUIDE_COPY[id];
-  document.getElementById('guideOverlay').hidden = false;
-  document.getElementById('guideCloseBtn').focus();
+function advanceExpeditionGuide() {
+  expeditionGuideLine = (expeditionGuideLine + 1) % EXPEDITION_GUIDE_LINES.length;
+  document.getElementById('expeditionGuideText').textContent = EXPEDITION_GUIDE_LINES[expeditionGuideLine];
 }
 
 // The preparation phase is a small location hub: village is the outer layer,
@@ -1052,7 +1043,6 @@ function buildUI() {
   document.getElementById('forestRegionBtn').addEventListener('click', () => {
     prepLocation = 'expedition';
     render();
-    showGuideOnce('expedition');
   });
   document.getElementById('expeditionBackBtn').addEventListener('click', () => {
     prepLocation = 'regions';
@@ -1071,26 +1061,9 @@ function buildUI() {
       && !e.target.closest('#inventoryCloseBtn');
     if (clickedBackdrop || clickedWarehouseBlank) setInventoryOpen(false);
   });
-  document.getElementById('guideCloseBtn').addEventListener('click', hideGuide);
-  document.getElementById('guideSkipBtn').addEventListener('click', () => {
-    guideSkipped = true;
-    hideGuide();
-  });
+  document.getElementById('expeditionGuideCharacter').addEventListener('click', advanceExpeditionGuide);
+  document.getElementById('expeditionGuideNextBtn').addEventListener('click', advanceExpeditionGuide);
   document.addEventListener('keydown', e => {
-    const guideOverlay = document.getElementById('guideOverlay');
-    if (!guideOverlay.hidden) {
-      if (e.key === 'Escape') e.preventDefault();
-      if (e.key === 'Tab') {
-        const guideButtons = [document.getElementById('guideSkipBtn'), document.getElementById('guideCloseBtn')];
-        const currentIndex = guideButtons.indexOf(document.activeElement);
-        const nextIndex = e.shiftKey
-          ? (currentIndex <= 0 ? guideButtons.length - 1 : currentIndex - 1)
-          : (currentIndex >= guideButtons.length - 1 ? 0 : currentIndex + 1);
-        e.preventDefault();
-        guideButtons[nextIndex].focus();
-      }
-      return;
-    }
     if (e.key === 'Escape' && activeOverlay) OVERLAY_CLOSERS[activeOverlay]();
   });
   document.addEventListener('click', event => {

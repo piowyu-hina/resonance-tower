@@ -25,6 +25,5 @@ initGame();
 buildUI();
 initDebugTools();
 render();
-setTimeout(() => showGuideOnce('village'), 350);
 runContractPreviewFromUrl();
 setInterval(tick, MASTER_TICK_MS);

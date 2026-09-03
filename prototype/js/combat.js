@@ -12,7 +12,6 @@ function enterPrepBoss() {
   shopMode = 'dungeon';
   shopAutoLeave = true;
   shopCountdown = SHOP_IDLE_MS;
-  showGuideOnce('dungeonShop');
 }
 
 function resetBossEntryCooldowns() {
@@ -325,10 +324,8 @@ function onMonsterDefeated(m) {
   }
 
   const alive = activeAliveMembers();
-  const firstExpeditionGold = runGold <= 0;
   const gold = goldForKill(m.isBoss, floor);
   runGold += gold;
-  if (firstExpeditionGold && gold > 0) showGuideOnce('expeditionGold');
   const xpShare = m.isBoss ? BOSS_XP_SHARE : MOB_XP_SHARE;
   const xpGain = Math.round((xpPoolForFloor(floor) * xpShare) / Math.max(1, alive.length));
   alive.forEach(c => addXp(c, xpGain));
