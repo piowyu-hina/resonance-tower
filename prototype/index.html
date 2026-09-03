@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-6">
+<link rel="stylesheet" href="style.css?v=20260903-7">
 </head>
 <body>
 
@@ -21,7 +21,7 @@
       </div>
       <div class="headerLeft">
         <span id="floorLabel">史萊姆叢林</span>
-        <span id="goldLabel" tabindex="0" aria-label="查看金幣說明"></span>
+        <span id="goldLabel"></span>
       </div>
     </div>
     <div class="headerActions">
@@ -171,9 +171,9 @@
     <div class="shopHeader">
       <div class="shopHeading">
         <img src="assets/ui/shop.png" alt="">
-        <div><span id="shopTitle">地城商店</span><small>露咪的旅行補給</small></div>
+        <div><span id="shopTitle">地城商店</span></div>
       </div>
-      <div class="shopHeaderMeta"><span id="shopWallet" tabindex="0" aria-label="查看金幣說明"></span><span id="shopCountdown"></span></div>
+      <div class="shopHeaderMeta"><span id="shopCountdown"></span></div>
       <button id="shopLeaveBtn" type="button" aria-label="關閉商店">×</button>
     </div>
     <div class="shopLayout">
@@ -187,6 +187,7 @@
         </button>
       </aside>
       <main class="shopGoodsPanel">
+        <div id="shopWallet" aria-label="目前金幣"></div>
         <div class="shopSection">
           <div class="shopSectionTitle"><span>出售素材</span><small>把遠征收穫換成金幣</small></div>
           <div class="shopSellRow">
@@ -289,7 +290,7 @@
 <script src="js/goo.js?v=20260903-1"></script>
 <script src="js/combat.js?v=20260903-1"></script>
 <script src="js/story.js?v=20260903-1"></script>
-<script src="js/ui.js?v=20260903-6"></script>
+<script src="js/ui.js?v=20260903-7"></script>
 <script src="js/debug.js?v=20260903-1"></script>
 <script src="js/main.js?v=20260903-1"></script>
 </body>

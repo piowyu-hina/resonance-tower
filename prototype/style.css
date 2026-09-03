@@ -551,11 +551,6 @@ body {
 #tooltip .ttSkillsHead { margin-top: 4px; font-weight: bold; color: #e0a95a; }
 #tooltip .ttSkill { font-size: 10px; color: #999; }
 #tooltip .ttMissing { margin-top: 5px; color: #ff9b8e; font-size: 10px; }
-.coinTip { display: flex; align-items: center; gap: 8px; padding: 2px; }
-.coinTip > img { width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,.45)); }
-.coinTip b { color: #f3cb69; font-size: 13px; line-height: 1; }
-#tooltip:has(.coinTip) { max-width: 160px; padding: 7px; border-color: #78633b; border-radius: 8px; background: linear-gradient(145deg, #27231c, #15181b); box-shadow: 0 6px 18px rgba(0,0,0,.58); }
-
 /* --- backpack modal: UI shell only; opening it intentionally does not pause combat --- */
 #inventoryOverlay {
   display: none;
@@ -1422,28 +1417,27 @@ button:focus-visible,
 .navBackBtn:active { transform: translateY(0); }
 
 #shopOverlay { backdrop-filter: blur(4px); }
-#shopModal { border-color: #776543; background: linear-gradient(145deg, #2c2b29, #24272b 44%, #202328); box-shadow: 0 24px 70px rgba(0,0,0,.72), 0 0 0 1px rgba(235,190,100,.04) inset; }
+#shopModal { width: min(980px, calc(100vw - 20px)); min-height: 0; border-color: #776543; background: linear-gradient(145deg, #2c2b29, #24272b 44%, #202328); box-shadow: 0 24px 70px rgba(0,0,0,.72), 0 0 0 1px rgba(235,190,100,.04) inset; }
 .shopHeader { border-bottom-color: #554b39; background: linear-gradient(90deg, #302b23, #292a2d 46%, #292a2d); }
 .shopHeading { min-width: 0; display: flex; flex: 1; align-items: center; gap: 10px; }
 .shopHeading > img { width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 4px 5px rgba(0,0,0,.4)); }
 .shopHeading > div { min-width: 0; display: grid; gap: 2px; }
 #shopTitle { font-size: 19px; letter-spacing: .06em; }
 .shopHeading small { color: #8f8779; font-size: 9px; font-weight: normal; letter-spacing: .12em; }
-.shopHeaderMeta { display: flex; align-items: center; gap: 8px; margin-right: 10px; }
-#shopWallet { padding: 6px 10px; border: 1px solid #79663f; border-radius: 14px; background: #342d20; color: #efc76c; font-size: 11px; white-space: nowrap; }
-#shopWallet { display: flex; align-items: center; gap: 5px; }
-#shopWallet img { width: 17px; height: 17px; object-fit: contain; }
+.shopHeaderMeta { display: flex; align-items: center; gap: 8px; margin-left: auto; margin-right: 10px; }
+#shopWallet { width: fit-content; min-width: 126px; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 9px 18px; border: 2px solid #79663f; border-radius: 26px; background: #342d20; color: #efc76c; font-size: 18px; font-weight: 800; white-space: nowrap; }
+#shopWallet img { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
 #shopCountdown { margin: 0; padding: 5px 8px; border-radius: 5px; background: rgba(0,0,0,.16); color: #aaa397; }
 #shopCountdown:empty { display: none; }
-.shopLayout { grid-template-columns: minmax(260px,.72fr) minmax(500px,1.55fr); gap: 14px; }
+.shopLayout { grid-template-columns: minmax(280px,.76fr) minmax(500px,1.5fr); gap: 14px; }
 .shopKeeperPanel { position: sticky; top: 59px; gap: 0; overflow: hidden; border: 1px solid #564c3c; border-radius: 12px; background: radial-gradient(circle at 50% 30%, rgba(126,83,51,.2), transparent 48%), #1e2023; box-shadow: 0 12px 26px rgba(0,0,0,.2); }
-.shopKeeperArt { aspect-ratio: auto; height: min(460px, calc(100vh - 230px)); min-height: 260px; border: 0; border-radius: 0; background: radial-gradient(circle at 50% 40%, #403229, #202225 64%); }
+.shopKeeperArt { aspect-ratio: auto; height: min(360px, calc(100vh - 330px)); min-height: 250px; border: 0; border-radius: 0; background: radial-gradient(circle at 50% 40%, #403229, #202225 64%); }
 .shopKeeperArt img { padding: 8px 8px 0; }
 #shopDialogue { min-height: 88px; border: 0; border-top: 1px solid #564c3c; border-radius: 0; background: linear-gradient(180deg, #29251f, #222326); }
 #shopDialogue:hover { border-color: #7b6747; background: linear-gradient(180deg, #332c22, #27282b); }
 #shopKeeperName { padding: 2px 7px; border-radius: 8px; background: #765b2e; color: #ffe4a0; }
 #shopDialogueText { color: #ded7ca; font-size: 13px; line-height: 1.6; }
-.shopGoodsPanel { display: grid; gap: 12px; }
+.shopGoodsPanel { display: grid; align-content: start; gap: 12px; }
 .shopSection { margin: 0; padding: 15px; border-color: #484b4f; border-radius: 11px; background: rgba(29,32,36,.84); box-shadow: inset 0 1px rgba(255,255,255,.025); }
 .shopSectionTitle { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; padding-bottom: 9px; border-bottom: 1px solid #3e4146; }
 .shopSectionTitle span { color: #e0bd72; font-size: 14px; }
@@ -1456,6 +1450,8 @@ button:focus-visible,
 .shopItemCopy small { overflow: hidden; color: #858e98; font-size: 9px; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
 .shopOwned, #shopMonsterCrystalQty { padding: 4px 7px; border-radius: 9px; background: #1c2024; color: #9aa3ac; font-size: 10px !important; white-space: nowrap; }
 .shopSellActions button, .shopBuyRow button { min-height: 34px; border-color: #7a6846; background: linear-gradient(#59492e,#443822); color: #f4dfad; font-weight: 700; }
+.shopSellActions button, .shopBuyRow button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.shopPriceCoin { width: 19px !important; height: 19px !important; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
 .shopBuyRow button span { color: #ffd777; font-size: 13px; }
 .shopSellActions button:hover:not(:disabled), .shopBuyRow button:hover:not(:disabled) { border-color: #aa8c52; background: linear-gradient(#695738,#514226); }
 .shopFooter { justify-content: flex-end; }

@@ -237,25 +237,6 @@ function attachItemTooltip(el, item, entry) {
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-function coinTooltipHTML(context) {
-  const inShop = context === 'shop';
-  const inTown = inShop ? shopMode === 'town' : phase === 'prepFloor' && !partyLocked;
-  return `<div class="coinTip"><img src="assets/item/coin.png" alt=""><b>${inTown ? '金幣' : '遠征金幣'}</b></div>`;
-}
-
-function attachCoinTooltip(el, context) {
-  const show = event => {
-    tooltipEl.innerHTML = coinTooltipHTML(context);
-    tooltipEl.style.display = 'block';
-    event && event.clientX ? positionTooltip(event) : positionTooltipAbove(el);
-  };
-  el.addEventListener('mouseenter', show);
-  el.addEventListener('mousemove', positionTooltip);
-  el.addEventListener('mouseleave', hideTooltip);
-  el.addEventListener('focus', show);
-  el.addEventListener('blur', hideTooltip);
-}
-
 function attachCombatActionTooltip(el, getItemId) {
   el.addEventListener('mouseenter', e => {
     const itemId = getItemId();
@@ -826,7 +807,8 @@ function renderShopView() {
   if (!shopOpen) return;
   document.getElementById('shopTitle').textContent = shopMode === 'town' ? '城外商店' : '地城商店';
   const shopWallet = document.getElementById('shopWallet');
-  shopWallet.innerHTML = `<img src="assets/item/coin.png" alt="">${shopGold()}`;
+  const shopCoinIcon = shopMode === 'town' ? 'coin.png' : 'coin_out.png';
+  shopWallet.innerHTML = `<img src="assets/item/${shopCoinIcon}" alt="">${shopGold()}`;
   renderShopDialogue();
   document.getElementById('shopCountdown').textContent = shopMode === 'town'
     ? ''
@@ -836,14 +818,18 @@ function renderShopView() {
   const sellBtn = document.getElementById('shopSellAllBtn');
   sellBtn.textContent = crystalQty > 0 ? `全部賣出（+${crystalQty * SHOP_MONSTER_CRYSTAL_SELL_PRICE}）` : '沒有可出售物';
   sellBtn.disabled = crystalQty <= 0;
-  document.getElementById('shopSellOneBtn').disabled = crystalQty <= 0;
+  const sellOneBtn = document.getElementById('shopSellOneBtn');
+  sellOneBtn.innerHTML = `<img class="shopPriceCoin" src="assets/item/${shopCoinIcon}" alt="">${SHOP_MONSTER_CRYSTAL_SELL_PRICE}`;
+  sellOneBtn.disabled = crystalQty <= 0;
   const autoLeaveBtn = document.getElementById('shopAutoLeaveBtn');
   autoLeaveBtn.style.display = shopMode === 'dungeon' ? '' : 'none';
   autoLeaveBtn.textContent = shopAutoLeave ? '關閉 10 秒倒數' : '開啟 10 秒倒數';
   SHOP_ITEMS.forEach(offer => {
     const row = document.querySelector(`.shopBuyRow[data-item-id="${offer.itemId}"]`);
     row.querySelector('.shopOwned').textContent = `持有 ×${inventoryItemCount(offer.itemId)}`;
-    row.querySelector('button').disabled = shopGold() < offer.price;
+    const buyBtn = row.querySelector('button');
+    buyBtn.innerHTML = `<img class="shopPriceCoin" src="assets/item/${shopCoinIcon}" alt="">${offer.price}`;
+    buyBtn.disabled = shopGold() < offer.price;
   });
 }
 
@@ -917,8 +903,6 @@ function setInventoryOpen(open) {
 
 function buildUI() {
   tooltipEl = document.getElementById('tooltip');
-  attachCoinTooltip(document.getElementById('goldLabel'), 'header');
-  attachCoinTooltip(document.getElementById('shopWallet'), 'shop');
   buildShopUI();
   bindDialogueUI();
 
@@ -1334,7 +1318,7 @@ function render() {
   const goldLabel = document.getElementById('goldLabel');
   goldLabel.innerHTML = inFreeVillage
     ? `<img src="assets/item/coin.png" alt="金幣">${bankedGold}`
-    : `<img src="assets/item/coin.png" alt="金幣">${runGold}`;
+    : `<img src="assets/item/coin_out.png" alt="遠征金幣">${runGold}`;
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();
