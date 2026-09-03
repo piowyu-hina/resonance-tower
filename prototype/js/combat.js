@@ -14,6 +14,16 @@ function enterPrepBoss() {
   shopCountdown = SHOP_IDLE_MS;
 }
 
+function resetBossEntryCooldowns() {
+  party.forEach(id => {
+    const character = roster.find(member => member.id === id);
+    if (!character) return;
+    character.skillCds = character.skillCds.map(() => 0);
+    character.manualActionCd = 0;
+  });
+  combatItemCooldowns = {};
+}
+
 // mob-wave stat baselines got roughly halved from their old single-mob values
 // because 2~3 of them now hit the party simultaneously - still a rough first
 // pass (see design.md "平衡尚待調整"), tune freely later.

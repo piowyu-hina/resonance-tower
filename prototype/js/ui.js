@@ -1083,6 +1083,7 @@ function buildUI() {
     if (party.length === 0) return; // need at least one character to fight with
     if (phase === 'prepFloor' || phase === 'prepBoss') {
       if (phase === 'prepBoss') {
+        resetBossEntryCooldowns();
         phase = 'bossIntro';
         render();
         showBossIntro(beginCombat);
