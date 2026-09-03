@@ -1794,6 +1794,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .soulChoice img { width: 78px; height: 78px; }
 }
 #homeGrowthView > .navBackBtn { margin-bottom: 12px; }
+#homeView.showingGrowth > .homeTopbar { display: none; }
 .homeGrowthShell { min-height: 330px; }
 #homeRoster { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
 .homeGrowthCard {

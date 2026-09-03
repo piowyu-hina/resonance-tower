@@ -1479,7 +1479,9 @@ function renderPrepView() {
   const atRegions = phase === 'prepFloor' && !partyLocked && prepLocation === 'regions';
   renderRegionContext();
   document.getElementById('villageView').style.display = atVillage ? '' : 'none';
-  document.getElementById('homeView').style.display = atHome ? '' : 'none';
+  const homeView = document.getElementById('homeView');
+  homeView.style.display = atHome ? '' : 'none';
+  homeView.classList.toggle('showingGrowth', atHome && homeMode === 'growth');
   document.getElementById('homeMenu').hidden = !atHome || homeMode !== 'menu';
   document.getElementById('homeGrowthView').hidden = !atHome || homeMode !== 'growth';
   const storyLocked = contractStoryLocked();
