@@ -25,6 +25,7 @@ function freshContext() {
     clearGooArena = () => {};
     render = () => {};
     showVictoryOverlay = () => { globalThis.__victoryShown = true; };
+    addInventoryItem = () => {}; // shop.js isn't loaded here - loot drops aren't under test
     t = key => key; // i18n stub - regionName() needs it, translated text isn't under test here
   `, context);
   return context;
