@@ -293,6 +293,7 @@ function itemTooltipHTML(item, entry) {
     <div class="ttName">${item.name}</div>
     <div class="ttStat">${t('tooltip.rarity', { rarity: item.rarity })}</div>
     ${entry ? `<div class="ttStat">${t('tooltip.owned', { quantity: formatLocaleNumber(entry.qty) })}</div>` : ''}
+    ${entry && entry.unsecuredQty > 0 ? `<div class="ttStat ttUnsecured">${t('inventory.unsecuredHint', { quantity: formatLocaleNumber(entry.unsecuredQty) })}</div>` : ''}
     <div class="ttStat">${item.desc}</div>
   `;
 }
@@ -1010,9 +1011,13 @@ function attachInventoryDrag(slot, collectionName, index) {
 
 function renderItemGrid(grid, collection, collectionName) {
   grid.innerHTML = '';
+  const unsecuredBySlot = collectionName === 'inventory'
+    ? unsecuredQuantitiesBySlot(collection)
+    : collection.map(() => 0);
   collection.forEach((entry, index) => {
     const slot = document.createElement('div');
-    slot.className = `inventorySlot${entry ? '' : ' empty'}`;
+    const unsecuredQty = unsecuredBySlot[index];
+    slot.className = `inventorySlot${entry ? '' : ' empty'}${unsecuredQty > 0 ? ' unsecured' : ''}`;
     slot.dataset.slotIndex = index;
     slot.dataset.collection = collectionName;
     slot.draggable = !!entry;
@@ -1026,8 +1031,9 @@ function renderItemGrid(grid, collection, collectionName) {
       <img src="assets/item/${item.img}.png" alt="${item.name}" draggable="false">
       <span class="inventoryQty">×${entry.qty}</span>
       <span class="inventoryItemName">${item.name}</span>
+      ${unsecuredQty > 0 ? `<span class="inventoryRunGain">${t('inventory.unsecured', { quantity: formatLocaleNumber(unsecuredQty) })}</span>` : ''}
     `;
-    if (entry.itemId !== 'coin') attachItemTooltip(slot, item, entry);
+    if (entry.itemId !== 'coin') attachItemTooltip(slot, item, { ...entry, unsecuredQty });
   });
 }
 
@@ -1541,6 +1547,15 @@ function render() {
   const goldLabel = document.getElementById('goldLabel');
   goldLabel.style.display = inFreeVillage ? 'none' : '';
   goldLabel.innerHTML = inFreeVillage ? '' : `<img src="assets/item/coin.png" alt="遠征金幣">${runGold}`;
+  const unsecuredTotal = Object.values(runInventoryGains).reduce((total, quantity) => total + Math.max(0, quantity), 0);
+  const bagBtn = document.getElementById('bagBtn');
+  const bagRiskBadge = document.getElementById('bagRiskBadge');
+  bagBtn.classList.toggle('hasUnsecuredItems', unsecuredTotal > 0);
+  bagBtn.setAttribute('aria-label', unsecuredTotal > 0
+    ? t('header.openBagUnsecured', { quantity: formatLocaleNumber(unsecuredTotal) })
+    : t('header.openBag'));
+  bagRiskBadge.hidden = unsecuredTotal <= 0;
+  bagRiskBadge.textContent = unsecuredTotal > 99 ? '99+' : formatLocaleNumber(unsecuredTotal);
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();

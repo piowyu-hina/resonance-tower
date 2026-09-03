@@ -10,8 +10,16 @@ const source = [
   'prototype/js/save.js',
 ].map(file => fs.readFileSync(file, 'utf8')).join('\n');
 
-vm.runInThisContext(`${source}\nglobalThis.__saveTestApi = { normalizeSaveData };`);
-const { normalizeSaveData } = globalThis.__saveTestApi;
+vm.runInThisContext(`${source}\nglobalThis.__saveTestApi = { normalizeSaveData, unsecuredQuantitiesBySlot };`);
+const { normalizeSaveData, unsecuredQuantitiesBySlot } = globalThis.__saveTestApi;
+
+assert.deepEqual(
+  unsecuredQuantitiesBySlot(
+    [{ itemId: 'potion', qty: 5 }, { itemId: 'potion', qty: 3 }, null, { itemId: 'monsterCrystal', qty: 2 }],
+    { potion: 6, monsterCrystal: 1 },
+  ),
+  [5, 1, 0, 1],
+);
 
 const normalized = normalizeSaveData({
   format: 'resonance-tower-save',

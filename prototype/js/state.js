@@ -23,6 +23,20 @@ let inventory = Array.from({ length: INVENTORY_SLOT_COUNT }, () => null);
 let storage = Array.from({ length: STORAGE_SLOT_COUNT }, () => null);
 let runInventoryGains = {}; // itemId -> unsecured quantity found this expedition
 
+// Inventory stacks may contain both previously secured items and items gained
+// during the current expedition. Allocate the fungible unsecured total across
+// visible stacks so the UI can label the exact at-risk quantity without
+// changing the compact { itemId, qty } inventory format.
+function unsecuredQuantitiesBySlot(collection, gains = runInventoryGains) {
+  const remaining = { ...gains };
+  return collection.map(entry => {
+    if (!entry || entry.qty <= 0) return 0;
+    const unsecured = Math.min(entry.qty, Math.max(0, remaining[entry.itemId] || 0));
+    remaining[entry.itemId] = Math.max(0, (remaining[entry.itemId] || 0) - unsecured);
+    return unsecured;
+  });
+}
+
 // --- character unlocks (see design.md 角色解鎖系統) ---
 // Like level/xp, unlock progress is permanent meta-progression: endRun() never
 // touches these, wipe or not (only the gold stash gets nuked on a wipe).

@@ -107,6 +107,7 @@ img {
 #goldLabel > img { width: 16px; height: 16px; object-fit: contain; }
 
 #bagBtn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,6 +124,8 @@ img {
   font-weight: 800;
   cursor: pointer;
 }
+#bagRiskBadge { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; display: grid; place-items: center; padding: 0 4px; border: 1px solid #e6bd69; border-radius: 10px; background: #6c4821; box-shadow: 0 2px 7px rgba(0,0,0,.5); color: #ffe6a9; font-size: 10px; font-style: normal; line-height: 1; }
+#bagRiskBadge[hidden] { display: none; }
 #bagBtn:hover:not(:disabled) { border-color: #91abc1; background: linear-gradient(180deg, #4b647a, #374d61); transform: translateY(-1px); }
 #bagBtn:disabled { opacity: .35; cursor: not-allowed; }
 #townShopBtn {
@@ -649,7 +652,7 @@ img {
 }
 #inventoryOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 #inventoryModal {
-  width: min(430px, calc(100vw - 30px));
+  width: min(500px, calc(100vw - 30px));
   padding: 12px;
   border: 1px solid #59616c;
   border-radius: 10px;
@@ -698,7 +701,7 @@ img {
 @keyframes storagePanelFromRight { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
 .inventorySlot {
   position: relative;
-  min-height: 82px;
+  min-height: 90px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -709,6 +712,8 @@ img {
   background: #1b1e23;
 }
 .inventorySlot:not(.empty):hover { border-color: #8ba3bf; box-shadow: 0 0 8px rgba(110,155,205,0.35); }
+.inventorySlot.unsecured { border-color: #8b7040; background: linear-gradient(145deg, #29251d, #1b1e23 58%); box-shadow: inset 0 0 12px rgba(205,153,68,.08); }
+.inventorySlot.unsecured:hover { border-color: #c49a55; box-shadow: 0 0 9px rgba(196,154,85,.24), inset 0 0 12px rgba(205,153,68,.1); }
 .inventorySlot[draggable="true"] { cursor: grab; }
 .inventorySlot.dragging { opacity: 0.35; cursor: grabbing; }
 .inventorySlot.dragTarget { border-color: #e0c25a; background: #30333a; box-shadow: inset 0 0 8px rgba(224,194,90,0.25); }
@@ -717,7 +722,8 @@ img {
 .inventorySlot.empty.dragTarget { opacity: 1; background: #30333a; }
 .inventorySlot img { width: 42px; height: 42px; object-fit: contain; }
 .inventoryQty { position: absolute; right: 5px; bottom: 4px; color: #fff; font-size: 12px; font-weight: bold; }
-.inventoryItemName { font-size: 10px; color: #bbb; }
+.inventoryItemName { width: 100%; box-sizing: border-box; overflow: hidden; padding: 0 34px 0 5px; color: #bbb; font-size: 10px; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.inventoryRunGain { position: absolute; z-index: 1; top: 4px; left: 4px; padding: 2px 5px; border: 1px solid rgba(218,174,93,.55); border-radius: 8px; background: rgba(77,52,25,.9); color: #f0cf8d; font-size: 9px; font-weight: 800; line-height: 1.2; }
 .prepQuickSlots { display: flex; justify-content: center; gap: 7px; width: 100%; margin-top: 2px; padding-top: 6px; border-top: 1px solid #3d4149; }
 
 /* Manual combat commands stay visually separate from auto-fighting cards.

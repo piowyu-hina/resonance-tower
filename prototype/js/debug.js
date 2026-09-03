@@ -30,6 +30,11 @@ function initDebugTools() {
   if (requestedView === 'regions') prepLocation = 'regions';
   if (requestedView === 'expedition') prepLocation = 'expedition';
   if (requestedView === 'shop') openTownShop();
+  if (requestedView === 'inventory-risk') {
+    addInventoryItem('potion', 3, true);
+    addInventoryItem('monsterCrystal', 2, true);
+    setInventoryOpen(true);
+  }
   if (requestedView === 'boss') debugStartBossFight();
 }
 
