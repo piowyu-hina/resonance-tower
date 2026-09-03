@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-55">
+<link rel="stylesheet" href="style.css?v=20260903-56">
 </head>
 <body>
 
@@ -325,14 +325,14 @@
 
 <!-- 對話系統：靈魂契約等劇情橋段用，見 design.md「契約角色與解鎖」 -->
 <div id="dialogueOverlay" aria-hidden="true">
-  <div id="soulResonance" aria-hidden="true">
+  <div id="soulResonance" role="button" tabindex="-1" aria-label="繼續靈魂共鳴演出" aria-hidden="true">
     <div class="soulResonanceGlow"></div>
     <img id="soulResonanceOrb" src="assets/story/xiaochu_resonance_orb.png" alt="靈魂共鳴">
     <div class="soulMissingArt">缺少圖片<br><small>assets/story/xiaochu_resonance_orb.png</small></div>
     <div class="soulResonanceTitle">靈魂共鳴</div>
     <div class="soulInteractionHint">點擊繼續</div>
   </div>
-  <div id="contractFormed" aria-hidden="true">
+  <div id="contractFormed" role="button" tabindex="-1" aria-label="完成契約演出" aria-hidden="true">
     <div class="contractFormedStage">
       <img id="contractFormedMagicCircle" alt="">
       <img id="contractFormedCharacter" alt="">
@@ -359,7 +359,7 @@
 <script src="js/state.js?v=20260903-37"></script>
 <script src="js/goo.js?v=20260903-1"></script>
 <script src="js/combat.js?v=20260903-35"></script>
-<script src="js/story.js?v=20260903-6"></script>
+<script src="js/story.js?v=20260903-7"></script>
 <script src="js/ui.js?v=20260903-38"></script>
 <script src="js/debug.js?v=20260903-5"></script>
 <script src="js/main.js?v=20260903-33"></script>

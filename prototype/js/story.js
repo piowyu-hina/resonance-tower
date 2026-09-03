@@ -152,6 +152,7 @@ function startSoulResonance() {
   intro.setAttribute('aria-hidden', 'false');
   void intro.offsetWidth;
   intro.classList.add('playing');
+  intro.focus();
 }
 
 function finishSoulResonance() {
@@ -222,6 +223,7 @@ function openTravelJournal() {
   const overlay = document.getElementById('journalOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
+  document.getElementById('journalNextBtn').focus();
 }
 
 function closeTravelJournal(finished = false) {
@@ -257,6 +259,7 @@ function openContractPanel() {
   const overlay = document.getElementById('contractOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
+  (hasPendingSoul ? document.getElementById('xiaochuSoulBtn') : document.getElementById('contractCloseBtn')).focus();
 }
 
 function beginContractPreparation() {
@@ -319,6 +322,7 @@ function startContractFormed(characterId) {
   outro.setAttribute('aria-hidden', 'false');
   void outro.offsetWidth;
   outro.classList.add('playing');
+  outro.focus();
 }
 
 function finishContractFormed() {
@@ -369,12 +373,31 @@ function bindDialogueUI() {
   document.getElementById('contractCloseBtn').addEventListener('click', closeContractPanel);
   document.getElementById('xiaochuSoulBtn').addEventListener('click', () => {
     document.getElementById('contractConfirm').hidden = false;
+    document.getElementById('contractConfirmBtn').focus();
   });
   document.getElementById('contractCancelBtn').addEventListener('click', () => {
     document.getElementById('contractConfirm').hidden = true;
+    document.getElementById('xiaochuSoulBtn').focus();
   });
   document.getElementById('contractConfirmBtn').addEventListener('click', confirmXiaochuContract);
   document.addEventListener('keydown', event => {
+    if ((event.key === 'Enter' || event.key === ' ') && activeOverlay === 'dialogue') {
+      event.preventDefault();
+      if (dialoguePhase === 'intro') finishSoulResonance();
+      else if (dialoguePhase === 'dialogue') advanceDialogue();
+      else if (dialoguePhase === 'outro') finishContractFormed();
+      return;
+    }
+    if (event.key === 'Escape' && activeOverlay === 'journal') {
+      event.preventDefault();
+      closeTravelJournal(false);
+      return;
+    }
+    if (event.key === 'Escape' && activeOverlay === 'contract') {
+      event.preventDefault();
+      closeContractPanel();
+      return;
+    }
     if (event.key === 'F8' && !event.repeat) {
       event.preventDefault();
       previewContract('xiaochu');
