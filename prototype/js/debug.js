@@ -75,6 +75,14 @@ function runDebugAction(action) {
       character.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(character);
     });
     log('開發工具：下一波怪物清空後將觸發小初相遇', 'warn');
+  } else if (action === 'focus-particles') {
+    closeOtherOverlays(null);
+    activeOverlay = null;
+    phase = 'prepFloor';
+    partyLocked = false;
+    prepLocation = 'village';
+    resonanceState.xiaochu = 'goHome';
+    log('已啟用引導粒子測試：回家入口目前為聚焦目標。', 'warn');
   } else if (action === 'reset') {
     window.location.reload();
     return;
