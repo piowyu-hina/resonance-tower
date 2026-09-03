@@ -592,15 +592,20 @@ body {
 .inventoryPaneTitle img { width: 34px; height: 34px; object-fit: contain; }
 .inventoryPaneTitle b { color: #dbe0e5; font-size: 15px; }
 #inventoryTransferHint { display: none; align-self: center; justify-items: center; gap: 3px; color: #c7a761; font-size: 22px; }
-#inventoryModal.warehouseOpen { width: min(880px, calc(100vw - 30px)); }
-#inventoryModal.warehouseOpen { border-color: #665b47; background: linear-gradient(145deg, #292b2d, #22262a); }
-#inventoryModal.warehouseOpen #inventoryTransferLayout { grid-template-columns: minmax(0,1fr) 34px minmax(0,1fr); align-items: stretch; }
-#inventoryModal.warehouseOpen .inventoryPane { padding: 14px; border: 1px solid; border-radius: 11px; }
-#inventoryModal.warehouseOpen .backpackPane { border-color: #526475; background: linear-gradient(145deg, #252c33, #1d2228); }
-#inventoryModal.warehouseOpen .storagePane { border-color: #756344; background: linear-gradient(145deg, #302b23, #232321); }
+#inventoryModal.warehouseOpen { width: min(1180px, calc(100vw - 36px)); padding: 0; border: 0; background: transparent; box-shadow: none; }
+#inventoryModal.warehouseOpen .inventoryHeader { justify-content: flex-end; margin: 0 0 10px; }
+#inventoryModal.warehouseOpen #inventoryTitle { display: none; }
+#inventoryModal.warehouseOpen #inventoryCloseBtn { width: 34px; height: 34px; border-color: #717983; background: #30353b; box-shadow: 0 5px 14px rgba(0,0,0,.4); }
+#inventoryModal.warehouseOpen #inventoryTransferLayout { grid-template-columns: minmax(0,1fr) 50px minmax(0,1fr); align-items: stretch; }
+#inventoryModal.warehouseOpen .inventoryPane { min-height: 430px; padding: 18px; border: 1px solid; border-radius: 13px; box-shadow: 0 18px 38px rgba(0,0,0,.48); }
+#inventoryModal.warehouseOpen .backpackPane { border-color: #526475; background: linear-gradient(145deg, #29323a, #1b2026); animation: storagePanelFromLeft .24s ease-out both; }
+#inventoryModal.warehouseOpen .storagePane { border-color: #756344; background: linear-gradient(145deg, #342e24, #211f1b); animation: storagePanelFromRight .24s ease-out both; }
 #inventoryModal.warehouseOpen .storagePane .inventoryPaneTitle { border-bottom-color: #5b503c; }
 #inventoryModal.warehouseOpen .inventoryPaneTitle { display: flex; }
 #inventoryModal.warehouseOpen #inventoryTransferHint { display: grid; }
+#inventoryModal.warehouseOpen .inventoryNote { width: fit-content; margin: 12px auto 0; padding: 6px 11px; border-radius: 12px; background: rgba(19,22,25,.78); }
+@keyframes storagePanelFromLeft { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes storagePanelFromRight { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
 .inventorySlot {
   position: relative;
   min-height: 82px;
@@ -1414,6 +1419,7 @@ button:focus-visible,
 
 @media (max-width: 650px) {
   #inventoryModal.warehouseOpen #inventoryTransferLayout { grid-template-columns: 1fr; }
+  #inventoryModal.warehouseOpen .inventoryPane { min-height: 0; padding: 12px; }
   #inventoryModal.warehouseOpen #inventoryTransferHint { grid-auto-flow: column; justify-content: center; }
 }
 
