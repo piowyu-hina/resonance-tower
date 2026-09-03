@@ -1433,7 +1433,7 @@ button:focus-visible,
 .shopKeeperPanel { position: sticky; top: 59px; gap: 0; overflow: hidden; border: 1px solid #564c3c; border-radius: 12px; background: radial-gradient(circle at 50% 30%, rgba(126,83,51,.2), transparent 48%), #1e2023; box-shadow: 0 12px 26px rgba(0,0,0,.2); }
 .shopKeeperArt { aspect-ratio: auto; height: min(448px, calc(100vh - 190px)); min-height: 340px; border: 0; border-radius: 0; background: radial-gradient(circle at 50% 40%, #403229, #202225 64%); }
 .shopKeeperArt img { padding: 8px 8px 0; }
-#shopDialogue { position: absolute; z-index: 2; right: 12px; bottom: 14px; left: 12px; width: auto; min-height: 0; padding: 34px 13px 11px; border: 1px solid rgba(176,139,77,.55); border-radius: 11px; background: linear-gradient(145deg, rgba(45,37,28,.58), rgba(20,22,25,.72)); backdrop-filter: blur(2px); box-shadow: 0 8px 20px rgba(0,0,0,.3); }
+#shopDialogue { position: absolute; z-index: 2; right: 12px; bottom: 14px; left: 12px; width: auto; min-height: 0; padding: 43px 13px 12px; border: 1px solid rgba(176,139,77,.55); border-radius: 11px; background: linear-gradient(145deg, rgba(45,37,28,.58), rgba(20,22,25,.72)); backdrop-filter: blur(2px); box-shadow: 0 8px 20px rgba(0,0,0,.3); }
 #shopDialogue:hover { border-color: rgba(207,163,87,.72); background: linear-gradient(145deg, rgba(55,43,30,.62), rgba(24,25,27,.76)); }
 #shopKeeperName { padding: 2px 7px; border-radius: 8px; background: #765b2e; color: #ffe4a0; }
 #shopDialogueText { color: #ded7ca; font-size: 13px; line-height: 1.6; }
