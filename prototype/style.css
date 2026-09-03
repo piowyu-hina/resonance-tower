@@ -50,7 +50,7 @@ body {
   border-bottom: 1px solid #444;
   margin-bottom: 8px;
 }
-.headerLead { min-width: 0; display: flex; align-items: center; gap: 18px; }
+.headerLead { min-width: 0; display: flex; flex: 1 1 auto; align-items: center; gap: 18px; }
 .gameBrand { flex: 0 0 auto; display: flex; align-items: center; gap: 9px; }
 .brandSigil { position: relative; width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; }
 .brandSigil img { width: 100%; height: 100%; object-fit: contain; filter: brightness(.84) saturate(.88) drop-shadow(0 0 5px rgba(105,199,255,.28)); }
@@ -1488,6 +1488,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   padding-bottom: 12px;
   border-bottom: 1px solid #41464d;
 }
+.homeTopbar > div { min-width: 0; }
 #homeBackBtn, #regionBackBtn, #expeditionBackBtn {
   flex: 0 0 auto;
   padding: 7px 11px;
@@ -1554,7 +1555,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .homeGrowthLock { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; border-radius: 8px; background: rgba(19,21,25,.78); color: #aaa; font-size: 11px; }
 .homeGrowthCard.charLocked { cursor: default; filter: grayscale(.8); }
 .homeGrowthCard.charLocked .homeGrowthLock { display: flex; }
-.regionGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 340px)); gap: 14px; }
+.regionGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 370px)); gap: 14px; }
 .regionCard { overflow: hidden; padding: 0; border: 1px solid #56606a; border-radius: 11px; background: #252930; color: #ddd; cursor: pointer; text-align: left; }
 .regionCard:hover { border-color: #9b7d49; box-shadow: 0 0 14px rgba(210,164,78,.16); }
 .regionArt { height: 230px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid #454b52; background: #202329; color: #b98282; font-size: 12px; }
@@ -1562,7 +1563,26 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .regionArt small { margin-top: 5px; color: #806b6b; font-size: 9px; }
 .regionCopy { display: flex; flex-direction: column; gap: 5px; padding: 14px 16px 16px; }
 .regionCopy b { color: #efc16d; font-size: 17px; }
-.regionCopy small { color: #929aa2; font-size: 10px; }
+.regionCopy small { color: #a2a9b0; font-size: 11px; }
+.regionTitleRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.regionTitleRow em { padding: 3px 7px; border: 1px solid #5d695f; border-radius: 10px; background: #202721; color: #a9c3a9; font-size: 9px; font-style: normal; white-space: nowrap; }
+.regionIntel { display: grid; grid-template-columns: 58px minmax(0,1fr); align-items: center; gap: 7px; margin-top: 7px; color: #777f88; font-size: 9px; }
+.regionTags { display: flex; flex-wrap: wrap; gap: 4px; }
+.regionTags span { padding: 2px 6px; border: 1px solid #614d55; border-radius: 8px; background: #2c2328; color: #d1aab8; }
+.regionDrops { overflow: hidden; color: #b9ad8d; text-overflow: ellipsis; white-space: nowrap; }
+.regionChoose { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 9px; padding-top: 10px; border-top: 1px solid #3d4349; color: #d5b66f; font-size: 11px; font-weight: 700; }
+.regionChoose i { font-size: 20px; font-style: normal; transition: transform .16s; }
+.regionCard:hover .regionChoose i { transform: translateX(3px); }
+#expeditionRegionBrief { display: grid; grid-template-columns: 100px minmax(150px,1fr) minmax(320px,1.4fr); align-items: center; gap: 14px; margin-bottom: 12px; padding: 10px 13px; border: 1px solid #4a5158; border-radius: 11px; background: linear-gradient(110deg, #20282a, #20242a 52%, #25282c); }
+#expeditionRegionImage { width: 100px; height: 78px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.45)); }
+.expeditionRegionMain { min-width: 0; display: grid; gap: 3px; }
+.regionBriefKicker { color: #718e82; font-size: 8px; font-weight: 700; letter-spacing: .16em; }
+.expeditionRegionMain b { color: #efc16d; font-size: 17px; }
+.expeditionRegionMain small { color: #949ca4; font-size: 10px; }
+.expeditionRegionFacts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+.expeditionRegionFacts > span { min-width: 0; display: grid; gap: 3px; padding: 7px 8px; border-left: 2px solid #58605f; background: rgba(18,21,24,.45); }
+.expeditionRegionFacts small { color: #747d86; font-size: 8px; }
+.expeditionRegionFacts b { overflow: hidden; color: #c7ccd0; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 #expeditionView #prepRoster { align-items: stretch; }
 #expeditionView #prepRoster { display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); }
 .expeditionCharacter {
@@ -1668,19 +1688,24 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .villageLocation { min-height: 270px; }
   .villageLocationArt { height: 192px; }
   .villageLocationMissing { display: none; }
+  #expeditionRegionBrief { grid-template-columns: 80px 1fr; }
+  #expeditionRegionImage { width: 80px; height: 66px; }
+  .expeditionRegionFacts { grid-column: 1 / -1; }
 }
 
 @media (max-width: 520px) {
-  body { padding-top: 6px; }
-  #app { width: calc(100vw - 10px); padding: 6px; border-radius: 11px; }
+  html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+  body { display: block; padding: 6px 5px 20px; }
+  #app { width: 100%; max-width: 100%; min-width: 0; padding: 6px; border-radius: 11px; }
   #header { min-height: 46px; padding-inline: 3px; }
   .brandSigil { width: 29px; height: 29px; }
   .brandSigilFallback { width: 27px; height: 27px; font-size: 19px; }
-  .brandCopy b { font-size: 12px; }
+  .brandCopy { display: none; }
   .headerLead { gap: 7px; }
   #goldLabel { font-size: 11px; }
   #bagBtn { padding: 4px 6px; font-size: 12px; }
-  #debugToggleBtn { max-width: 54px; padding: 4px; font-size: 10px; }
+  #debugToggleBtn { max-width: 46px; padding: 4px; overflow: hidden; font-size: 0; }
+  #debugToggleBtn::after { content: 'DEV'; font-size: 9px; }
   #villageView { padding: 12px; }
   .villageIntro { margin-bottom: 14px; }
   .villageLocations { grid-template-columns: 1fr; }
@@ -1689,8 +1714,19 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .villageLocationArt { flex: 0 0 132px; height: 122px; }
   .villageExpedition .villageLocationArt { margin: 0; width: 132px; height: 122px; }
   .villageLocationCopy { justify-content: center; }
+  #prepView, #homeView, #regionView, #expeditionView, .homeRosterShell { min-width: 0; max-width: 100%; }
   #homeView, #regionView, #expeditionView { padding: 8px; }
   #expeditionSelectedSummary { align-items: stretch; flex-direction: column; }
+  #expeditionRegionBrief { grid-template-columns: 62px 1fr; padding: 8px; }
+  #expeditionRegionImage { width: 62px; height: 54px; }
+  .expeditionRegionFacts { gap: 4px; }
+  .expeditionRegionFacts > span { padding: 5px 6px; }
+  .expeditionRegionFacts b { text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
+  .homeTopbar { align-items: flex-start; }
+  .homeTopbar .prepHeading { font-size: 16px !important; overflow-wrap: anywhere; }
+  #expeditionView #prepRoster { grid-template-columns: minmax(0, 1fr); }
+  .expeditionCharacter { width: 100%; grid-template-columns: 110px minmax(0, 1fr); }
+  .expeditionCharacter .lockReq { max-width: 100%; overflow-wrap: anywhere; }
   .expeditionLoadout { justify-content: flex-start; }
   .homeInterior { min-height: 300px; flex-direction: column; gap: 12px; text-align: center; }
   .homeInterior img { width: min(220px,80%); }

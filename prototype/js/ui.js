@@ -1335,6 +1335,7 @@ function renderPrepView() {
   const atVillage = phase === 'prepFloor' && !partyLocked && prepLocation === 'village';
   const atHome = phase === 'prepFloor' && !partyLocked && prepLocation === 'home';
   const atRegions = phase === 'prepFloor' && !partyLocked && prepLocation === 'regions';
+  renderRegionContext();
   document.getElementById('villageView').style.display = atVillage ? '' : 'none';
   document.getElementById('homeView').style.display = atHome ? '' : 'none';
   document.getElementById('regionView').style.display = atRegions ? '' : 'none';
@@ -1387,6 +1388,25 @@ function renderPrepView() {
     refs.portrait.src = characterPortraitPath(c.id);
   });
   renderExpeditionSelectedSummary();
+}
+
+function renderRegionContext() {
+  const region = regionDef(floor);
+  const tagHTML = values => values.map(value => `<span>${value}</span>`).join('');
+  document.getElementById('forestRegionName').textContent = region.name;
+  document.getElementById('forestRegionLevel').textContent = `推薦 Lv.${region.recommendedLevel}`;
+  document.getElementById('forestRegionDescription').textContent = region.description;
+  document.getElementById('forestRegionThreats').innerHTML = tagHTML(region.threats);
+  document.getElementById('forestRegionDrops').textContent = region.drops.join('・');
+
+  const image = document.getElementById('expeditionRegionImage');
+  image.src = `assets/ui/${region.image}.png`;
+  image.alt = region.name;
+  document.getElementById('expeditionRegionName').textContent = region.name;
+  document.getElementById('expeditionRegionDescription').textContent = region.description;
+  document.getElementById('expeditionRegionLevel').textContent = `Lv.${region.recommendedLevel}`;
+  document.getElementById('expeditionRegionBoss').textContent = region.boss;
+  document.getElementById('expeditionRegionThreats').textContent = region.threats.join('・');
 }
 
 function renderCombatView() {

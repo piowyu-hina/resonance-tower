@@ -256,8 +256,19 @@ const MAX_IMPLEMENTED_FLOOR = 1; // raise this when floor 2 content is ready
 // but are framed to the player as named regions - floor 1 is 森林, the
 // forest just outside the village. Add an entry here when floor 2+ ships;
 // regionName() falls back to the raw floor number for anything not yet named.
-const REGION_NAMES = { 1: '史萊姆叢林' };
-function regionName(f) { return REGION_NAMES[f] || `樓層 ${f}`; }
+const REGION_DEFS = {
+  1: {
+    name: '史萊姆叢林',
+    description: '史萊姆棲息的近郊叢林',
+    image: 'slime_forest',
+    recommendedLevel: 8,
+    threats: ['緩速', '睡眠', '魅惑'],
+    drops: ['魔物結晶', '能力書', '技能書'],
+    boss: '史萊姆王',
+  },
+};
+function regionDef(f) { return REGION_DEFS[f] || { name: `樓層 ${f}`, description: '未知區域', image: '', recommendedLevel: 1, threats: ['未知'], drops: ['未知'], boss: '未知' }; }
+function regionName(f) { return regionDef(f).name; }
 const MOBS_PER_FLOOR = 2;   // clear this many mob WAVES (each wave = 2~3 mobs) before the boss shows up
 // mob XP share got cut from 0.25 to 0.1 when mobs went from 1-at-a-time to
 // 2~3-at-a-time - otherwise a floor's total mob XP would balloon to roughly

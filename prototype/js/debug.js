@@ -17,6 +17,10 @@ function initDebugTools() {
     if (!button) return;
     runDebugAction(button.dataset.debugAction);
   });
+
+  const requestedView = new URLSearchParams(window.location.search).get('view');
+  if (requestedView === 'regions') prepLocation = 'regions';
+  if (requestedView === 'expedition') prepLocation = 'expedition';
 }
 
 function runDebugAction(action) {

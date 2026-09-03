@@ -92,7 +92,13 @@
       <div class="regionGrid">
         <button id="forestRegionBtn" class="regionCard" type="button">
           <span class="regionArt"><img src="assets/ui/slime_forest.png" alt="史萊姆叢林"></span>
-          <span class="regionCopy"><b>史萊姆叢林</b><small>史萊姆棲息的近郊叢林</small></span>
+          <span class="regionCopy">
+            <span class="regionTitleRow"><b id="forestRegionName">史萊姆叢林</b><em id="forestRegionLevel">推薦 Lv.8</em></span>
+            <small id="forestRegionDescription">史萊姆棲息的近郊叢林</small>
+            <span class="regionIntel"><span>主要威脅</span><span id="forestRegionThreats" class="regionTags"></span></span>
+            <span class="regionIntel"><span>可能掉落</span><span id="forestRegionDrops" class="regionDrops"></span></span>
+            <span class="regionChoose">選擇此區域 <i aria-hidden="true">›</i></span>
+          </span>
         </button>
       </div>
     </div>
@@ -104,6 +110,19 @@
           <div class="prepMsg" id="prepMsg"></div>
         </div>
       </div>
+      <section id="expeditionRegionBrief" aria-label="目前選擇的遠征區域">
+        <img id="expeditionRegionImage" src="assets/ui/slime_forest.png" alt="">
+        <div class="expeditionRegionMain">
+          <span class="regionBriefKicker">本次遠征區域</span>
+          <b id="expeditionRegionName"></b>
+          <small id="expeditionRegionDescription"></small>
+        </div>
+        <div class="expeditionRegionFacts">
+          <span><small>推薦等級</small><b id="expeditionRegionLevel"></b></span>
+          <span><small>區域首領</small><b id="expeditionRegionBoss"></b></span>
+          <span><small>主要威脅</small><b id="expeditionRegionThreats"></b></span>
+        </div>
+      </section>
       <div class="homeRosterShell">
         <div class="homeSectionHeading" id="expeditionCharacterHeading">選擇附身角色</div>
         <div id="prepRoster"></div>
