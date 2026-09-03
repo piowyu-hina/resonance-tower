@@ -29,8 +29,34 @@ function closeOtherOverlays(nextId) {
   if (activeOverlay && activeOverlay !== nextId) OVERLAY_CLOSERS[activeOverlay]();
 }
 
+function renderRunResultSummary(targetId, gold) {
+  const rewards = [];
+  if (gold > 0) rewards.push({ name: ITEM_DEFS.coin.name, img: ITEM_DEFS.coin.img, qty: gold });
+
+  Object.entries(runInventoryGains).forEach(([itemId, qty]) => {
+    const item = ITEM_DEFS[itemId];
+    if (!item || itemId === 'coin' || qty <= 0) return;
+    rewards.push({ name: item.name, img: item.img, qty });
+  });
+
+  const summary = document.getElementById(targetId);
+  if (!rewards.length) {
+    summary.innerHTML = '<div class="runResultEmpty">本次沒有取得戰利品</div>';
+    return;
+  }
+
+  summary.innerHTML = rewards.map(reward => `
+    <div class="runResultItem">
+      <img src="assets/item/${reward.img}.png" alt="">
+      <span>${reward.name}</span>
+      <b>×${reward.qty.toLocaleString()}</b>
+    </div>
+  `).join('');
+}
+
 function showDefeatOverlay() {
   if (activeOverlay && OVERLAY_CLOSERS[activeOverlay]) OVERLAY_CLOSERS[activeOverlay]();
+  renderRunResultSummary('defeatSummary', runGold);
   const overlay = document.getElementById('defeatOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
@@ -46,7 +72,7 @@ function confirmDefeat() {
 }
 
 function showVictoryOverlay(securedGold) {
-  document.getElementById('victoryReward').textContent = `帶回 ${securedGold} 金幣。`;
+  renderRunResultSummary('victorySummary', securedGold);
   const overlay = document.getElementById('victoryOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');

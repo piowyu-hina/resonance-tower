@@ -284,7 +284,9 @@
   <div id="defeatModal" role="dialog" aria-modal="true" aria-labelledby="defeatTitle">
     <div class="defeatMark">遠征失敗</div>
     <h2 id="defeatTitle">意識逐漸遠去……</h2>
-    <p>這次遠征取得的金幣與戰利品已經遺失。<br>休息之後，再從村莊重新出發。</p>
+    <p>這些尚未入袋的戰利品已經遺失。</p>
+    <div id="defeatSummary" class="runResultSummary lost" aria-label="遺失的戰利品"></div>
+    <div class="runResultFoot">休息之後，再從村莊重新出發。</div>
     <button id="defeatConfirmBtn" type="button">回到村莊</button>
   </div>
 </div>
@@ -293,7 +295,8 @@
   <div id="victoryModal" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
     <div class="victoryMark">遠征完成</div>
     <h2 id="victoryTitle">首領已被擊敗</h2>
-    <p>本次遠征的戰利品已安全帶回。<br><span id="victoryReward"></span></p>
+    <p>本次遠征的戰利品已安全帶回。</p>
+    <div id="victorySummary" class="runResultSummary secured" aria-label="帶回的戰利品"></div>
     <button id="victoryConfirmBtn" type="button">返回村莊</button>
   </div>
 </div>
