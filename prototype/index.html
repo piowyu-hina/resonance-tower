@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-13">
+<link rel="stylesheet" href="style.css?v=20260903-14">
 </head>
 <body>
 
@@ -49,7 +49,6 @@
   <div class="panel" id="prepView">
     <div id="villageView">
       <div class="villageIntro">
-        <div class="sceneKicker">安全據點 · WAYFARER'S REST</div>
         <div class="prepHeading">村莊</div>
         <div class="prepMsg">回家整備、到商店補給，或從村口展開遠征。</div>
       </div>
@@ -231,7 +230,16 @@
       <span id="inventoryTitle">背包</span>
       <button id="inventoryCloseBtn" aria-label="關閉背包">×</button>
     </div>
-    <div id="inventoryGrid"></div>
+    <div id="inventoryTransferLayout">
+      <section class="inventoryPane">
+        <div class="inventoryPaneTitle">背包</div>
+        <div id="inventoryGrid"></div>
+      </section>
+      <section id="storagePane" class="inventoryPane" hidden>
+        <div class="inventoryPaneTitle">倉庫</div>
+        <div id="storageGrid"></div>
+      </section>
+    </div>
     <div class="inventoryNote">拖曳物品可以整理位置；能力書與技能書可在角色詳情中使用。</div>
   </div>
 </div>
@@ -293,12 +301,12 @@
   </div>
 </div>
 
-<script src="js/constants.js?v=20260903-1"></script>
-<script src="js/state.js?v=20260903-1"></script>
+<script src="js/constants.js?v=20260903-14"></script>
+<script src="js/state.js?v=20260903-14"></script>
 <script src="js/goo.js?v=20260903-1"></script>
 <script src="js/combat.js?v=20260903-1"></script>
 <script src="js/story.js?v=20260903-1"></script>
-<script src="js/ui.js?v=20260903-13"></script>
+<script src="js/ui.js?v=20260903-14"></script>
 <script src="js/debug.js?v=20260903-1"></script>
 <script src="js/main.js?v=20260903-1"></script>
 </body>

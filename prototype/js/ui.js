@@ -862,13 +862,14 @@ function renderShopView() {
   });
 }
 
-function attachInventoryDrag(slot, index) {
+function attachInventoryDrag(slot, collectionName, index) {
   slot.addEventListener('dragstart', e => {
-    if (!inventory[index]) {
+    const collection = collectionName === 'storage' ? storage : inventory;
+    if (!collection[index]) {
       e.preventDefault();
       return;
     }
-    inventoryDragFrom = index;
+    inventoryDragFrom = { collectionName, index };
     slot.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', String(index));
@@ -884,8 +885,11 @@ function attachInventoryDrag(slot, index) {
   slot.addEventListener('drop', e => {
     e.preventDefault();
     slot.classList.remove('dragTarget');
-    if (inventoryDragFrom === null || inventoryDragFrom === index) return;
-    [inventory[inventoryDragFrom], inventory[index]] = [inventory[index], inventory[inventoryDragFrom]];
+    if (inventoryDragFrom === null) return;
+    if (inventoryDragFrom.collectionName === collectionName && inventoryDragFrom.index === index) return;
+    const source = inventoryDragFrom.collectionName === 'storage' ? storage : inventory;
+    const target = collectionName === 'storage' ? storage : inventory;
+    [source[inventoryDragFrom.index], target[index]] = [target[index], source[inventoryDragFrom.index]];
     inventoryDragFrom = null;
     renderInventory();
   });
@@ -895,39 +899,53 @@ function attachInventoryDrag(slot, index) {
   });
 }
 
-function renderInventory() {
-  const grid = document.getElementById('inventoryGrid');
+function renderItemGrid(grid, collection, collectionName) {
   grid.innerHTML = '';
-  const goldSlot = document.createElement('div');
-  goldSlot.className = 'inventorySlot inventoryGoldSlot';
-  goldSlot.innerHTML = `<img src="assets/item/coin.png" alt="金幣"><span class="inventoryQty">${bankedGold}</span><span class="inventoryItemName">金幣</span>`;
-  grid.appendChild(goldSlot);
-  for (let index = 0; index < INVENTORY_SLOT_COUNT; index++) {
-    const entry = inventory[index];
+  collection.forEach((entry, index) => {
     const slot = document.createElement('div');
     slot.className = `inventorySlot${entry ? '' : ' empty'}`;
     slot.dataset.slotIndex = index;
+    slot.dataset.collection = collectionName;
     slot.draggable = !!entry;
     grid.appendChild(slot);
-    attachInventoryDrag(slot, index);
+    attachInventoryDrag(slot, collectionName, index);
 
-    if (!entry) continue;
+    if (!entry) return;
     const item = ITEM_DEFS[entry.itemId];
-    if (!item || entry.qty <= 0) continue;
+    if (!item || entry.qty <= 0) return;
     slot.innerHTML = `
       <img src="assets/item/${item.img}.png" alt="${item.name}" draggable="false">
       <span class="inventoryQty">×${entry.qty}</span>
       <span class="inventoryItemName">${item.name}</span>
     `;
     attachItemTooltip(slot, item, entry);
-  }
+  });
+}
 
+function renderInventory() {
+  const grid = document.getElementById('inventoryGrid');
+  grid.innerHTML = '';
+  const coinPosition = document.createElement('div');
+  coinPosition.className = `inventorySlot${bankedGold > 0 ? ' inventoryGoldSlot' : ' empty'}`;
+  if (bankedGold > 0) coinPosition.innerHTML = `<img src="assets/item/coin.png" alt="金幣"><span class="inventoryQty">${bankedGold}</span><span class="inventoryItemName">金幣</span>`;
+  grid.appendChild(coinPosition);
+  const itemGrid = document.createDocumentFragment();
+  const temporaryGrid = document.createElement('div');
+  renderItemGrid(temporaryGrid, inventory, 'inventory');
+  while (temporaryGrid.firstChild) itemGrid.appendChild(temporaryGrid.firstChild);
+  grid.appendChild(itemGrid);
+  renderItemGrid(document.getElementById('storageGrid'), storage, 'storage');
 }
 
 function setInventoryOpen(open, title = '背包') {
   if (open) closeOtherOverlays('inventory');
   activeOverlay = open ? 'inventory' : (activeOverlay === 'inventory' ? null : activeOverlay);
-  if (open) document.getElementById('inventoryTitle').textContent = title;
+  if (open) {
+    const warehouseOpen = title === '倉庫';
+    document.getElementById('inventoryTitle').textContent = title;
+    document.getElementById('inventoryModal').classList.toggle('warehouseOpen', warehouseOpen);
+    document.getElementById('storagePane').hidden = !warehouseOpen;
+  }
   const overlay = document.getElementById('inventoryOverlay');
   overlay.classList.toggle('open', open);
   overlay.setAttribute('aria-hidden', String(!open));

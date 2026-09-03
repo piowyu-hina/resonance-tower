@@ -586,6 +586,12 @@ body {
   cursor: pointer;
 }
 #inventoryGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+#storageGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+#inventoryTransferLayout { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.inventoryPaneTitle { display: none; margin-bottom: 8px; color: #d5b970; font-size: 14px; font-weight: 700; }
+#inventoryModal.warehouseOpen { width: min(880px, calc(100vw - 30px)); }
+#inventoryModal.warehouseOpen #inventoryTransferLayout { grid-template-columns: repeat(2, minmax(0,1fr)); }
+#inventoryModal.warehouseOpen .inventoryPaneTitle { display: block; }
 .inventorySlot {
   position: relative;
   min-height: 82px;
@@ -1400,6 +1406,10 @@ button:focus-visible,
   #actionArea button { flex-basis: auto; width: 100%; }
 }
 
+@media (max-width: 650px) {
+  #inventoryModal.warehouseOpen #inventoryTransferLayout { grid-template-columns: 1fr; }
+}
+
 /* --- Navigation and merchant shop refresh --- */
 .navBackBtn {
   display: inline-flex;
@@ -1851,7 +1861,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .expeditionRegionFacts > span { padding: 5px 6px; }
   .expeditionRegionFacts b { text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
   .homeTopbar { align-items: flex-start; }
-  .homeTopbar .prepHeading { font-size: 16px !important; overflow-wrap: anywhere; }
+  .homeTopbar .prepHeading { font-size: 19px !important; overflow-wrap: anywhere; }
   #expeditionView #prepRoster { grid-template-columns: minmax(0, 1fr); }
   .expeditionCharacter { width: 100%; grid-template-columns: 110px minmax(0, 1fr); }
   .expeditionCharacter .lockReq { max-width: 100%; overflow-wrap: anywhere; }
@@ -1859,3 +1869,18 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .homeInterior { min-height: 300px; flex-direction: column; gap: 12px; text-align: center; }
   .homeInterior img { width: min(220px,80%); }
 }
+
+/* Typography pass: primary labels and supporting copy stay readable across the hub UI. */
+.brandCopy b { font-size: 17px; }
+.brandCopy small { font-size: 10px; }
+#villageView .prepHeading { font-size: 29px; }
+#villageView .prepMsg { font-size: 14px; }
+.villageLocationCopy b { font-size: 17px; }
+.villageLocationCopy small { font-size: 12px; line-height: 1.5; }
+#homeView .prepHeading, #regionView .prepHeading, #expeditionView .prepHeading { font-size: 21px; }
+#homeView .prepMsg, #regionView .prepMsg, #expeditionView .prepMsg { font-size: 12px; line-height: 1.5; }
+.homeSectionHeading { font-size: 13px; }
+#shopTitle { font-size: 22px; }
+.shopSectionTitle span { font-size: 16px; }
+.shopSectionTitle small, .shopItemCopy small { font-size: 11px; }
+.shopItemCopy b { font-size: 15px; }

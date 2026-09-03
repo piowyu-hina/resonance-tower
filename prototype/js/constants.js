@@ -134,7 +134,8 @@ const ITEM_DEFS = {
     desc: '消耗後可為角色某一個自動技能的效果永久 +1 級（最高 100 級，滿級為基礎值的 2 倍）。',
   },
 };
-const INVENTORY_SLOT_COUNT = 8;
+const INVENTORY_SLOT_COUNT = 15; // 15 item slots + 1 reserved coin position = 4×4 backpack
+const STORAGE_SLOT_COUNT = 16;
 const SLIME_MONSTER_CRYSTAL_DROP_CHANCE = 0.35;
 const SLIME_STAT_BOOK_DROP_CHANCE = 0.15;
 const SLIME_SKILL_BOOK_DROP_CHANCE = 0.15;

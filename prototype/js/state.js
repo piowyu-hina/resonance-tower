@@ -28,6 +28,7 @@ let inventory = Array.from({ length: INVENTORY_SLOT_COUNT }, (_, index) => {
   if (index === 7) return { itemId: 'windCharm', qty: 1 };
   return null;
 });
+let storage = Array.from({ length: STORAGE_SLOT_COUNT }, () => null);
 let runInventoryGains = {}; // itemId -> unsecured quantity found this expedition
 
 // --- character unlocks (see design.md 角色解鎖系統) ---
