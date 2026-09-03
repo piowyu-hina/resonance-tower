@@ -828,7 +828,7 @@ function renderShopView() {
   wasShopOpen = true;
   document.getElementById('shopTitle').textContent = shopMode === 'town' ? '城外商店' : '地城商店';
   const shopWallet = document.getElementById('shopWallet');
-  const shopCoinIcon = shopMode === 'town' ? 'coin.png' : 'coin_out.png';
+  const shopCoinIcon = 'coin.png';
   shopWallet.innerHTML = `<img src="assets/item/${shopCoinIcon}" alt="">${shopGold()}`;
   const buyTab = document.getElementById('shopBuyTab');
   const sellTab = document.getElementById('shopSellTab');
@@ -896,9 +896,12 @@ function attachInventoryDrag(slot, index) {
 }
 
 function renderInventory() {
-  document.getElementById('inventoryWallet').innerHTML = `<img src="assets/item/coin.png" alt="金幣">${bankedGold}`;
   const grid = document.getElementById('inventoryGrid');
   grid.innerHTML = '';
+  const goldSlot = document.createElement('div');
+  goldSlot.className = 'inventorySlot inventoryGoldSlot';
+  goldSlot.innerHTML = `<img src="assets/item/coin.png" alt="金幣"><span class="inventoryQty">${bankedGold}</span><span class="inventoryItemName">金幣</span>`;
+  grid.appendChild(goldSlot);
   for (let index = 0; index < INVENTORY_SLOT_COUNT; index++) {
     const entry = inventory[index];
     const slot = document.createElement('div');
@@ -921,9 +924,10 @@ function renderInventory() {
 
 }
 
-function setInventoryOpen(open) {
+function setInventoryOpen(open, title = '背包') {
   if (open) closeOtherOverlays('inventory');
   activeOverlay = open ? 'inventory' : (activeOverlay === 'inventory' ? null : activeOverlay);
+  if (open) document.getElementById('inventoryTitle').textContent = title;
   const overlay = document.getElementById('inventoryOverlay');
   overlay.classList.toggle('open', open);
   overlay.setAttribute('aria-hidden', String(!open));
@@ -945,6 +949,7 @@ function buildUI() {
     prepLocation = 'village';
     render();
   });
+  document.getElementById('homeStorageBtn').addEventListener('click', () => setInventoryOpen(true, '倉庫'));
   document.getElementById('expeditionLocationBtn').addEventListener('click', () => {
     if (phase !== 'prepFloor' || partyLocked) return;
     prepLocation = 'regions';
@@ -1347,7 +1352,7 @@ function render() {
   floorLabelEl.style.display = inPrep ? 'none' : '';
   const goldLabel = document.getElementById('goldLabel');
   goldLabel.style.display = inFreeVillage ? 'none' : '';
-  goldLabel.innerHTML = inFreeVillage ? '' : `<img src="assets/item/coin_out.png" alt="遠征金幣">${runGold}`;
+  goldLabel.innerHTML = inFreeVillage ? '' : `<img src="assets/item/coin.png" alt="遠征金幣">${runGold}`;
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();
