@@ -337,28 +337,16 @@ function onMonsterDefeated(m) {
     slimeKillCount++; // all floor-1 mobs are slimes for now - see design.md 角色解鎖系統
     checkThresholdUnlocks();
     if (Math.random() < SLIME_MONSTER_CRYSTAL_DROP_CHANCE) {
-      const added = addInventoryItem('monsterCrystal', 1, true);
-      if (added > 0) {
-        log(`${m.name} 掉落了 1 顆魔物結晶`, 'good');
-      } else {
-        log(`${m.name} 掉落了魔物結晶，但背包已滿，無法拾取`, 'warn');
-      }
+      addInventoryItem('monsterCrystal', 1, true);
+      log(`${m.name} 掉落了 1 顆魔物結晶`, 'good');
     }
     if (Math.random() < SLIME_STAT_BOOK_DROP_CHANCE) {
-      const added = addInventoryItem('statBook', 1, true);
-      if (added > 0) {
-        log(`${m.name} 掉落了 1 本能力書`, 'good');
-      } else {
-        log(`${m.name} 掉落了能力書，但背包已滿，無法拾取`, 'warn');
-      }
+      addInventoryItem('statBook', 1, true);
+      log(`${m.name} 掉落了 1 本能力書`, 'good');
     }
     if (Math.random() < SLIME_SKILL_BOOK_DROP_CHANCE) {
-      const added = addInventoryItem('skillBook', 1, true);
-      if (added > 0) {
-        log(`${m.name} 掉落了 1 本技能書`, 'good');
-      } else {
-        log(`${m.name} 掉落了技能書，但背包已滿，無法拾取`, 'warn');
-      }
+      addInventoryItem('skillBook', 1, true);
+      log(`${m.name} 掉落了 1 本技能書`, 'good');
     }
   }
 
@@ -375,7 +363,7 @@ function onMonsterDefeated(m) {
       log(`${regionName(floor)}制霸！`, 'good');
       if (floor >= MAX_IMPLEMENTED_FLOOR) {
         const securedGold = runGold;
-        log(`目前開放的區域已全部完成，本局 ${securedGold} 金幣正式入袋！`, 'good');
+        log(`目前開放的區域已全部完成，本次取得 ${securedGold} 金幣！`, 'good');
         phase = 'victory';
         showVictoryOverlay(securedGold);
       } else {
@@ -412,28 +400,11 @@ function continueAfterClearedWave() {
     render();
 }
 
-// shared by death and voluntary retreat: both end the run and send everyone
-// home to rest (full heal). Level/xp/character unlocks ALWAYS persist now,
-// wipe or not. The difference is purely economic, and only touches THIS
-// run's unsecured take - anything already safely banked before this run
-// started is never at risk:
-//  - retreat (bankGold=true): this run's gold joins the permanent stash,
-//    this run's item gains (runInventoryGains) stay in the backpack for good
-//  - wipe    (bankGold=false): this run's gold evaporates (never added to
-//    bankedGold), this run's item gains are stripped back out of the
-//    backpack - but bankedGold itself and any previously-secured items are
-//    untouched. This is what makes it worth "putting things in the warehouse"
-//    (retreating) instead of pushing your luck.
-// floor always resets to 1 either way - you re-climb from the bottom next time.
-function endRun(bankGold) {
-  if (bankGold) {
-    bankedGold += runGold;
-  } else {
-    Object.entries(runInventoryGains).forEach(([itemId, qty]) => {
-      removeInventoryItemQuantity(itemId, qty);
-    });
-  }
-  runInventoryGains = {};
+// Every way an expedition ends keeps its rewards. Defeat only costs time and
+// floor progress, which keeps unattended play productive instead of punitive.
+function endRun() {
+  bankedGold += runGold;
+  runItemGains = {};
   runGold = 0;
   floor = 1;
   mobsCleared = 0;
@@ -477,12 +448,12 @@ function removeInventoryItemQuantity(itemId, amount) {
 function consumeInventoryItem(itemId, amount = 1) {
   if (inventoryItemCount(itemId) < amount) return false;
   const removed = removeInventoryItemQuantity(itemId, amount);
-  const unsecured = runInventoryGains[itemId] || 0;
-  runInventoryGains[itemId] = Math.max(0, unsecured - removed);
+  const gainedThisRun = runItemGains[itemId] || 0;
+  runItemGains[itemId] = Math.max(0, gainedThisRun - removed);
   return removed === amount;
 }
 
-function addInventoryItem(itemId, amount = 1, unsecured = false) {
+function addInventoryItem(itemId, amount = 1, trackRunGain = false) {
   const item = ITEM_DEFS[itemId];
   if (!item || amount <= 0) return 0;
   const maxStack = item.maxStack || 99;
@@ -501,8 +472,16 @@ function addInventoryItem(itemId, amount = 1, unsecured = false) {
     remaining -= added;
   }
 
+  // The unified item library has no capacity limit. Sixteen cells are shown
+  // initially, then more stacks are appended only when they are needed.
+  while (remaining > 0) {
+    const added = Math.min(maxStack, remaining);
+    inventory.push({ itemId, qty: added });
+    remaining -= added;
+  }
+
   const added = amount - remaining;
-  if (unsecured && added > 0) runInventoryGains[itemId] = (runInventoryGains[itemId] || 0) + added;
+  if (trackRunGain && added > 0) runItemGains[itemId] = (runItemGains[itemId] || 0) + added;
   const overlay = document.getElementById('inventoryOverlay');
   if (overlay && overlay.classList.contains('open')) renderInventory();
   return added;
@@ -537,10 +516,7 @@ function buyShopItem(itemId) {
   if (activeOverlay !== 'shop') return;
   const offer = SHOP_ITEMS.find(entry => entry.itemId === itemId);
   if (!offer || shopGold() < offer.price) return;
-  if (addInventoryItem(itemId, 1, shopMode === 'dungeon') <= 0) {
-    log('背包已滿，無法購買', 'warn');
-    return;
-  }
+  addInventoryItem(itemId, 1, shopMode === 'dungeon');
   changeShopGold(-offer.price);
   resetShopIdleTimer();
   log(`購買 1 個${ITEM_DEFS[itemId].name}，花費 ${offer.price} 金幣`, 'good');
@@ -679,8 +655,8 @@ function doWipeReset() {
 }
 
 function doRetreat() {
-  log(`選擇撤退，本局 ${runGold} 金幣正式入袋！回家休息，全隊回滿血`, 'good');
-  endRun(true);
+  log(`結束遠征，本次取得的 ${runGold} 金幣與物品全部保留。回家休息，全隊回滿血`, 'good');
+  endRun();
 }
 
 function tick() {

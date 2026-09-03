@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-68">
+<link rel="stylesheet" href="style.css?v=20260903-70">
 </head>
 <body>
 
@@ -25,7 +25,7 @@
       </div>
     </div>
     <div class="headerActions">
-      <button id="bagBtn" aria-label="開啟背包" data-i18n-aria-label="header.openBag"><img src="assets/ui/bag.png" alt=""><span data-i18n="header.bag">背包</span></button>
+      <button id="bagBtn" aria-label="開啟物品庫" data-i18n-aria-label="header.openBag"><img src="assets/ui/bag.png" alt=""><span data-i18n="header.bag">物品庫</span></button>
       <div class="saveActions" aria-label="遊戲存檔" data-i18n-aria-label="header.saveGroup">
         <button id="saveGameBtn" type="button" data-i18n="header.save">存檔</button>
         <button id="loadGameBtn" type="button" data-i18n="header.load">讀檔</button>
@@ -91,10 +91,6 @@
         <button id="homeGrowthBtn" class="homeFacilityBtn homeGrowthBtn" type="button">
           <img src="assets/characters/hina_full.png" alt="Hina">
           <span><b data-i18n="home.growth">角色培養</b><small data-i18n="home.growthDesc">查看角色、能力與技能成長</small></span>
-        </button>
-        <button id="homeStorageBtn" class="homeFacilityBtn homeStorageBtn" type="button">
-          <img src="assets/ui/warehouse.png" alt="">
-          <span><b data-i18n="home.storage">倉庫</b><small data-i18n="home.storageDesc">整理背包與存放物品</small></span>
         </button>
         <button id="travelJournalBtn" class="homeFacilityBtn journalFacilityBtn" type="button">
           <img src="assets/ui/book.png" alt="">
@@ -270,36 +266,20 @@
       <span id="inventoryTitle">背包</span>
       <button id="inventoryCloseBtn" aria-label="關閉背包" data-i18n-aria-label="inventory.close">×</button>
     </div>
-    <div id="inventoryTransferLayout">
-      <section class="inventoryPane backpackPane">
-        <div class="inventoryPaneTitle">
-          <img src="assets/ui/bag.png" alt="">
-          <b data-i18n="inventory.title">背包</b>
-        </div>
-        <div id="inventoryGrid"></div>
-      </section>
-      <div id="inventoryTransferHint" aria-hidden="true">⇄</div>
-      <section id="storagePane" class="inventoryPane storagePane" hidden>
-        <div class="inventoryPaneTitle">
-          <img src="assets/ui/warehouse.png" alt="">
-          <b data-i18n="inventory.storage">倉庫</b>
-        </div>
-        <div id="storageGrid"></div>
-      </section>
-    </div>
+    <div id="inventoryGrid"></div>
   </div>
 </div>
 
 <div id="defeatOverlay" aria-hidden="true">
   <div id="defeatModal" role="dialog" aria-modal="true" aria-labelledby="defeatTitle">
-    <div class="defeatMark" data-i18n="result.defeat">遠征失敗</div>
-    <h2 id="defeatTitle" data-i18n="result.defeatTitle">意識逐漸遠去……</h2>
-    <p data-i18n="result.lost">這些尚未入袋的戰利品已經遺失。</p>
-    <div id="defeatSummary" class="runResultSummary lost" aria-label="遺失的戰利品" data-i18n-aria-label="result.lostLabel"></div>
-    <div class="runResultFoot" data-i18n="result.defeatFoot">休息之後，再從村莊重新出發。</div>
+    <div class="defeatMark" data-i18n="result.defeat">重新整備</div>
+    <h2 id="defeatTitle" data-i18n="result.defeatTitle">稍作休息，再次出發</h2>
+    <p data-i18n="result.lost">本次取得的金幣與物品全部保留。</p>
+    <div id="defeatSummary" class="runResultSummary secured" aria-label="本次獲得的戰利品" data-i18n-aria-label="result.lostLabel"></div>
+    <div class="runResultFoot" data-i18n="result.defeatFoot">整備完成後，將沿用目前的角色與配裝重新出發。</div>
     <div id="defeatRestartCountdown" aria-live="polite"></div>
     <div class="defeatActions">
-      <button id="defeatRestartBtn" type="button" data-i18n="result.restartNow">立即重新遠征</button>
+      <button id="defeatRestartBtn" type="button" data-i18n="result.restartNow">立即完成整備</button>
       <button id="defeatVillageBtn" type="button" data-i18n="result.backVillage">回到村莊</button>
     </div>
   </div>
@@ -309,8 +289,8 @@
   <div id="victoryModal" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
     <div class="victoryMark" data-i18n="result.victory">遠征完成</div>
     <h2 id="victoryTitle" data-i18n="result.victoryTitle">首領已被擊敗</h2>
-    <p data-i18n="result.secured">本次遠征的戰利品已安全帶回。</p>
-    <div id="victorySummary" class="runResultSummary secured" aria-label="帶回的戰利品" data-i18n-aria-label="result.securedLabel"></div>
+    <p data-i18n="result.secured">本次遠征獲得以下戰利品。</p>
+    <div id="victorySummary" class="runResultSummary secured" aria-label="本次獲得的戰利品" data-i18n-aria-label="result.securedLabel"></div>
     <button id="victoryConfirmBtn" type="button" data-i18n="result.returnVillage">返回村莊</button>
   </div>
 </div>
@@ -401,17 +381,17 @@
   </div>
 </div>
 
-<script src="js/locales/zh-Hant.js?v=20260903-4"></script>
+<script src="js/locales/zh-Hant.js?v=20260903-6"></script>
 <script src="js/locales/en.js?v=20260903-3"></script>
 <script src="js/i18n.js?v=20260903-2"></script>
-<script src="js/constants.js?v=20260903-20"></script>
-<script src="js/state.js?v=20260903-38"></script>
+<script src="js/constants.js?v=20260903-21"></script>
+<script src="js/state.js?v=20260903-39"></script>
 <script src="js/goo.js?v=20260903-1"></script>
-<script src="js/combat.js?v=20260903-35"></script>
+<script src="js/combat.js?v=20260903-37"></script>
 <script src="js/story.js?v=20260903-12"></script>
-<script src="js/ui.js?v=20260903-45"></script>
-<script src="js/debug.js?v=20260903-8"></script>
-<script src="js/save.js?v=20260903-1"></script>
+<script src="js/ui.js?v=20260903-48"></script>
+<script src="js/debug.js?v=20260903-9"></script>
+<script src="js/save.js?v=20260903-2"></script>
 <script src="js/main.js?v=20260903-36"></script>
 </body>
 </html>

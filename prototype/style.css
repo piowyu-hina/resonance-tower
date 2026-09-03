@@ -634,7 +634,7 @@ img {
 @keyframes dungeonEntryDrift { from { transform: scale(1.08); } to { transform: scale(1); } }
 @keyframes dungeonEntryLine { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
 @keyframes dungeonEntryText { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
-/* --- backpack modal: UI shell only; opening it intentionally does not pause combat --- */
+/* --- unified item library; opening it intentionally does not pause combat --- */
 #inventoryOverlay {
   display: flex;
   position: fixed;
@@ -651,6 +651,8 @@ img {
 #inventoryOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 #inventoryModal {
   width: min(500px, calc(100vw - 30px));
+  max-height: calc(100vh - 30px);
+  overflow-y: auto;
   padding: 12px;
   border: 1px solid #59616c;
   border-radius: 10px;
@@ -677,26 +679,6 @@ img {
   cursor: pointer;
 }
 #inventoryGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-#storageGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-#inventoryTransferLayout { display: grid; grid-template-columns: 1fr; gap: 14px; }
-.inventoryPaneTitle { display: none; align-items: center; gap: 9px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #48515b; }
-.inventoryPaneTitle img { width: 34px; height: 34px; object-fit: contain; }
-.inventoryPaneTitle b { color: #dbe0e5; font-size: 15px; }
-#inventoryTransferHint { display: none; align-self: center; justify-items: center; gap: 3px; color: #c7a761; font-size: 22px; }
-#inventoryModal.warehouseOpen { position: relative; width: min(1180px, calc(100vw - 36px)); padding: 0; border: 0; background: transparent; box-shadow: none; }
-#inventoryModal.warehouseOpen .inventoryHeader { position: absolute; z-index: 2; top: 18px; right: 18px; margin: 0; }
-#inventoryModal.warehouseOpen #inventoryTitle { display: none; }
-#inventoryModal.warehouseOpen #inventoryCloseBtn { width: 34px; height: 34px; border-color: #717983; background: #30353b; box-shadow: 0 5px 14px rgba(0,0,0,.4); }
-#inventoryModal.warehouseOpen #inventoryTransferLayout { grid-template-columns: minmax(0,1fr) 50px minmax(0,1fr); align-items: stretch; }
-#inventoryModal.warehouseOpen .inventoryPane { min-height: 430px; padding: 18px; border: 1px solid; border-radius: 13px; box-shadow: 0 18px 38px rgba(0,0,0,.48); }
-#inventoryModal.warehouseOpen .backpackPane { border-color: #526475; background: linear-gradient(145deg, #29323a, #1b2026); animation: storagePanelFromLeft .24s ease-out both; }
-#inventoryModal.warehouseOpen .storagePane { border-color: #756344; background: linear-gradient(145deg, #342e24, #211f1b); animation: storagePanelFromRight .24s ease-out both; }
-#inventoryModal.warehouseOpen .storagePane .inventoryPaneTitle { padding-right: 46px; border-bottom-color: #5b503c; }
-#inventoryModal.warehouseOpen .inventoryPaneTitle { display: flex; }
-#inventoryModal.warehouseOpen #inventoryTransferHint { display: grid; }
-#inventoryModal.warehouseOpen .inventoryNote { width: fit-content; margin: 12px auto 0; padding: 6px 11px; border-radius: 12px; background: rgba(19,22,25,.78); }
-@keyframes storagePanelFromLeft { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes storagePanelFromRight { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
 .inventorySlot {
   position: relative;
   min-height: 90px;
@@ -710,18 +692,14 @@ img {
   background: #1b1e23;
 }
 .inventorySlot:not(.empty):hover { border-color: #8ba3bf; box-shadow: 0 0 8px rgba(110,155,205,0.35); }
-.inventorySlot.unsecured { border-color: #8b7040; background: linear-gradient(145deg, #29251d, #1b1e23 58%); box-shadow: inset 0 0 12px rgba(205,153,68,.08); }
-.inventorySlot.unsecured:hover { border-color: #c49a55; box-shadow: 0 0 9px rgba(196,154,85,.24), inset 0 0 12px rgba(205,153,68,.1); }
 .inventorySlot[draggable="true"] { cursor: grab; }
 .inventorySlot.dragging { opacity: 0.35; cursor: grabbing; }
 .inventorySlot.dragTarget { border-color: #e0c25a; background: #30333a; box-shadow: inset 0 0 8px rgba(224,194,90,0.25); }
-.inventorySlot.transferSelected { border-color: #f0bd55; background: #353126; box-shadow: 0 0 0 2px rgba(240,189,85,.24), 0 0 14px rgba(240,189,85,.25); }
 .inventorySlot.empty { opacity: 0.45; background: #202329; }
 .inventorySlot.empty.dragTarget { opacity: 1; background: #30333a; }
 .inventorySlot img { width: 42px; height: 42px; object-fit: contain; }
 .inventoryQty { position: absolute; right: 5px; bottom: 4px; color: #fff; font-size: 12px; font-weight: bold; }
 .inventoryItemName { width: 100%; box-sizing: border-box; overflow: hidden; padding: 0 34px 0 5px; color: #bbb; font-size: 10px; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
-.inventoryRunGain { position: absolute; z-index: 1; top: 4px; left: 4px; padding: 2px 5px; border: 1px solid rgba(218,174,93,.55); border-radius: 8px; background: rgba(77,52,25,.9); color: #f0cf8d; font-size: 9px; font-weight: 800; line-height: 1.2; }
 .prepQuickSlots { display: flex; justify-content: center; gap: 7px; width: 100%; margin-top: 2px; padding-top: 6px; border-top: 1px solid #3d4149; }
 
 /* Manual combat commands stay visually separate from auto-fighting cards.
@@ -1574,12 +1552,6 @@ button:focus-visible,
   #actionArea button { flex-basis: auto; width: 100%; }
 }
 
-@media (max-width: 650px) {
-  #inventoryModal.warehouseOpen #inventoryTransferLayout { grid-template-columns: 1fr; }
-  #inventoryModal.warehouseOpen .inventoryPane { min-height: 0; padding: 12px; }
-  #inventoryModal.warehouseOpen #inventoryTransferHint { grid-auto-flow: column; justify-content: center; }
-}
-
 /* --- Navigation and merchant shop refresh --- */
 .navBackBtn {
   display: inline-flex;
@@ -1845,11 +1817,11 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 }
 .homeRosterShell .homeSectionHeading { margin-bottom: 12px; }
 .homeContentGrid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); align-items: stretch; gap: 14px; }
+.homeContentGrid.singleFacility { grid-template-columns: minmax(0, 720px); justify-content: center; }
 .homeContentGrid[hidden], #homeGrowthView[hidden] { display: none; }
 .homeFacilityBtn { min-height: 190px; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px; padding: 18px 24px; overflow: hidden; border: 1px solid #655a46; border-radius: 11px; background: radial-gradient(circle at 24% 50%, rgba(130,101,57,.24), transparent 35%), linear-gradient(145deg, #2d2b27, #22262a); color: #ddd; text-align: left; cursor: pointer; }
 .homeFacilityBtn:hover { border-color: #a08450; background: radial-gradient(circle at 50% 35%, rgba(160,123,66,.3), transparent 42%), linear-gradient(145deg, #353129, #272b30); transform: translateY(-2px); }
 .homeFacilityBtn img { flex: 0 0 145px; width: 145px; height: 155px; object-fit: contain; filter: drop-shadow(0 12px 14px rgba(0,0,0,.42)); }
-.homeStorageBtn img { width: 135px; height: 135px; }
 .homeFacilityBtn span { min-width: 0; display: grid; gap: 7px; }
 .homeFacilityBtn b { color: #e5c275; font-size: 19px; }
 .homeFacilityBtn small { color: #9299a1; font-size: 11px; line-height: 1.5; }
@@ -2013,7 +1985,6 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .homeContentGrid { min-height: 275px; }
   .homeFacilityBtn { min-height: 250px; }
   .homeFacilityBtn img { flex-basis: 175px; width: 175px; height: 190px; }
-  .homeStorageBtn img { width: 165px; height: 165px; }
   .homeGrowthCard { min-height: 190px; }
   .homeGrowthPortrait { height: 165px; }
 
@@ -2103,16 +2074,16 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 
 #defeatOverlay { display: flex; position: fixed; inset: 0; z-index: 1200; padding: 20px; background: rgba(7,8,11,.88); align-items: center; justify-content: center; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .18s ease-out, visibility 0s linear .29s; }
 #defeatOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
-#defeatModal { width: min(470px, 100%); padding: 34px 28px 26px; border: 1px solid #59444a; border-radius: 14px; background: radial-gradient(circle at 50% 0, #302329, #17191e 58%); box-shadow: 0 18px 70px rgba(0,0,0,.65); color: #d7d9de; text-align: center; opacity: 0; transform: translateY(10px) scale(.985); transition: opacity .25s ease-out .04s, transform .25s cubic-bezier(.2,.78,.28,1) .04s; }
+#defeatModal { width: min(470px, 100%); padding: 34px 28px 26px; border: 1px solid #45615b; border-radius: 14px; background: radial-gradient(circle at 50% 0, #253a36, #17191e 58%); box-shadow: 0 18px 70px rgba(0,0,0,.65); color: #d7d9de; text-align: center; opacity: 0; transform: translateY(10px) scale(.985); transition: opacity .25s ease-out .04s, transform .25s cubic-bezier(.2,.78,.28,1) .04s; }
 #defeatOverlay.open #defeatModal { opacity: 1; transform: translateY(0) scale(1); }
-.defeatMark { color: #b77882; font-size: 12px; font-weight: 800; letter-spacing: .28em; }
+.defeatMark { color: #87b5a7; font-size: 12px; font-weight: 800; letter-spacing: .28em; }
 #defeatModal h2 { margin: 14px 0 10px; color: #eee8ea; font-size: 24px; }
 #defeatModal p { margin: 0 0 16px; color: #9ea2aa; font-size: 12px; line-height: 1.8; }
-#defeatRestartCountdown { margin: -7px 0 12px; color: #b99ca4; font-size: 12px; font-variant-numeric: tabular-nums; }
+#defeatRestartCountdown { margin: -7px 0 12px; color: #9bbab1; font-size: 12px; font-variant-numeric: tabular-nums; }
 .defeatActions { display: flex; justify-content: center; gap: 8px; }
 .defeatActions button { min-width: 150px; padding: 10px 16px; border-radius: 7px; cursor: pointer; }
-#defeatRestartBtn { border: 1px solid #8b5d68; background: #5b3741; color: #fff0f3; }
-#defeatRestartBtn:hover { background: #704650; }
+#defeatRestartBtn { border: 1px solid #5f897d; background: #365a51; color: #effbf7; }
+#defeatRestartBtn:hover { background: #416b60; }
 #defeatVillageBtn { border: 1px solid #555d67; background: #30353c; color: #c9cdd3; }
 #defeatVillageBtn:hover { border-color: #747e89; background: #3a4149; }
 #victoryOverlay { display: flex; position: fixed; inset: 0; z-index: 1200; padding: 20px; background: rgba(7,9,10,.86); align-items: center; justify-content: center; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .18s ease-out, visibility 0s linear .29s; }
@@ -2196,7 +2167,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   .headerLead { gap: 10px; }
   .homeContentGrid { grid-template-columns: 1fr; }
   .homeFacilityBtn { min-height: 130px; flex-direction: row; }
-  .homeFacilityBtn img, .homeStorageBtn img { flex-basis: 100px; width: 100px; height: 100px; }
+  .homeFacilityBtn img { flex-basis: 100px; width: 100px; height: 100px; }
   .homeFacilityBtn span { text-align: left; }
   .brandCopy small { display: none; }
   #villageView { min-height: 0; padding: 15px; }

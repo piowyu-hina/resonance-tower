@@ -41,7 +41,7 @@ for (const file of ['prototype/js/locales/zh-Hant.js', 'prototype/js/locales/en.
   vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
 }
 
-assert.equal(vm.runInContext("t('header.bag')", context), '背包');
+assert.equal(vm.runInContext("t('header.bag')", context), '物品庫');
 assert.equal(vm.runInContext("t('format.page', { current: 2, total: 5 })", context), '2／5');
 assert.equal(vm.runInContext("t('missing.translation')", context), 'missing.translation');
 assert.equal(vm.runInContext("resolveLocale('zh-TW')", context), 'zh-Hant');
@@ -53,8 +53,8 @@ assert.equal(vm.runInContext("t('journal.next')", context), 'Next Page');
 vm.runInContext("currentLocale = 'zh-Hant'; applyTranslations()", context);
 assert.equal(documentMock.title, '共鳴之塔｜Resonance Tower');
 assert.equal(documentMock.documentElement.lang, 'zh-Hant');
-assert.equal(translatedElement.textContent, '背包');
-assert.equal(translatedElement.attributes['aria-label'], '開啟背包');
+assert.equal(translatedElement.textContent, '物品庫');
+assert.equal(translatedElement.attributes['aria-label'], '開啟物品庫');
 
 const html = fs.readFileSync(path.join(root, 'prototype/index.html'), 'utf8');
 const markerPattern = /data-i18n(?:-(?:aria-label|alt|placeholder))?="([^"]+)"/g;

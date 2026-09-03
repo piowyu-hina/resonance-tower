@@ -13,33 +13,18 @@ let partyLocked = false; // once true (first "開始出擊" of a run), party can
 let mobsCleared = 0;     // counts full MOB WAVES cleared (not individual mobs) toward the boss gate
 let partyBuff = { mult: 1, until: 0 };
 let partyDefense = { bonus: 0, until: 0 }; // 魔法護盾: adds defense before the normal ATK-DEF damage formula
-let bankedGold = 0; // permanent - see endRun(): a wipe now clears this too, only retreat grows it
-let runGold = 0;    // this run's unbanked gold - lost on wipe, kept only if you retreat
+let bankedGold = 0; // permanent gold available in the village
+let runGold = 0;    // gold earned during the current expedition; always kept when it ends
 let logLines = [];
 
 // Normal play starts with an empty backpack. Test items are only available
 // through the opt-in ?debug panel, never as invisible production seed data.
 let inventory = Array.from({ length: INVENTORY_SLOT_COUNT }, () => null);
-let storage = Array.from({ length: STORAGE_SLOT_COUNT }, () => null);
-let runInventoryGains = {}; // itemId -> unsecured quantity found this expedition
-
-// Inventory stacks may contain both previously secured items and items gained
-// during the current expedition. Allocate the fungible unsecured total across
-// visible stacks so the UI can label the exact at-risk quantity without
-// changing the compact { itemId, qty } inventory format.
-function unsecuredQuantitiesBySlot(collection, gains = runInventoryGains) {
-  const remaining = { ...gains };
-  return collection.map(entry => {
-    if (!entry || entry.qty <= 0) return 0;
-    const unsecured = Math.min(entry.qty, Math.max(0, remaining[entry.itemId] || 0));
-    remaining[entry.itemId] = Math.max(0, (remaining[entry.itemId] || 0) - unsecured);
-    return unsecured;
-  });
-}
+let runItemGains = {}; // itemId -> quantity gained this expedition, used only in result summaries
 
 // --- character unlocks (see design.md 角色解鎖系統) ---
 // Like level/xp, unlock progress is permanent meta-progression: endRun() never
-// touches these, wipe or not (only the gold stash gets nuked on a wipe).
+// touches it.
 let slimeKillCount = 0;       // lifetime count, feeds the killCount unlock type
 let potionUseCount = 0;       // lifetime successful uses, feeds potionCount unlocks
 let unlockedChars = new Set(['wuming']); // wuming starts unlocked for free

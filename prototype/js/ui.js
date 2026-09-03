@@ -47,7 +47,7 @@ function renderRunResultSummary(targetId, gold) {
     rewards.push({ name: coin.name, img: coin.img, qty: gold });
   }
 
-  Object.entries(runInventoryGains).forEach(([itemId, qty]) => {
+  Object.entries(runItemGains).forEach(([itemId, qty]) => {
     const item = localizedItemDef(itemId);
     if (!item || itemId === 'coin' || qty <= 0) return;
     rewards.push({ name: item.name, img: item.img, qty });
@@ -99,8 +99,8 @@ function settleDefeat() {
   const overlay = document.getElementById('defeatOverlay');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
-  log('遠征失敗。本次遠征取得的金幣與戰利品已遺失。', 'warn');
-  endRun(false);
+  log('重新整備完成。本次取得的金幣與物品全部保留。', 'good');
+  endRun();
 }
 
 function returnToVillageAfterDefeat() {
@@ -131,7 +131,7 @@ function confirmVictory() {
   const overlay = document.getElementById('victoryOverlay');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
-  endRun(true);
+  endRun();
   render();
 }
 
@@ -342,7 +342,6 @@ function itemTooltipHTML(item, entry) {
     <div class="ttName">${item.name}</div>
     <div class="ttStat">${t('tooltip.rarity', { rarity: item.rarity })}</div>
     ${entry ? `<div class="ttStat">${t('tooltip.owned', { quantity: formatLocaleNumber(entry.qty) })}</div>` : ''}
-    ${entry && entry.unsecuredQty > 0 ? `<div class="ttStat ttUnsecured">${t('inventory.unsecuredHint', { quantity: formatLocaleNumber(entry.unsecuredQty) })}</div>` : ''}
     <div class="ttStat">${item.desc}</div>
   `;
 }
@@ -997,16 +996,13 @@ function renderShopView() {
   });
 }
 
-let selectedTransferSlot = null;
-
-function attachInventoryDrag(slot, collectionName, index) {
+function attachInventoryDrag(slot, index) {
   slot.addEventListener('dragstart', e => {
-    const collection = collectionName === 'storage' ? storage : inventory;
-    if (!collection[index]) {
+    if (!inventory[index]) {
       e.preventDefault();
       return;
     }
-    inventoryDragFrom = { collectionName, index };
+    inventoryDragFrom = index;
     slot.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', String(index));
@@ -1023,10 +1019,8 @@ function attachInventoryDrag(slot, collectionName, index) {
     e.preventDefault();
     slot.classList.remove('dragTarget');
     if (inventoryDragFrom === null) return;
-    if (inventoryDragFrom.collectionName === collectionName && inventoryDragFrom.index === index) return;
-    const source = inventoryDragFrom.collectionName === 'storage' ? storage : inventory;
-    const target = collectionName === 'storage' ? storage : inventory;
-    [source[inventoryDragFrom.index], target[index]] = [target[index], source[inventoryDragFrom.index]];
+    if (inventoryDragFrom === index) return;
+    [inventory[inventoryDragFrom], inventory[index]] = [inventory[index], inventory[inventoryDragFrom]];
     inventoryDragFrom = null;
     renderInventory();
   });
@@ -1034,44 +1028,17 @@ function attachInventoryDrag(slot, collectionName, index) {
     inventoryDragFrom = null;
     document.querySelectorAll('.inventorySlot').forEach(el => el.classList.remove('dragging', 'dragTarget'));
   });
-  slot.addEventListener('click', event => {
-    event.stopPropagation();
-    const modal = document.getElementById('inventoryModal');
-    if (!modal.classList.contains('warehouseOpen')) return;
-    const collection = collectionName === 'storage' ? storage : inventory;
-    if (!selectedTransferSlot) {
-      if (!collection[index]) return;
-      selectedTransferSlot = { collectionName, index };
-      slot.classList.add('transferSelected');
-      return;
-    }
-    if (selectedTransferSlot.collectionName === collectionName && selectedTransferSlot.index === index) {
-      selectedTransferSlot = null;
-      slot.classList.remove('transferSelected');
-      return;
-    }
-    const source = selectedTransferSlot.collectionName === 'storage' ? storage : inventory;
-    const target = collectionName === 'storage' ? storage : inventory;
-    [source[selectedTransferSlot.index], target[index]] = [target[index], source[selectedTransferSlot.index]];
-    selectedTransferSlot = null;
-    renderInventory();
-  });
 }
 
-function renderItemGrid(grid, collection, collectionName) {
+function renderItemGrid(grid) {
   grid.innerHTML = '';
-  const unsecuredBySlot = collectionName === 'inventory'
-    ? unsecuredQuantitiesBySlot(collection)
-    : collection.map(() => 0);
-  collection.forEach((entry, index) => {
+  inventory.forEach((entry, index) => {
     const slot = document.createElement('div');
-    const unsecuredQty = unsecuredBySlot[index];
-    slot.className = `inventorySlot${entry ? '' : ' empty'}${unsecuredQty > 0 ? ' unsecured' : ''}`;
+    slot.className = `inventorySlot${entry ? '' : ' empty'}`;
     slot.dataset.slotIndex = index;
-    slot.dataset.collection = collectionName;
     slot.draggable = !!entry;
     grid.appendChild(slot);
-    attachInventoryDrag(slot, collectionName, index);
+    attachInventoryDrag(slot, index);
 
     if (!entry) return;
     const item = localizedItemDef(entry.itemId);
@@ -1080,52 +1047,39 @@ function renderItemGrid(grid, collection, collectionName) {
       <img src="assets/item/${item.img}.png" alt="${item.name}" draggable="false">
       <span class="inventoryQty">×${entry.qty}</span>
       <span class="inventoryItemName">${item.name}</span>
-      ${unsecuredQty > 0 ? `<span class="inventoryRunGain">${t('inventory.unsecured', { quantity: formatLocaleNumber(unsecuredQty) })}</span>` : ''}
     `;
-    if (entry.itemId !== 'coin') attachItemTooltip(slot, item, { ...entry, unsecuredQty });
+    if (entry.itemId !== 'coin') attachItemTooltip(slot, item, entry);
   });
 }
 
 function syncCoinItem() {
-  const collections = [inventory, storage];
   const coinEntries = [];
-  collections.forEach(collection => collection.forEach((entry, index) => {
-    if (entry && entry.itemId === 'coin') coinEntries.push({ collection, index });
-  }));
+  inventory.forEach((entry, index) => {
+    if (entry && entry.itemId === 'coin') coinEntries.push(index);
+  });
   if (bankedGold <= 0) {
-    coinEntries.forEach(({ collection, index }) => { collection[index] = null; });
+    coinEntries.forEach(index => { inventory[index] = null; });
     return;
   }
   if (coinEntries.length > 0) {
-    coinEntries[0].collection[coinEntries[0].index].qty = bankedGold;
-    coinEntries.slice(1).forEach(({ collection, index }) => { collection[index] = null; });
+    inventory[coinEntries[0]].qty = bankedGold;
+    coinEntries.slice(1).forEach(index => { inventory[index] = null; });
     return;
   }
-  const target = collections
-    .map(collection => ({ collection, index: collection.findIndex(entry => !entry) }))
-    .find(location => location.index >= 0);
-  if (target) target.collection[target.index] = { itemId: 'coin', qty: bankedGold };
+  const emptyIndex = inventory.findIndex(entry => !entry);
+  if (emptyIndex >= 0) inventory[emptyIndex] = { itemId: 'coin', qty: bankedGold };
+  else inventory.push({ itemId: 'coin', qty: bankedGold });
 }
 
 function renderInventory() {
   syncCoinItem();
-  const warehouseOpen = document.getElementById('inventoryModal').classList.contains('warehouseOpen');
-  document.getElementById('inventoryTitle').textContent = t(warehouseOpen ? 'inventory.storage' : 'inventory.title');
-  renderItemGrid(document.getElementById('inventoryGrid'), inventory, 'inventory');
-  renderItemGrid(document.getElementById('storageGrid'), storage, 'storage');
+  document.getElementById('inventoryTitle').textContent = t('inventory.title');
+  renderItemGrid(document.getElementById('inventoryGrid'));
 }
 
-function setInventoryOpen(open, mode = 'bag') {
+function setInventoryOpen(open) {
   if (open) closeOtherOverlays('inventory');
   activeOverlay = open ? 'inventory' : (activeOverlay === 'inventory' ? null : activeOverlay);
-  if (open) {
-    selectedTransferSlot = null;
-    const warehouseOpen = mode === 'storage';
-    document.getElementById('inventoryTitle').textContent = t(warehouseOpen ? 'inventory.storage' : 'inventory.title');
-    document.getElementById('inventoryModal').classList.toggle('warehouseOpen', warehouseOpen);
-    document.getElementById('storagePane').hidden = !warehouseOpen;
-    document.getElementById('inventoryTransferHint').style.display = warehouseOpen ? '' : 'none';
-  }
   const overlay = document.getElementById('inventoryOverlay');
   overlay.classList.toggle('open', open);
   overlay.setAttribute('aria-hidden', String(!open));
@@ -1162,9 +1116,6 @@ function buildUI() {
     prepLocation = 'village';
     render();
   });
-  document.getElementById('homeStorageBtn').addEventListener('click', () => {
-    if (!contractStoryLocked()) setInventoryOpen(true, 'storage');
-  });
   document.getElementById('homeGrowthBtn').addEventListener('click', () => {
     if (contractStoryLocked()) return;
     homeMode = 'growth';
@@ -1200,12 +1151,7 @@ function buildUI() {
   document.getElementById('victoryConfirmBtn').addEventListener('click', confirmVictory);
   document.getElementById('inventoryCloseBtn').addEventListener('click', () => setInventoryOpen(false));
   document.getElementById('inventoryOverlay').addEventListener('click', e => {
-    const modal = document.getElementById('inventoryModal');
-    const clickedBackdrop = e.target.id === 'inventoryOverlay';
-    const clickedWarehouseBlank = modal.classList.contains('warehouseOpen')
-      && !e.target.closest('.inventoryPane')
-      && !e.target.closest('#inventoryCloseBtn');
-    if (clickedBackdrop || clickedWarehouseBlank) setInventoryOpen(false);
+    if (e.target.id === 'inventoryOverlay') setInventoryOpen(false);
   });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && activeOverlay === 'dialogue') {
@@ -1245,7 +1191,7 @@ function buildUI() {
   });
   retreatBtnEl = document.createElement('button');
   retreatBtnEl.id = 'retreatBtn';
-  retreatBtnEl.textContent = '撤退';
+  retreatBtnEl.textContent = '返回村莊';
   retreatBtnEl.addEventListener('click', () => {
     doRetreat();
     render();
@@ -1586,11 +1532,8 @@ function render() {
   const goldLabel = document.getElementById('goldLabel');
   goldLabel.style.display = inFreeVillage ? 'none' : '';
   goldLabel.innerHTML = inFreeVillage ? '' : `<img src="assets/item/coin.png" alt="遠征金幣">${runGold}`;
-  const unsecuredTotal = Object.values(runInventoryGains).reduce((total, quantity) => total + Math.max(0, quantity), 0);
   const bagBtn = document.getElementById('bagBtn');
-  bagBtn.setAttribute('aria-label', unsecuredTotal > 0
-    ? t('header.openBagUnsecured', { quantity: formatLocaleNumber(unsecuredTotal) })
-    : t('header.openBag'));
+  bagBtn.setAttribute('aria-label', t('header.openBag'));
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();
@@ -1653,6 +1596,9 @@ function renderPrepView() {
   const contractAvailable = ['oathReady', 'contracting', 'contracted'].includes(resonanceState.xiaochu);
   document.getElementById('travelJournalBtn').hidden = !journalUnlocked;
   document.getElementById('contractFacilityBtn').hidden = !contractAvailable;
+  const visibleHomeFacilities = [...document.querySelectorAll('#homeMenu .homeFacilityBtn')]
+    .filter(element => !element.hidden).length;
+  document.getElementById('homeMenu').classList.toggle('singleFacility', visibleHomeFacilities === 1);
   document.getElementById('travelJournalBtn').classList.toggle('storyRequired', waitingForBook);
   document.getElementById('contractFacilityBtn').classList.toggle('storyRequired', oathReady);
   document.getElementById('homeLocationBtn').classList.toggle('storyRequired', mustGoHome);
@@ -1667,7 +1613,6 @@ function renderPrepView() {
   document.getElementById('expeditionLocationBtn').disabled = storyLocked;
   document.getElementById('homeBackBtn').disabled = storyLocked;
   document.getElementById('homeGrowthBtn').disabled = storyLocked;
-  document.getElementById('homeStorageBtn').disabled = storyLocked;
   document.getElementById('travelJournalBtn').disabled = storyLocked && !waitingForBook;
   document.getElementById('bagBtn').disabled = storyLocked;
   document.getElementById('regionView').style.display = atRegions ? '' : 'none';

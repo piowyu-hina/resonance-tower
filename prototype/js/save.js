@@ -14,9 +14,34 @@ function saveSlot(entry) {
   return qty > 0 ? { itemId: entry.itemId, qty } : null;
 }
 
-function normalizedSlots(value, count) {
-  const source = Array.isArray(value) ? value : [];
-  return Array.from({ length: count }, (_, index) => saveSlot(source[index]));
+function normalizedInventory(source) {
+  const result = Array.from({ length: INVENTORY_SLOT_COUNT }, () => null);
+  const legacyCollections = [source.inventory, source.storage]
+    .filter(Array.isArray)
+    .flat();
+
+  legacyCollections.forEach(rawEntry => {
+    const entry = saveSlot(rawEntry);
+    if (!entry) return;
+    const maxStack = ITEM_DEFS[entry.itemId].maxStack || 99;
+    let remaining = entry.qty;
+    result.forEach(existing => {
+      if (!existing || existing.itemId !== entry.itemId || existing.qty >= maxStack || remaining <= 0) return;
+      const added = Math.min(maxStack - existing.qty, remaining);
+      existing.qty += added;
+      remaining -= added;
+    });
+    while (remaining > 0) {
+      const added = Math.min(maxStack, remaining);
+      const emptyIndex = result.findIndex(slot => !slot);
+      const stack = { itemId: entry.itemId, qty: added };
+      if (emptyIndex >= 0) result[emptyIndex] = stack;
+      else result.push(stack);
+      remaining -= added;
+    }
+  });
+
+  return result;
 }
 
 function permanentCharacterData(character) {
@@ -44,7 +69,6 @@ function createSaveData() {
       roster: roster.map(permanentCharacterData),
       party: [...party],
       inventory: inventory.map(saveSlot),
-      storage: storage.map(saveSlot),
       ownedSkins: [...ownedSkins],
       equippedSkinByCharacter: { ...equippedSkinByCharacter },
     },
@@ -103,8 +127,7 @@ function normalizeSaveData(raw) {
     resonanceState: normalizedResonance,
     characters,
     party: savedParty.slice(0, SOLO_PARTY_LIMIT),
-    inventory: normalizedSlots(source.inventory, INVENTORY_SLOT_COUNT),
-    storage: normalizedSlots(source.storage, STORAGE_SLOT_COUNT),
+    inventory: normalizedInventory(source),
     ownedSkins: owned,
     equippedSkinByCharacter: equipped,
   };
@@ -152,7 +175,6 @@ function applySaveData(data) {
   unlockedChars = data.unlocked;
   resonanceState = data.resonanceState;
   inventory = data.inventory;
-  storage = data.storage;
   ownedSkins = data.ownedSkins;
   equippedSkinByCharacter = data.equippedSkinByCharacter;
   roster.forEach(character => {

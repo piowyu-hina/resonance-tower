@@ -10,16 +10,8 @@ const source = [
   'prototype/js/save.js',
 ].map(file => fs.readFileSync(file, 'utf8')).join('\n');
 
-vm.runInThisContext(`${source}\nglobalThis.__saveTestApi = { normalizeSaveData, unsecuredQuantitiesBySlot };`);
-const { normalizeSaveData, unsecuredQuantitiesBySlot } = globalThis.__saveTestApi;
-
-assert.deepEqual(
-  unsecuredQuantitiesBySlot(
-    [{ itemId: 'potion', qty: 5 }, { itemId: 'potion', qty: 3 }, null, { itemId: 'monsterCrystal', qty: 2 }],
-    { potion: 6, monsterCrystal: 1 },
-  ),
-  [5, 1, 0, 1],
-);
+vm.runInThisContext(`${source}\nglobalThis.__saveTestApi = { normalizeSaveData };`);
+const { normalizeSaveData } = globalThis.__saveTestApi;
 
 const normalized = normalizeSaveData({
   format: 'resonance-tower-save',
@@ -33,7 +25,7 @@ const normalized = normalizeSaveData({
     roster: [{ id: 'xiaochu', level: 3, xp: 999, lineLevels: { atk: 500, skill0: 4 }, loadout: { activeItemId: 'powerCharm' } }],
     party: ['xiaochu', 'not-a-character'],
     inventory: [{ itemId: 'monsterCrystal', qty: 7 }, { itemId: 'fake', qty: 2 }],
-    storage: [],
+    storage: [{ itemId: 'potion', qty: 3 }],
     ownedSkins: ['xiaochu_default', 'fake_skin'],
     equippedSkinByCharacter: { xiaochu: 'xiaochu_default', wuming: 'fake_skin' },
   },
@@ -47,7 +39,7 @@ assert.equal(normalized.resonanceState.xiaochu, 'contracted');
 assert.equal(normalized.resonanceState.fake, undefined);
 assert.deepEqual(normalized.party, ['xiaochu']);
 assert.deepEqual(normalized.inventory[0], { itemId: 'monsterCrystal', qty: 7 });
-assert.equal(normalized.inventory[1], null);
+assert.deepEqual(normalized.inventory[1], { itemId: 'potion', qty: 3 });
 assert.equal(normalized.characters.get('xiaochu').xp, 29);
 assert.equal(normalized.characters.get('xiaochu').lineLevels.atk, 100);
 assert.equal(normalized.characters.get('xiaochu').lineLevels.skill0, 4);
