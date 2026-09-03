@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-23">
+<link rel="stylesheet" href="style.css?v=20260903-24">
 </head>
 <body>
 
@@ -72,14 +72,21 @@
         <button id="homeBackBtn" class="navBackBtn" type="button">← 村莊</button>
         <div>
           <div class="prepHeading">家</div>
-          <div class="prepMsg">查看靈魂夥伴，分配能力與技能成長。</div>
+          <div class="prepMsg">培養靈魂夥伴，或整理遠征物資。</div>
         </div>
       </div>
-      <div class="homeContentGrid">
-        <button id="homeStorageBtn" class="homeStorageBtn" type="button">
+      <div id="homeMenu" class="homeContentGrid">
+        <button id="homeGrowthBtn" class="homeFacilityBtn homeGrowthBtn" type="button">
+          <img src="assets/characters/wuming_full.png" alt="">
+          <span><b>角色培養</b><small>查看角色、能力與技能成長</small></span>
+        </button>
+        <button id="homeStorageBtn" class="homeFacilityBtn homeStorageBtn" type="button">
           <img src="assets/ui/warehouse.png" alt="">
           <span><b>倉庫</b><small>整理背包與存放物品</small></span>
         </button>
+      </div>
+      <div id="homeGrowthView" hidden>
+        <button id="homeGrowthBackBtn" class="navBackBtn" type="button">← 家</button>
         <div class="homeRosterShell homeGrowthShell">
           <div class="homeSectionHeading">角色培養</div>
           <div id="homeRoster"></div>
@@ -314,7 +321,7 @@
 <script src="js/goo.js?v=20260903-1"></script>
 <script src="js/combat.js?v=20260903-17"></script>
 <script src="js/story.js?v=20260903-1"></script>
-<script src="js/ui.js?v=20260903-23"></script>
+<script src="js/ui.js?v=20260903-24"></script>
 <script src="js/debug.js?v=20260903-1"></script>
 <script src="js/main.js?v=20260903-1"></script>
 </body>

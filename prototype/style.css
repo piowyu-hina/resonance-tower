@@ -1666,13 +1666,16 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   background: #20242a;
 }
 .homeRosterShell .homeSectionHeading { margin-bottom: 12px; }
-.homeContentGrid { display: grid; grid-template-columns: 210px minmax(0,1fr); align-items: stretch; gap: 14px; }
-.homeStorageBtn { min-height: 330px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 18px; overflow: hidden; border: 1px solid #655a46; border-radius: 11px; background: radial-gradient(circle at 50% 35%, rgba(130,101,57,.24), transparent 40%), linear-gradient(145deg, #2d2b27, #22262a); color: #ddd; text-align: center; cursor: pointer; }
-.homeStorageBtn:hover { border-color: #a08450; background: radial-gradient(circle at 50% 35%, rgba(160,123,66,.3), transparent 42%), linear-gradient(145deg, #353129, #272b30); transform: translateY(-2px); }
-.homeStorageBtn img { width: 142px; height: 142px; object-fit: contain; filter: drop-shadow(0 12px 14px rgba(0,0,0,.42)); }
-.homeStorageBtn span { display: grid; gap: 6px; }
-.homeStorageBtn b { color: #e5c275; font-size: 19px; }
-.homeStorageBtn small { color: #9299a1; font-size: 11px; line-height: 1.5; }
+.homeContentGrid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); align-items: stretch; gap: 14px; }
+.homeContentGrid[hidden], #homeGrowthView[hidden] { display: none; }
+.homeFacilityBtn { min-height: 330px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 18px; overflow: hidden; border: 1px solid #655a46; border-radius: 11px; background: radial-gradient(circle at 50% 35%, rgba(130,101,57,.24), transparent 40%), linear-gradient(145deg, #2d2b27, #22262a); color: #ddd; text-align: center; cursor: pointer; }
+.homeFacilityBtn:hover { border-color: #a08450; background: radial-gradient(circle at 50% 35%, rgba(160,123,66,.3), transparent 42%), linear-gradient(145deg, #353129, #272b30); transform: translateY(-2px); }
+.homeFacilityBtn img { width: 180px; height: 180px; object-fit: contain; filter: drop-shadow(0 12px 14px rgba(0,0,0,.42)); }
+.homeStorageBtn img { width: 155px; height: 155px; }
+.homeFacilityBtn span { display: grid; gap: 6px; }
+.homeFacilityBtn b { color: #e5c275; font-size: 19px; }
+.homeFacilityBtn small { color: #9299a1; font-size: 11px; line-height: 1.5; }
+#homeGrowthView > .navBackBtn { margin-bottom: 12px; }
 .homeGrowthShell { min-height: 330px; }
 #homeRoster { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
 .homeGrowthCard {
@@ -1833,9 +1836,9 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 @media (max-width: 850px) {
   .headerLead { gap: 10px; }
   .homeContentGrid { grid-template-columns: 1fr; }
-  .homeStorageBtn { min-height: 130px; flex-direction: row; }
-  .homeStorageBtn img { width: 100px; height: 100px; }
-  .homeStorageBtn span { text-align: left; }
+  .homeFacilityBtn { min-height: 130px; flex-direction: row; }
+  .homeFacilityBtn img, .homeStorageBtn img { width: 100px; height: 100px; }
+  .homeFacilityBtn span { text-align: left; }
   .brandCopy small { display: none; }
   #villageView { min-height: 0; padding: 15px; }
   .villageLocations { grid-template-columns: repeat(2, minmax(0, 1fr)); }

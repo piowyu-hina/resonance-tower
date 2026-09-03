@@ -18,6 +18,7 @@ const OVERLAY_CLOSERS = {
 // The preparation phase is a small location hub: village is the outer layer,
 // while character/loadout management lives inside the home location.
 let prepLocation = 'village';
+let homeMode = 'menu';
 let homeEls = {};
 
 // Call before opening `nextId`: enforces "only one overlay/popover open at a
@@ -999,6 +1000,7 @@ function buildUI() {
   document.getElementById('townShopBtn').addEventListener('click', openTownShop);
   document.getElementById('homeLocationBtn').addEventListener('click', () => {
     prepLocation = 'home';
+    homeMode = 'menu';
     render();
   });
   document.getElementById('homeBackBtn').addEventListener('click', () => {
@@ -1006,6 +1008,14 @@ function buildUI() {
     render();
   });
   document.getElementById('homeStorageBtn').addEventListener('click', () => setInventoryOpen(true, '倉庫'));
+  document.getElementById('homeGrowthBtn').addEventListener('click', () => {
+    homeMode = 'growth';
+    render();
+  });
+  document.getElementById('homeGrowthBackBtn').addEventListener('click', () => {
+    homeMode = 'menu';
+    render();
+  });
   document.getElementById('expeditionLocationBtn').addEventListener('click', () => {
     if (phase !== 'prepFloor' || partyLocked) return;
     prepLocation = 'regions';
@@ -1442,6 +1452,8 @@ function renderPrepView() {
   renderRegionContext();
   document.getElementById('villageView').style.display = atVillage ? '' : 'none';
   document.getElementById('homeView').style.display = atHome ? '' : 'none';
+  document.getElementById('homeMenu').hidden = !atHome || homeMode !== 'menu';
+  document.getElementById('homeGrowthView').hidden = !atHome || homeMode !== 'growth';
   document.getElementById('regionView').style.display = atRegions ? '' : 'none';
   document.getElementById('expeditionView').style.display = (atVillage || atHome || atRegions) ? 'none' : '';
   Object.entries(homeEls).forEach(([id, refs]) => {
