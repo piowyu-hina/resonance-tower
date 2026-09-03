@@ -3,10 +3,15 @@
 // power gated by level+skill points only (see design.md: 不做裝備／武器系統).
 const RARITY_DEFS = {
   common: { label: '普通', color: '#9aa0a8' },
-  rare:   { label: '稀有', color: '#5a8fd6' },
+  rare:   { label: '稀有', color: '#5a8fd6', revealEffect: 'rare_magic_circle' },
   epic:   { label: '史詩', color: '#c979e8' },
   unique: { label: '獨特', color: '#e08a3c' },
 };
+
+// Development-only controls and exact unlock requirements are available with
+// ?debug in the URL. Normal play keeps hidden conditions and destructive reset
+// controls out of the main interface.
+const DEBUG_MODE = new URLSearchParams(window.location.search).has('debug');
 
 // Floor-1 monster catalogue. Skills describe targets + composable effects;
 // combat.js interprets those declarations without branching on monster names.
@@ -89,9 +94,24 @@ const ITEM_DEFS = {
     },
     desc: '使全隊攻速提升 50%，持續 30 秒。冷卻 10 秒。',
   },
-  stone: {
+  powerCharm: {
+    name: '力量護符', img: 'active_items/power_up_ring', rarity: '普通', category: 'charm', equipSlot: 'charm',
+    passive: { type: 'atkPct', value: 0.15 },
+    desc: '附身角色的攻擊力提升 15%。',
+  },
+  guardCharm: {
+    name: '守護護符', img: 'active_items/recover_ring', rarity: '普通', category: 'charm', equipSlot: 'charm',
+    passive: { type: 'defFlat', value: 2 },
+    desc: '附身角色的防禦力提升 2。',
+  },
+  windCharm: {
+    name: '疾風護符', img: 'active_items/speed_up_ring', rarity: '普通', category: 'charm', equipSlot: 'charm',
+    passive: { type: 'speedPct', value: 0.15 },
+    desc: '附身角色的行動間隔縮短 15%。',
+  },
+  monsterCrystal: {
     name: '魔物結晶',
-    img: 'stone',
+    img: 'monster_crystal',
     rarity: '普通',
     equipSlot: null,
     maxStack: 99,
@@ -115,7 +135,7 @@ const ITEM_DEFS = {
   },
 };
 const INVENTORY_SLOT_COUNT = 8;
-const SLIME_STONE_DROP_CHANCE = 0.35;
+const SLIME_MONSTER_CRYSTAL_DROP_CHANCE = 0.35;
 const SLIME_STAT_BOOK_DROP_CHANCE = 0.15;
 const SLIME_SKILL_BOOK_DROP_CHANCE = 0.15;
 
@@ -133,7 +153,7 @@ const GENERAL_STAT_LINES = [
   { key: 'speed', label: '攻速', bookId: 'statBook' }, // maxed: this character's atkInterval is halved
 ];
 const SHOP_IDLE_MS = 10000;
-const SHOP_STONE_SELL_PRICE = 5;
+const SHOP_MONSTER_CRYSTAL_SELL_PRICE = 5;
 const SHOP_ITEMS = [
   { itemId: 'potion', price: 12 },
   { itemId: 'speedPotion', price: 18 },
@@ -173,14 +193,12 @@ const CHAR_DEFS = {
   },
   xiaochu: {
     name: '小初', icon: '🗡️', img: 'xiaochu', rarity: 'rare',
-    // 靈魂：年輕劍士，活潑開朗 - 重新設計，見 worldview_design_v2.md。單階段
-    // 契約（無 goal）：達到 trigger 就直接播 discoverDialogue，對話結束即解鎖 -
-    // 不是每個靈魂都要跑任務才能締結契約（v2 明講）。discoverDialogue 目前是
-    // 佔位對話，真正的契約故事還沒寫（故事另外討論），見 js/story.js。
+    // 靈魂：年輕劍士，活潑開朗 - 見 design.md「契約角色與解鎖」。單階段
+    // 達到隱藏條件後直接播放契約短篇，對話結束即締約解鎖。
     unlock: {
-      type: 'soulQuest',
+      type: 'resonanceContract',
       trigger: { type: 'killCount', monster: 'slime', count: 50 },
-      discoverDialogue: 'xiaochu_contract_placeholder',
+      contractDialogue: 'xiaochu_contract',
     },
     baseHp: 40, baseAtk: 6, baseDef: 3,
     atkInterval: 2200, // ms between this character's own actions - their "attack speed"
@@ -208,6 +226,21 @@ const CHAR_DEFS = {
   },
 };
 
+// Character appearance is deliberately separate from character stats.  New
+// skins only need an entry here and matching image files; combat balance and
+// unlock data stay on CHAR_DEFS.
+const SKIN_DEFS = {
+  wuming_default: { characterId: 'wuming', name: '原始外觀', portrait: 'wuming', fullArt: 'wuming_full' },
+  xiaochu_default: { characterId: 'xiaochu', name: '原始外觀', portrait: 'xiaochu', fullArt: 'xiaochu_full' },
+  fengzi_default: { characterId: 'fengzi', name: '原始外觀', portrait: 'fengzi', fullArt: 'fengzi_full' },
+};
+
+const DEFAULT_SKIN_BY_CHARACTER = {
+  wuming: 'wuming_default',
+  xiaochu: 'xiaochu_default',
+  fengzi: 'fengzi_default',
+};
+
 const MAX_PARTY = 3; // full squad size the data model supports, for future multiplayer
 const SOLO_PARTY_LIMIT = 1; // until multiplayer ships, only one character goes on an expedition at a time
 // The old design had one global tick where everyone acted in lockstep, which
@@ -219,11 +252,11 @@ const MOB_ATK_INTERVAL = 2200;
 const BOSS_ATK_INTERVAL = 2200;
 const MONSTER_DEATH_REMOVE_MS = 1100;
 const MAX_IMPLEMENTED_FLOOR = 1; // raise this when floor 2 content is ready
-// worldview_design_v2.md: floor numbers stay the internal progression unit,
+// design.md「區域推進」：floor numbers stay the internal progression unit,
 // but are framed to the player as named regions - floor 1 is 森林, the
 // forest just outside the village. Add an entry here when floor 2+ ships;
 // regionName() falls back to the raw floor number for anything not yet named.
-const REGION_NAMES = { 1: '森林' };
+const REGION_NAMES = { 1: '史萊姆叢林' };
 function regionName(f) { return REGION_NAMES[f] || `樓層 ${f}`; }
 const MOBS_PER_FLOOR = 2;   // clear this many mob WAVES (each wave = 2~3 mobs) before the boss shows up
 // mob XP share got cut from 0.25 to 0.1 when mobs went from 1-at-a-time to

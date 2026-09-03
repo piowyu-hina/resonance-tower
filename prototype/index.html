@@ -10,37 +10,96 @@
 <div id="app">
   <div id="header">
     <div class="headerLeft">
-      <span id="floorLabel">森林</span>
+      <span id="floorLabel">史萊姆叢林</span>
       <span id="goldLabel"></span>
     </div>
     <div class="headerActions">
-      <button id="townShopBtn"><img src="assets/ui/shop.png" alt="">商店</button>
       <button id="bagBtn" aria-label="開啟背包"><img src="assets/ui/bag.png" alt="">背包</button>
-      <button id="resetBtn">重新開始整局</button>
+      <button id="bossIntroTestBtn" hidden>測試首領演出</button>
+      <button id="resetBtn" hidden>重新開始整局</button>
     </div>
   </div>
 
-  <!-- 進場 UI：家（選擇附身靈魂、整補、出發），見 worldview_design_v2.md -->
+  <!-- 進場 UI：村莊、家與遠征流程，見 design.md「世界觀與敘事基準」 -->
   <div class="panel" id="prepView">
-    <div class="prepHeading" id="prepHeading"></div>
-    <div class="prepMsg" id="prepMsg"></div>
-    <div id="prepRoster"></div>
-    <div id="actionArea"></div>
+    <div id="villageView">
+      <div class="villageIntro">
+        <div class="prepHeading">村莊</div>
+        <div class="prepMsg">回家整備、到商店補給，或從村口展開遠征。</div>
+      </div>
+      <div class="villageLocations">
+        <button id="homeLocationBtn" class="villageLocation" type="button">
+          <span class="villageLocationArt"><img src="assets/ui/house.png" alt=""></span>
+          <span class="villageLocationCopy"><b>家</b><small>查看角色與進行培養</small></span>
+        </button>
+        <button id="townShopBtn" class="villageLocation" type="button">
+          <span class="villageLocationArt"><img src="assets/ui/shop.png" alt=""></span>
+          <span class="villageLocationCopy"><b>商店</b><small>出售素材與購買補給</small></span>
+        </button>
+        <button id="expeditionLocationBtn" class="villageLocation villageExpedition" type="button">
+          <span class="villageLocationArt"><img src="assets/ui/village_out.png" alt="離開村莊的村口"></span>
+          <span class="villageLocationCopy"><b>遠征入口</b><small>選擇地區並準備出發</small></span>
+        </button>
+      </div>
+    </div>
+    <div id="homeView">
+      <div class="homeTopbar">
+        <button id="homeBackBtn" type="button">← 村莊</button>
+        <div>
+          <div class="prepHeading">家</div>
+          <div class="prepMsg">查看靈魂夥伴，分配能力與技能成長。</div>
+        </div>
+      </div>
+      <div class="homeRosterShell homeGrowthShell">
+        <div class="homeSectionHeading">角色培養</div>
+        <div id="homeRoster"></div>
+      </div>
+    </div>
+    <div id="regionView">
+      <div class="homeTopbar">
+        <button id="regionBackBtn" type="button">← 村莊</button>
+        <div>
+          <div class="prepHeading">遠征入口</div>
+          <div class="prepMsg">選擇這次遠征要前往的地區。</div>
+        </div>
+      </div>
+      <div class="regionGrid">
+        <button id="forestRegionBtn" class="regionCard" type="button">
+          <span class="regionArt"><img src="assets/ui/slime_forest.png" alt="史萊姆叢林"></span>
+          <span class="regionCopy"><b>史萊姆叢林</b><small>史萊姆棲息的近郊叢林</small></span>
+        </button>
+      </div>
+    </div>
+    <div id="expeditionView">
+      <div class="homeTopbar">
+        <button id="expeditionBackBtn" type="button">← 遠征入口</button>
+        <div>
+          <div class="prepHeading" id="prepHeading"></div>
+          <div class="prepMsg" id="prepMsg"></div>
+        </div>
+      </div>
+      <div class="homeRosterShell">
+        <div class="homeSectionHeading" id="expeditionCharacterHeading">選擇附身角色</div>
+        <div id="prepRoster"></div>
+        <div id="expeditionSelectedSummary"></div>
+      </div>
+      <div id="actionArea"></div>
+    </div>
   </div>
 
   <!-- 戰鬥 UI：桌面版左右分欄，窄畫面才回到上下排列。 -->
   <div id="combatView">
     <div class="combatColumns">
-      <section class="panel battleColumn enemyColumn">
-        <div class="columnHeading">敵方</div>
-        <div id="monsterSide"></div>
-        <div id="bossArena"></div>
-      </section>
-
       <section class="panel battleColumn partyColumn">
         <div class="columnHeading">我方</div>
         <div id="partySide"></div>
         <div id="combatActionBar"></div>
+      </section>
+
+      <section class="panel battleColumn enemyColumn">
+        <div class="columnHeading">敵方</div>
+        <div id="monsterSide"></div>
+        <div id="bossArena"></div>
       </section>
     </div>
   </div>
@@ -51,7 +110,7 @@
 <div id="tooltip"></div>
 
 <div id="combatItemPicker" aria-hidden="true">
-  <div class="pickerTitle">選擇戰鬥道具</div>
+  <div class="pickerTitle">選擇藥水</div>
   <div id="combatItemPickerList"></div>
 </div>
 
@@ -67,28 +126,46 @@
     <div class="shopHeader">
       <span id="shopTitle">地城商店</span>
       <span id="shopCountdown"></span>
+      <button id="shopLeaveBtn" type="button" aria-label="關閉商店">×</button>
     </div>
-    <div class="shopSection">
-      <div class="shopSectionTitle">出售素材</div>
-      <div class="shopSellRow">
-        <img src="assets/item/stone.png" alt="魔物結晶">
-        <span>魔物結晶</span>
-        <span id="shopStoneQty"></span>
-        <div class="shopSellActions">
-          <button id="shopSellOneBtn" type="button">賣 1 顆</button>
-          <button id="shopSellAllBtn" type="button"></button>
+    <div class="shopLayout">
+      <aside class="shopKeeperPanel">
+        <div class="shopKeeperArt">
+          <img src="assets/characters/merchant_full.png" alt="露咪">
         </div>
-      </div>
-    </div>
-    <div class="shopSection">
-      <div class="shopSectionTitle">購買藥水</div>
-      <div id="shopBuyList"></div>
-    </div>
-    <div class="shopFooter">
-      <button id="shopAutoLeaveBtn" type="button"></button>
-      <button id="shopLeaveBtn" type="button">離開商店</button>
+        <button id="shopDialogue" type="button">
+            <span id="shopKeeperName">露咪</span>
+          <span id="shopDialogueText"></span>
+        </button>
+      </aside>
+      <main class="shopGoodsPanel">
+        <div class="shopSection">
+          <div class="shopSectionTitle">出售素材</div>
+          <div class="shopSellRow">
+            <img src="assets/item/monster_crystal.png" alt="魔物結晶">
+            <span>魔物結晶</span>
+            <span id="shopMonsterCrystalQty"></span>
+            <div class="shopSellActions">
+              <button id="shopSellOneBtn" type="button">賣 1 顆</button>
+              <button id="shopSellAllBtn" type="button"></button>
+            </div>
+          </div>
+        </div>
+        <div class="shopSection">
+          <div class="shopSectionTitle">購買藥水</div>
+          <div id="shopBuyList"></div>
+        </div>
+        <div class="shopFooter">
+          <button id="shopAutoLeaveBtn" type="button"></button>
+        </div>
+      </main>
     </div>
   </div>
+</div>
+
+<div id="charmPicker" aria-hidden="true">
+  <div class="pickerTitle">選擇護符</div>
+  <div id="charmPickerList"></div>
 </div>
 
 <div id="inventoryOverlay" aria-hidden="true">
@@ -98,12 +175,54 @@
       <button id="inventoryCloseBtn" aria-label="關閉背包">×</button>
     </div>
     <div id="inventoryGrid"></div>
-    <div class="inventoryNote">拖曳物品可以整理位置；藥水可在出戰前裝備，能力書與技能書可在角色詳情中使用。</div>
+    <div class="inventoryNote">拖曳物品可以整理位置；能力書與技能書可在角色詳情中使用。</div>
   </div>
 </div>
 
-<!-- 對話系統：靈魂任務等劇情橋段用，見 worldview_design.md -->
+<div id="defeatOverlay" aria-hidden="true">
+  <div id="defeatModal" role="dialog" aria-modal="true" aria-labelledby="defeatTitle">
+    <div class="defeatMark">遠征失敗</div>
+    <h2 id="defeatTitle">意識逐漸遠去……</h2>
+    <p>這次遠征取得的金幣與戰利品已經遺失。<br>休息之後，再從村莊重新出發。</p>
+    <button id="defeatConfirmBtn" type="button">回到村莊</button>
+  </div>
+</div>
+
+<div id="victoryOverlay" aria-hidden="true">
+  <div id="victoryModal" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
+    <div class="victoryMark">遠征完成</div>
+    <h2 id="victoryTitle">首領已被擊敗</h2>
+    <p>本次遠征的戰利品已安全帶回。<br><span id="victoryReward"></span></p>
+    <button id="victoryConfirmBtn" type="button">返回村莊</button>
+  </div>
+</div>
+
+<div id="bossIntroOverlay" aria-hidden="true">
+  <div class="bossIntroStage">
+    <img src="assets/monsters/floor1/slime_boss.png" alt="史萊姆王">
+    <div class="bossIntroName">史萊姆王</div>
+  </div>
+</div>
+
+<!-- 對話系統：靈魂契約等劇情橋段用，見 design.md「契約角色與解鎖」 -->
 <div id="dialogueOverlay" aria-hidden="true">
+  <div id="soulResonance" aria-hidden="true">
+    <div class="soulResonanceGlow"></div>
+    <img id="soulResonanceOrb" src="assets/story/resonance_orb.png" alt="靈魂共鳴">
+    <div class="soulMissingArt">缺少圖片<br><small>assets/story/resonance_orb.png</small></div>
+    <div class="soulResonanceTitle">靈魂共鳴</div>
+    <div class="soulInteractionHint">點擊繼續</div>
+  </div>
+  <div id="contractFormed" aria-hidden="true">
+    <div class="contractFormedStage">
+      <img id="contractFormedMagicCircle" alt="">
+      <img id="contractFormedCharacter" alt="">
+    </div>
+    <div id="contractFormedTitle"></div>
+    <div class="contractFormedSubtitle">締結共鳴契約</div>
+    <div class="contractFormedKicker">— 契約成立 —</div>
+    <div class="soulInteractionHint">點擊完成</div>
+  </div>
   <div id="dialogueModal" role="dialog" aria-modal="true" aria-labelledby="dialogueSpeakerName">
     <div id="dialoguePortraitFrame">
       <img id="dialoguePortraitImg" alt="">
@@ -112,7 +231,7 @@
     <div id="dialogueBox">
       <div id="dialogueSpeakerName"></div>
       <div id="dialogueText"></div>
-      <button id="dialogueNextBtn" type="button">繼續 ▶</button>
+      <div id="dialogueAdvanceMark" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
   </div>
 </div>

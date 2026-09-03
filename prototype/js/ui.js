@@ -10,14 +10,64 @@ const OVERLAY_CLOSERS = {
   shop: () => leaveShop(false),
   inventory: () => setInventoryOpen(false),
   combatItemPicker: () => setCombatItemPickerOpen(false),
+  charmPicker: () => setCharmPickerOpen(false),
   characterDetail: () => setCharacterDetailOpen(false),
   dialogue: () => closeDialogue(),
 };
+
+// The preparation phase is a small location hub: village is the outer layer,
+// while character/loadout management lives inside the home location.
+let prepLocation = 'village';
+let homeEls = {};
 
 // Call before opening `nextId`: enforces "only one overlay/popover open at a
 // time" so callers never have to manually juggle every other overlay's flag.
 function closeOtherOverlays(nextId) {
   if (activeOverlay && activeOverlay !== nextId) OVERLAY_CLOSERS[activeOverlay]();
+}
+
+function showDefeatOverlay() {
+  if (activeOverlay && OVERLAY_CLOSERS[activeOverlay]) OVERLAY_CLOSERS[activeOverlay]();
+  const overlay = document.getElementById('defeatOverlay');
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function confirmDefeat() {
+  const overlay = document.getElementById('defeatOverlay');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  log('遠征失敗。本次遠征取得的金幣與戰利品已遺失。', 'warn');
+  endRun(false);
+  render();
+}
+
+function showVictoryOverlay(securedGold) {
+  document.getElementById('victoryReward').textContent = `帶回 ${securedGold} 金幣。`;
+  const overlay = document.getElementById('victoryOverlay');
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function confirmVictory() {
+  const overlay = document.getElementById('victoryOverlay');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  endRun(true);
+  render();
+}
+
+function showBossIntro(onComplete) {
+  const overlay = document.getElementById('bossIntroOverlay');
+  if (overlay.classList.contains('open')) return;
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  setTimeout(() => overlay.classList.add('leaving'), 4800);
+  setTimeout(() => {
+    overlay.classList.remove('open', 'leaving');
+    overlay.setAttribute('aria-hidden', 'true');
+    onComplete();
+  }, 5400);
 }
 
 function popup(portraitEl, text, cls) {
@@ -193,7 +243,7 @@ function attachCombatActionTooltip(el, getItemId) {
     const item = ITEM_DEFS[itemId];
     const html = item
       ? itemTooltipHTML(item, { qty: inventoryItemCount(itemId) })
-      : '<div class="ttName">戰鬥道具槽</div><div class="ttStat">目前沒有放入道具</div>';
+      : '<div class="ttName">藥水槽</div><div class="ttStat">目前沒有放入藥水</div>';
     showTooltipContent(html, e);
   });
   el.addEventListener('mousemove', positionTooltip);
@@ -205,7 +255,7 @@ function attachActiveRelicTooltip(el, character) {
     const item = ITEM_DEFS[character.loadout.activeItemId];
     const html = item
       ? itemTooltipHTML(item, null)
-      : '<div class="ttName">主動遺物槽</div><div class="ttStat">目前沒有裝備遺物</div>';
+      : '<div class="ttName">護符槽</div><div class="ttStat">目前沒有裝備護符</div>';
     showTooltipContent(html, e);
   });
   el.addEventListener('mousemove', positionTooltip);
@@ -231,8 +281,119 @@ function loadoutItemHTML(itemId, fallbackIcon, fallbackLabel) {
 
 function renderActiveRelicSlot(slot, character) {
   const itemId = character.loadout.activeItemId;
-  slot.innerHTML = loadoutItemHTML(itemId, '◇', '主動遺物槽');
+  slot.innerHTML = loadoutItemHTML(itemId, '◇', '護符槽');
   slot.classList.toggle('equipped', !!itemId);
+}
+
+function renderCharmPicker(character) {
+  const list = document.getElementById('charmPickerList');
+  list.innerHTML = '';
+  inventory.forEach(entry => {
+    if (!entry) return;
+    const item = ITEM_DEFS[entry.itemId];
+    if (!item || item.equipSlot !== 'charm') return;
+    const option = document.createElement('button');
+    option.type = 'button';
+    option.className = `pickerItem${character.loadout.activeItemId === entry.itemId ? ' selected' : ''}`;
+    option.innerHTML = `<img src="assets/item/${item.img}.png" alt="${item.name}"><span>${item.name}</span><b>×${entry.qty}</b>`;
+    option.addEventListener('click', event => {
+      event.stopPropagation();
+      character.loadout.activeItemId = entry.itemId;
+      setCharmPickerOpen(false);
+      render();
+    });
+    attachItemTooltip(option, item, entry);
+    list.appendChild(option);
+  });
+  const empty = document.createElement('button');
+  empty.type = 'button';
+  empty.className = 'pickerItem unequip';
+  empty.innerHTML = '<span class="pickerEmptyIcon">◇</span><span>不裝備護符</span>';
+  empty.addEventListener('click', event => {
+    event.stopPropagation();
+    character.loadout.activeItemId = null;
+    setCharmPickerOpen(false);
+    render();
+  });
+  list.appendChild(empty);
+}
+
+function setCharmPickerOpen(open, anchor = null, character = null) {
+  if (open) closeOtherOverlays('charmPicker');
+  activeOverlay = open ? 'charmPicker' : (activeOverlay === 'charmPicker' ? null : activeOverlay);
+  const picker = document.getElementById('charmPicker');
+  picker.classList.toggle('open', open);
+  picker.setAttribute('aria-hidden', String(!open));
+  hideTooltip();
+  if (!open || !anchor || !character) return;
+  renderCharmPicker(character);
+  const rect = anchor.getBoundingClientRect();
+  const pickerRect = picker.getBoundingClientRect();
+  picker.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - pickerRect.width - 8))}px`;
+  const below = rect.bottom + 7;
+  picker.style.top = `${below + pickerRect.height <= window.innerHeight - 8 ? below : Math.max(8, rect.top - pickerRect.height - 7)}px`;
+}
+
+function renderExpeditionSelectedSummary() {
+  const summary = document.getElementById('expeditionSelectedSummary');
+  if (!summary) return;
+  const character = roster.find(member => party.includes(member.id));
+  if (!character) {
+    summary.innerHTML = '<div class="expeditionEmptySelection">尚未選擇附身角色</div>';
+    return;
+  }
+  const def = CHAR_DEFS[character.id];
+  const bossIdentity = phase === 'prepBoss' ? `
+    <div class="expeditionSelectedIdentity bossSelectedIdentity">
+      <img src="${characterPortraitPath(character.id)}" alt="${def.name}">
+      <div><small>${character.id === 'wuming' ? '目前出戰' : '目前附身'}</small><b>${def.name}</b><span>Lv.${character.level}</span></div>
+    </div>` : '';
+  summary.innerHTML = `
+    ${bossIdentity}
+    <div class="expeditionLoadout">
+      <div><small>藥水</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
+      <div><small>護符</small><div class="quickSlot activeQuickSlot"></div></div>
+    </div>`;
+  const combatSlot = summary.querySelector('.combatItemQuickSlot');
+  combatSlot.innerHTML = loadoutItemHTML(equippedCombatItemId, '＋', '選擇藥水');
+  combatSlot.classList.toggle('equipped', !!equippedCombatItemId);
+  combatSlot.classList.toggle('locked', phase === 'combat');
+  attachCombatActionTooltip(combatSlot, () => equippedCombatItemId);
+  const openPicker = event => {
+    event.stopPropagation();
+    if (phase !== 'prepFloor' && phase !== 'prepBoss') return;
+    if (activeOverlay === 'combatItemPicker') {
+      setCombatItemPickerOpen(false);
+      return;
+    }
+    setCombatItemPickerOpen(true, combatSlot);
+  };
+  combatSlot.addEventListener('click', openPicker);
+  combatSlot.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    openPicker(event);
+  });
+  const activeSlot = summary.querySelector('.activeQuickSlot');
+  renderActiveRelicSlot(activeSlot, character);
+  attachActiveRelicTooltip(activeSlot, character);
+  activeSlot.setAttribute('role', 'button');
+  activeSlot.tabIndex = 0;
+  const openCharmPicker = event => {
+    event.stopPropagation();
+    if (phase !== 'prepFloor' && phase !== 'prepBoss') return;
+    if (activeOverlay === 'charmPicker') {
+      setCharmPickerOpen(false);
+      return;
+    }
+    setCharmPickerOpen(true, activeSlot, character);
+  };
+  activeSlot.addEventListener('click', openCharmPicker);
+  activeSlot.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    openCharmPicker(event);
+  });
 }
 
 function renderCombatItemPicker() {
@@ -504,8 +665,8 @@ function renderCharacterDetail(characterId) {
   content.innerHTML = `
     <div class="detailPortraitColumn">
       <div class="detailArtFrame">
-        <img src="assets/characters/${def.img}_full.png" alt="${def.name} 完整立繪">
-        <div class="detailMissingArt">缺少 ${def.img}_full.png</div>
+        <img src="${characterFullArtPath(characterId)}" alt="${def.name} 完整立繪">
+        <div class="detailMissingArt">缺少目前外觀立繪</div>
       </div>
       <button id="characterDetailSelectBtn" type="button"></button>
     </div>
@@ -513,6 +674,13 @@ function renderCharacterDetail(characterId) {
       <div class="detailTitleRow">
         <div><h2 id="characterDetailName">${def.name}</h2><span>Lv.${c.level} · ${c.xp}/${xpToNext(c.level)} EXP</span></div>
         <div class="growthWallet"><span><img src="assets/item/${ITEM_DEFS.statBook.img}.png" alt="">能力書 <b>${inventoryItemCount('statBook')}</b></span><span><img src="assets/item/${ITEM_DEFS.skillBook.img}.png" alt="">技能書 <b>${inventoryItemCount('skillBook')}</b></span></div>
+      </div>
+      <div class="detailSectionTitle">共鳴外觀</div>
+      <div class="skinPicker">
+        ${characterSkins(characterId).map(skin => `
+          <button type="button" class="skinOption${equippedSkinByCharacter[characterId] === skin.skinId ? ' selected' : ''}" data-skin-id="${skin.skinId}">
+            <img src="assets/characters/${skin.portrait}.png" alt="${skin.name}"><span>${skin.name}</span>
+          </button>`).join('')}
       </div>
       <div class="growthVital"><span>HP</span><b>${Math.max(0, c.curHp)} / ${c.maxHp}</b></div>
       <div class="detailSectionTitle">基礎能力</div>
@@ -544,6 +712,13 @@ function renderCharacterDetail(characterId) {
       renderCharacterDetail(characterId);
     });
   });
+  content.querySelectorAll('.skinOption[data-skin-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      if (!equipCharacterSkin(characterId, el.dataset.skinId)) return;
+      renderCharacterDetail(characterId);
+      render();
+    });
+  });
 
   const upgradeBtn = document.getElementById('growthUpgradeBtn');
   attachHoldRepeat(upgradeBtn, () => {
@@ -553,13 +728,40 @@ function renderCharacterDetail(characterId) {
   }, () => { renderCharacterDetail(characterId); render(); });
 
   const selectBtn = document.getElementById('characterDetailSelectBtn');
-  selectBtn.textContent = !unlocked ? '尚未締結契約' : selected ? '目前附身中' : partyLocked ? '本次遠征已鎖定附身對象' : '設為附身對象';
+  const isWuming = characterId === 'wuming';
+  selectBtn.textContent = !unlocked ? '尚未締結契約' : selected ? (isWuming ? '目前出戰中' : '目前附身中') : partyLocked ? '本次遠征角色已鎖定' : (isWuming ? '設為出戰角色' : '設為附身對象');
   selectBtn.disabled = !unlocked || selected || partyLocked;
+  selectBtn.style.display = prepLocation === 'home' ? 'none' : '';
   selectBtn.addEventListener('click', () => {
     toggleParty(characterId);
     renderCharacterDetail(characterId);
     render();
   });
+}
+
+let shopDialogueIndex = 0;
+let lastShopDialogueMode = null;
+
+const SHOP_DIALOGUE = {
+  town: [
+    '歡迎。需要補給，還是有漂亮的結晶要賣？',
+    '藥水都整理好了，出發前記得檢查行囊。',
+    '魔物結晶很受歡迎，我會給你公道的價格。'
+  ],
+  dungeon: [
+    '能在這裡碰見也算緣分，要補給就趁現在。',
+    '地城裡可沒有下一間店，別省過頭了。',
+    '時間不等人。想慢慢挑的話，可以先關掉倒數。'
+  ]
+};
+
+function renderShopDialogue() {
+  if (lastShopDialogueMode !== shopMode) {
+    shopDialogueIndex = 0;
+    lastShopDialogueMode = shopMode;
+  }
+  const lines = SHOP_DIALOGUE[shopMode] || SHOP_DIALOGUE.town;
+  document.getElementById('shopDialogueText').textContent = lines[shopDialogueIndex % lines.length];
 }
 
 function buildShopUI() {
@@ -579,10 +781,14 @@ function buildShopUI() {
     attachItemTooltip(row.querySelector('img'), item, { qty: inventoryItemCount(offer.itemId) });
     buyList.appendChild(row);
   });
-  document.getElementById('shopSellOneBtn').addEventListener('click', () => sellShopCrystals(1));
-  document.getElementById('shopSellAllBtn').addEventListener('click', () => sellShopCrystals(inventoryItemCount('stone')));
+  document.getElementById('shopSellOneBtn').addEventListener('click', () => sellMonsterCrystals(1));
+  document.getElementById('shopSellAllBtn').addEventListener('click', () => sellMonsterCrystals(inventoryItemCount('monsterCrystal')));
   document.getElementById('shopAutoLeaveBtn').addEventListener('click', toggleShopAutoLeave);
   document.getElementById('shopLeaveBtn').addEventListener('click', () => leaveShop(false));
+  document.querySelector('.shopKeeperPanel').addEventListener('click', () => {
+    shopDialogueIndex += 1;
+    renderShopDialogue();
+  });
 }
 
 function renderShopView() {
@@ -592,15 +798,16 @@ function renderShopView() {
   overlay.setAttribute('aria-hidden', String(!shopOpen));
   if (!shopOpen) return;
   document.getElementById('shopTitle').textContent = shopMode === 'town' ? '城外商店' : '地城商店';
+  renderShopDialogue();
   document.getElementById('shopCountdown').textContent = shopMode === 'town'
     ? `安全金幣：${bankedGold}`
     : (shopAutoLeave ? `${Math.ceil(shopCountdown / 1000)} 秒後自動離開` : '自動離開已關閉');
-  const stoneQty = inventoryItemCount('stone');
-  document.getElementById('shopStoneQty').textContent = `持有 ×${stoneQty}`;
+  const crystalQty = inventoryItemCount('monsterCrystal');
+  document.getElementById('shopMonsterCrystalQty').textContent = `持有 ×${crystalQty}`;
   const sellBtn = document.getElementById('shopSellAllBtn');
-  sellBtn.textContent = stoneQty > 0 ? `全部賣出（+${stoneQty * SHOP_STONE_SELL_PRICE}）` : '沒有可出售物';
-  sellBtn.disabled = stoneQty <= 0;
-  document.getElementById('shopSellOneBtn').disabled = stoneQty <= 0;
+  sellBtn.textContent = crystalQty > 0 ? `全部賣出（+${crystalQty * SHOP_MONSTER_CRYSTAL_SELL_PRICE}）` : '沒有可出售物';
+  sellBtn.disabled = crystalQty <= 0;
+  document.getElementById('shopSellOneBtn').disabled = crystalQty <= 0;
   const autoLeaveBtn = document.getElementById('shopAutoLeaveBtn');
   autoLeaveBtn.style.display = shopMode === 'dungeon' ? '' : 'none';
   autoLeaveBtn.textContent = shopAutoLeave ? '關閉 10 秒倒數' : '開啟 10 秒倒數';
@@ -665,15 +872,6 @@ function renderInventory() {
       <span class="inventoryItemName">${item.name}</span>
     `;
     attachItemTooltip(slot, item, entry);
-    if (item.combatAction && phase === 'prepFloor' && !partyLocked) {
-      slot.classList.add('combatEquippable');
-      slot.addEventListener('click', () => {
-        if (phase !== 'prepFloor' || partyLocked) return;
-        equippedCombatItemId = entry.itemId;
-        setInventoryOpen(false);
-        render();
-      });
-    }
   }
 
 }
@@ -694,8 +892,35 @@ function buildUI() {
   bindDialogueUI();
 
   document.getElementById('townShopBtn').addEventListener('click', openTownShop);
+  document.getElementById('homeLocationBtn').addEventListener('click', () => {
+    prepLocation = 'home';
+    render();
+  });
+  document.getElementById('homeBackBtn').addEventListener('click', () => {
+    prepLocation = 'village';
+    render();
+  });
+  document.getElementById('expeditionLocationBtn').addEventListener('click', () => {
+    if (phase !== 'prepFloor' || partyLocked) return;
+    prepLocation = 'regions';
+    render();
+  });
+  document.getElementById('regionBackBtn').addEventListener('click', () => {
+    prepLocation = 'village';
+    render();
+  });
+  document.getElementById('forestRegionBtn').addEventListener('click', () => {
+    prepLocation = 'expedition';
+    render();
+  });
+  document.getElementById('expeditionBackBtn').addEventListener('click', () => {
+    prepLocation = 'regions';
+    render();
+  });
 
   document.getElementById('bagBtn').addEventListener('click', () => setInventoryOpen(true));
+  document.getElementById('defeatConfirmBtn').addEventListener('click', confirmDefeat);
+  document.getElementById('victoryConfirmBtn').addEventListener('click', confirmVictory);
   document.getElementById('inventoryCloseBtn').addEventListener('click', () => setInventoryOpen(false));
   document.getElementById('inventoryOverlay').addEventListener('click', e => {
     if (e.target.id === 'inventoryOverlay') setInventoryOpen(false);
@@ -707,6 +932,9 @@ function buildUI() {
     if (!event.target.closest('#combatItemPicker') && !event.target.closest('.combatItemQuickSlot')) {
       setCombatItemPickerOpen(false);
     }
+    if (!event.target.closest('#charmPicker') && !event.target.closest('#expeditionSelectedSummary .activeQuickSlot')) {
+      setCharmPickerOpen(false);
+    }
   });
   document.getElementById('characterDetailCloseBtn').addEventListener('click', () => setCharacterDetailOpen(false));
   document.getElementById('characterDetailOverlay').addEventListener('click', event => {
@@ -716,25 +944,32 @@ function buildUI() {
   const actionArea = document.getElementById('actionArea');
   startBtnEl = document.createElement('button');
   startBtnEl.id = 'startBtn';
+  const beginCombat = () => {
+    partyLocked = true;
+    phase = 'combat';
+    buildBattleRoster();
+    spawnWave();
+    party.forEach(id => {
+      const c = roster.find(r => r.id === id);
+      c.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(c);
+    });
+    render();
+  };
   startBtnEl.addEventListener('click', () => {
     if (party.length === 0) return; // need at least one character to fight with
     if (phase === 'prepFloor' || phase === 'prepBoss') {
-      partyLocked = true;
-      phase = 'combat';
-      buildBattleRoster();
-      spawnWave();
-      // everyone waits out a full cycle before their first move - no instant
-      // opening strike the moment a fight begins.
-      party.forEach(id => {
-        const c = roster.find(r => r.id === id);
-        c.actionCountdown = CHAR_DEFS[id].atkInterval;
-      });
-      render();
+      if (phase === 'prepBoss') {
+        phase = 'bossIntro';
+        render();
+        showBossIntro(beginCombat);
+      } else {
+        beginCombat();
+      }
     }
   });
   retreatBtnEl = document.createElement('button');
   retreatBtnEl.id = 'retreatBtn';
-  retreatBtnEl.textContent = '撤退並保留金幣';
+  retreatBtnEl.textContent = '撤退';
   retreatBtnEl.addEventListener('click', () => {
     doRetreat();
     render();
@@ -742,48 +977,31 @@ function buildUI() {
   actionArea.appendChild(startBtnEl);
   actionArea.appendChild(retreatBtnEl);
 
-  // prep roster: full collection, pick your party here by clicking a card
-  // directly (no checkbox) - selected state shown via border glow + badge.
+  // Expedition is a quick possession choice; detailed growth stays at Home.
   const prepRosterEl = document.getElementById('prepRoster');
   prepRosterEl.innerHTML = '';
   roster.forEach(c => {
     const def = CHAR_DEFS[c.id];
-    const card = document.createElement('div');
-    card.className = 'prepCard';
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'expeditionCharacter';
     const rarity = RARITY_DEFS[def.rarity];
     card.style.setProperty('--rarity-color', rarity.color);
     // deliberately no native `title` tooltip here - the browser's default
     // tooltip box is ugly and can visibly get stuck on screen; rarity reads
     // from the frame color/glow alone (see design.md).
     card.innerHTML = `
-      <div class="selectedBadge">✓</div>
+      <span class="selectedBadge">${c.id === 'wuming' ? '出戰中' : '附身中'}</span>
       <div class="lockOverlay">
         <span class="lockIcon">🔒</span>
         <span class="lockReq"></span>
       </div>
       <div class="portrait">
-        <img src="assets/characters/${def.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <img src="${characterPortraitPath(c.id)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <div class="fallback" style="display:none;">${def.icon}</div>
       </div>
       <span class="nm">${def.name}</span>
       <span class="lvlTag">Lv.<span class="lvl"></span></span>
-      <div class="skills">
-        ${def.skills.map(s => `
-          <div class="skillIcon autoSkillIcon">
-            <img src="assets/skills/${s.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-            <span class="fallback">${s.icon}</span>
-          </div>
-        `).join('')}
-        ${def.action ? `
-          <div class="skillIcon prepActionIcon" aria-label="手動操作：${def.action.name}">
-            <img src="assets/skills/${def.action.img}.png" alt="${def.action.name}" onerror="this.style.display='none';">
-          </div>
-        ` : ''}
-      </div>
-      <div class="prepQuickSlots">
-        <div class="quickSlot combatItemQuickSlot" role="button" tabindex="0" aria-label="戰鬥道具槽"></div>
-        <div class="quickSlot activeQuickSlot"></div>
-      </div>
     `;
     prepRosterEl.appendChild(card);
 
@@ -791,29 +1009,40 @@ function buildUI() {
       card,
       lvl: card.querySelector('.lvl'),
       lockReq: card.querySelector('.lockReq'),
-      combatItemQuickSlot: card.querySelector('.combatItemQuickSlot'),
-      activeQuickSlot: card.querySelector('.activeQuickSlot'),
+      portrait: card.querySelector('.portrait img'),
     };
-    attachCombatActionTooltip(prepEls[c.id].combatItemQuickSlot, () => equippedCombatItemId);
-    const openCombatItemPicker = event => {
-      event.stopPropagation();
-      if (phase !== 'prepFloor' || partyLocked || !party.includes(c.id)) return;
-      setCombatItemPickerOpen(true, prepEls[c.id].combatItemQuickSlot);
-    };
-    prepEls[c.id].combatItemQuickSlot.addEventListener('click', openCombatItemPicker);
-    prepEls[c.id].combatItemQuickSlot.addEventListener('keydown', event => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      openCombatItemPicker(event);
-    });
-    attachActiveRelicTooltip(prepEls[c.id].activeQuickSlot, c);
-    attachCharacterCardPress(card, c.id);
+    card.addEventListener('click', () => toggleParty(c.id));
     attachCharTooltip(card.querySelector('.portrait'), c.id);
-    Array.from(card.querySelectorAll('.autoSkillIcon')).forEach((iconEl, i) => {
-      attachSkillTooltip(iconEl, def.skills[i]);
+  });
+
+  const homeRosterEl = document.getElementById('homeRoster');
+  homeRosterEl.innerHTML = '';
+  roster.forEach(c => {
+    const def = CHAR_DEFS[c.id];
+    const rarity = RARITY_DEFS[def.rarity];
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'homeGrowthCard';
+    card.style.setProperty('--rarity-color', rarity.color);
+    card.innerHTML = `
+      <span class="homeGrowthPortrait">
+        <img src="${characterPortraitPath(c.id)}" alt="${def.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <span class="fallback" style="display:none;">缺少圖片</span>
+      </span>
+      <span class="homeGrowthInfo">
+        <b>${def.name}</b>
+        <small>Lv.<span class="lvl"></span></small>
+        <span class="homeGrowthSkills">${def.skills.map(s => `<img src="assets/skills/${s.img}.png" alt="" onerror="this.classList.add('missing');">`).join('')}</span>
+        <em>查看能力與技能配點</em>
+      </span>
+      <span class="homeGrowthLock">尚未締結契約</span>
+    `;
+    card.addEventListener('click', () => {
+      if (!isCharUnlocked(c.id)) return;
+      setCharacterDetailOpen(true, c.id);
     });
-    const prepActionIcon = card.querySelector('.prepActionIcon');
-    if (prepActionIcon) attachCharacterActionTooltip(prepActionIcon, def.action);
+    homeRosterEl.appendChild(card);
+    homeEls[c.id] = { card, lvl: card.querySelector('.lvl'), portrait: card.querySelector('.homeGrowthPortrait img') };
   });
 }
 
@@ -830,7 +1059,7 @@ function buildBattleRoster() {
     card.className = 'charCard';
     card.innerHTML = `
       <div class="portrait">
-        <img src="assets/characters/${def.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <img src="${characterPortraitPath(id)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <div class="fallback" style="display:none;">${def.icon}</div>
         <div class="statusList" aria-label="目前狀態"></div>
       </div>
@@ -881,15 +1110,15 @@ function buildBattleRoster() {
 }
 
 // Player-manual action row. Potions are a standalone combat command and are
-// deliberately not attached to any character; active relics still belong to
-// their equipped character and gain one labelled slot per party member.
+// deliberately not attached to any character; passive charms still belong to
+// their equipped character and gain one slot per party member.
 function buildCombatActionBar() {
   const barEl = document.getElementById('combatActionBar');
   const itemId = equippedCombatItemId;
   barEl.innerHTML = `
     <span class="actionBarTitle">戰鬥操作</span>
-    <button class="combatItemButton combatItemAction" type="button" aria-label="使用戰鬥道具">
-      ${loadoutItemHTML(itemId, '◇', '空戰鬥道具槽')}
+    <button class="combatItemButton combatItemAction" type="button" aria-label="使用藥水">
+      ${loadoutItemHTML(itemId, '◇', '空藥水槽')}
       <span class="itemCdOverlay"></span>
       <span class="itemCdText"></span>
     </button>
@@ -914,7 +1143,7 @@ function buildCombatActionBar() {
           <span class="actionLockOverlay"><img src="assets/skill_lock.png" alt=""></span>
         </button>
       ` : ''}
-      <div class="quickSlot activeQuickSlot" data-slot-type="active" aria-label="主動遺物"></div>
+      <div class="quickSlot activeQuickSlot" data-slot-type="active" aria-label="護符"></div>
     `;
     relicActions.appendChild(group);
     if (action) {
@@ -1050,6 +1279,12 @@ function buildMonsterCards() {
 
 function floorLabelText() {
   const region = regionName(floor);
+  if (phase === 'prepFloor' && !partyLocked) {
+    if (prepLocation === 'village') return '村莊';
+    if (prepLocation === 'home') return '家';
+    if (prepLocation === 'regions') return '遠征入口';
+    return '史萊姆叢林';
+  }
   if (phase === 'combat' && monsters.length > 0) {
     const boss = monsters.find(m => m.isBoss);
     return boss ? `${region}　首領戰` : `${region}　小怪 ${mobsCleared + 1}/${MOBS_PER_FLOOR}`;
@@ -1058,14 +1293,20 @@ function floorLabelText() {
 }
 
 function render() {
-  document.getElementById('floorLabel').textContent = floorLabelText();
-  document.getElementById('goldLabel').innerHTML =
-    `金幣 ${bankedGold}（本局 <span class="runGold">+${runGold}</span> 未入袋）`;
+  const inPrep = (phase === 'prepFloor' || phase === 'prepBoss');
+  const inFreeVillage = phase === 'prepFloor' && !partyLocked;
+  const floorLabelEl = document.getElementById('floorLabel');
+  floorLabelEl.textContent = floorLabelText();
+  floorLabelEl.style.display = inPrep ? 'none' : '';
+  document.getElementById('goldLabel').innerHTML = inFreeVillage
+    ? `金幣 ${bankedGold}`
+    : `金幣 ${bankedGold}（本局 <span class="runGold">+${runGold}</span> 未入袋）`;
+  document.getElementById('resetBtn').hidden = !DEBUG_MODE;
+  document.getElementById('bossIntroTestBtn').hidden = !DEBUG_MODE;
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();
 
-  const inPrep = (phase === 'prepFloor' || phase === 'prepBoss');
   document.getElementById('prepView').style.display = inPrep ? 'block' : 'none';
   document.getElementById('combatView').style.display = inPrep ? 'none' : 'block';
 
@@ -1076,6 +1317,7 @@ function render() {
   }
 
   const logEl = document.getElementById('log');
+  logEl.style.display = phase === 'combat' ? 'block' : 'none';
   logEl.innerHTML = logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('');
   logEl.scrollTop = logEl.scrollHeight;
 }
@@ -1083,9 +1325,23 @@ function render() {
 function renderPrepView() {
   const headingEl = document.getElementById('prepHeading');
   const msgEl = document.getElementById('prepMsg');
+  const atVillage = phase === 'prepFloor' && !partyLocked && prepLocation === 'village';
+  const atHome = phase === 'prepFloor' && !partyLocked && prepLocation === 'home';
+  const atRegions = phase === 'prepFloor' && !partyLocked && prepLocation === 'regions';
+  document.getElementById('villageView').style.display = atVillage ? '' : 'none';
+  document.getElementById('homeView').style.display = atHome ? '' : 'none';
+  document.getElementById('regionView').style.display = atRegions ? '' : 'none';
+  document.getElementById('expeditionView').style.display = (atVillage || atHome || atRegions) ? 'none' : '';
+  Object.entries(homeEls).forEach(([id, refs]) => {
+    const c = roster.find(entry => entry.id === id);
+    refs.lvl.textContent = c.level;
+    refs.portrait.src = characterPortraitPath(id);
+    refs.card.classList.toggle('charLocked', !isCharUnlocked(id));
+  });
+  if (atVillage || atHome || atRegions) return;
 
   if (phase === 'prepFloor') {
-    headingEl.textContent = '家';
+    headingEl.textContent = `${regionName(floor)}・遠征準備`;
     if (partyLocked) {
       msgEl.textContent = `已選定附身的靈魂，前往${regionName(floor)}，直到死亡或通關前無法更換`;
       startBtnEl.textContent = '繼續前進';
@@ -1096,14 +1352,19 @@ function renderPrepView() {
       msgEl.textContent = ''; // party already picked - the highlighted card already shows that, no need to say it again
       startBtnEl.textContent = '開始出擊';
     }
-    retreatBtnEl.style.display = '';
+    retreatBtnEl.style.display = partyLocked ? '' : 'none';
   } else {
     headingEl.textContent = '首領戰前確認';
-    msgEl.textContent = '小怪已清空，準備迎戰首領（也可以選擇見好就收）';
+    msgEl.textContent = '小怪已清空。確認藥水與護符後，選擇撤退或挑戰首領。';
     startBtnEl.textContent = '挑戰首領';
     retreatBtnEl.style.display = '';
   }
   startBtnEl.disabled = (party.length === 0);
+  document.getElementById('actionArea').style.display = '';
+  const choosingCharacter = phase !== 'prepBoss';
+  document.getElementById('expeditionBackBtn').style.display = choosingCharacter ? '' : 'none';
+  document.getElementById('expeditionCharacterHeading').style.display = choosingCharacter ? '' : 'none';
+  document.getElementById('prepRoster').style.display = choosingCharacter ? '' : 'none';
 
   roster.forEach(c => {
     const refs = prepEls[c.id];
@@ -1116,12 +1377,9 @@ function renderPrepView() {
     refs.card.classList.toggle('charLocked', !unlocked);
     refs.lockReq.textContent = unlockReqText(c.id);
     refs.lvl.textContent = c.level;
-    refs.combatItemQuickSlot.style.display = inParty ? '' : 'none';
-    refs.combatItemQuickSlot.innerHTML = loadoutItemHTML(equippedCombatItemId, '◇', '空戰鬥道具槽');
-    refs.combatItemQuickSlot.classList.toggle('equipped', !!equippedCombatItemId);
-    refs.combatItemQuickSlot.classList.toggle('locked', partyLocked);
-    renderActiveRelicSlot(refs.activeQuickSlot, c);
+    refs.portrait.src = characterPortraitPath(c.id);
   });
+  renderExpeditionSelectedSummary();
 }
 
 function renderCombatView() {

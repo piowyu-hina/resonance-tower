@@ -18,8 +18,12 @@ function initGame() {
 }
 
 document.getElementById('resetBtn').addEventListener('click', () => {
-  doWipeReset();
+  endRun(false);
   render();
+});
+
+document.getElementById('bossIntroTestBtn').addEventListener('click', () => {
+  showBossIntro(() => {});
 });
 
 // Game surface: suppress the browser context menu so right-clicks during
@@ -29,4 +33,5 @@ document.addEventListener('contextmenu', event => event.preventDefault());
 initGame();
 buildUI();
 render();
+runContractPreviewFromUrl();
 setInterval(tick, MASTER_TICK_MS);

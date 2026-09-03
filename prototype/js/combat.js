@@ -1,5 +1,6 @@
 function enterPrepFloor() {
   phase = 'prepFloor';
+  prepLocation = 'village';
   // retreating out of prepBoss leaves its auto-opened shop overlay active
   // otherwise - close whatever's open on this clean state transition.
   if (activeOverlay) OVERLAY_CLOSERS[activeOverlay]();
@@ -320,14 +321,12 @@ function onMonsterDefeated(m) {
   alive.forEach(c => addXp(c, xpGain));
   log(m.isBoss ? `擊敗首領！獲得 ${gold} 金幣` : `擊敗 ${m.name}！獲得 ${gold} 金幣`, 'good');
 
-  if (m.isBoss) {
-    checkBossDropUnlocks();
-  } else if (!m.isSummoned) {
+  if (!m.isBoss && !m.isSummoned) {
     slimeKillCount++; // all floor-1 mobs are slimes for now - see design.md 角色解鎖系統
     checkThresholdUnlocks();
-    checkSoulQuestTriggers();
-    if (Math.random() < SLIME_STONE_DROP_CHANCE) {
-      const added = addInventoryItem('stone', 1, true);
+    checkResonanceTriggers();
+    if (Math.random() < SLIME_MONSTER_CRYSTAL_DROP_CHANCE) {
+      const added = addInventoryItem('monsterCrystal', 1, true);
       if (added > 0) {
         log(`${m.name} 掉落了 1 顆魔物結晶`, 'good');
       } else {
@@ -366,7 +365,8 @@ function onMonsterDefeated(m) {
       if (floor >= MAX_IMPLEMENTED_FLOOR) {
         const securedGold = runGold;
         log(`目前開放的區域已全部完成，本局 ${securedGold} 金幣正式入袋！`, 'good');
-        endRun(true);
+        phase = 'victory';
+        showVictoryOverlay(securedGold);
       } else {
         floor++;
         mobsCleared = 0;
@@ -499,12 +499,12 @@ function changeShopGold(amount) {
   else runGold += amount;
 }
 
-function sellShopCrystals(requestedQty) {
+function sellMonsterCrystals(requestedQty) {
   if (activeOverlay !== 'shop') return;
-  const qty = Math.min(requestedQty, inventoryItemCount('stone'));
+  const qty = Math.min(requestedQty, inventoryItemCount('monsterCrystal'));
   if (qty <= 0) return;
-  consumeInventoryItem('stone', qty);
-  const gold = qty * SHOP_STONE_SELL_PRICE;
+  consumeInventoryItem('monsterCrystal', qty);
+  const gold = qty * SHOP_MONSTER_CRYSTAL_SELL_PRICE;
   changeShopGold(gold);
   resetShopIdleTimer();
   log(`賣出 ${qty} 顆魔物結晶，獲得 ${gold} 金幣`, 'good');
@@ -604,7 +604,7 @@ function useCombatItem(itemId) {
   if (item.category === 'potion') {
     potionUseCount++;
     checkThresholdUnlocks();
-    checkSoulQuestTriggers();
+    checkResonanceTriggers();
   }
   hideTooltip();
   render();
@@ -635,7 +635,7 @@ function useCharacterAction(characterId) {
     popup(charEls[characterId] && charEls[characterId].portraitEl, 'RANDOM', 'buff');
     performSkill(c, skill, skillIndex, target);
   } else if (action.type === 'selfBuffAtkDef') {
-    // 小初「全力以赴」- 見 worldview_design_v2.md。跟技能線一樣用 'action' 這條
+    // 小初「全力以赴」- 見 design.md「契約角色與解鎖」。跟技能線一樣用 'action' 這條
     // 強化線放大幅度（design.md 98：專屬操作本身有數值時比照技能線疊倍率），
     // 冷卻縮短則走 actionLineCooldownMult，兩者是各自獨立的加成。
     const scale = lineScale(c, 'action');
@@ -651,8 +651,9 @@ function useCharacterAction(characterId) {
 }
 
 function doWipeReset() {
-  log('隊伍全滅……本次遠征帶的金幣與戰利品全部付諸流水，但倉庫裡已經安全存放的東西、等級與角色解鎖都不受影響，重新開始爬塔', 'warn');
-  endRun(false);
+  if (phase === 'defeat') return;
+  phase = 'defeat';
+  showDefeatOverlay();
 }
 
 function doRetreat() {

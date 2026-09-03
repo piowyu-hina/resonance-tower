@@ -1,6 +1,7 @@
 // phase is one of:
 //  'prepFloor' - manual, no timer: confirm party before the floor's mobs start (or retreat here)
 //  'prepBoss'  - manual, no timer: confirm party after mobs are cleared, before the boss
+//  'bossIntro' - short non-interactive boss title sequence
 //  'combat'    - the tick loop is actually fighting
 let roster = [];
 let party = [];
@@ -16,14 +17,15 @@ let bankedGold = 0; // permanent - see endRun(): a wipe now clears this too, onl
 let runGold = 0;    // this run's unbanked gold - lost on wipe, kept only if you retreat
 let logLines = [];
 
-// Backpack shell test data. This becomes the real inventory array once item
-// acquisition/consumption is implemented; UI code already reads this shape.
+// New-run starter inventory. Permanent progression books are intentionally
+// excluded: they must come from combat drops instead of debug seed data.
 let inventory = Array.from({ length: INVENTORY_SLOT_COUNT }, (_, index) => {
   if (index === 0) return { itemId: 'potion', qty: 2 };
-  if (index === 1) return { itemId: 'stone', qty: 3 };
+  if (index === 1) return { itemId: 'monsterCrystal', qty: 3 };
   if (index === 2) return { itemId: 'speedPotion', qty: 2 };
-  if (index === 3) return { itemId: 'statBook', qty: 20 }; // TODO: remove once real acquisition is the only source - here so 屬性強化 UI has something to click during testing
-  if (index === 4) return { itemId: 'skillBook', qty: 20 }; // TODO: same as above
+  if (index === 5) return { itemId: 'powerCharm', qty: 1 };
+  if (index === 6) return { itemId: 'guardCharm', qty: 1 };
+  if (index === 7) return { itemId: 'windCharm', qty: 1 };
   return null;
 });
 let runInventoryGains = {}; // itemId -> unsecured quantity found this expedition
@@ -34,11 +36,9 @@ let runInventoryGains = {}; // itemId -> unsecured quantity found this expeditio
 let slimeKillCount = 0;       // lifetime count, feeds the killCount unlock type
 let potionUseCount = 0;       // lifetime successful uses, feeds potionCount unlocks
 let unlockedChars = new Set(['wuming']); // wuming starts unlocked for free
-// id -> 'discovered' | 'complete', for unlock.type 'soulQuest' characters only
-// (see worldview_design.md 靈魂任務). Absent/'hidden' means the soul hasn't
-// been found yet. Once unlockChar() runs, unlockedChars is the source of
-// truth and this stage is no longer consulted.
-let soulQuestStage = {};
+// id -> 'resonating' | 'contracted' for resonanceContract characters.
+// Absent means its hidden synchronization condition has not been met yet.
+let resonanceState = {};
 let combatItemCooldowns = {}; // itemId -> milliseconds remaining
 let equippedCombatItemId = null; // one player-controlled combat item, never character-bound
 // single source of truth for which modal/popover is currently open - opening
@@ -48,6 +48,36 @@ let activeOverlay = null;
 let shopCountdown = 0;
 let shopMode = null; // 'town' spends secured gold; 'dungeon' spends run gold
 let shopAutoLeave = true;
+
+// Cosmetics are permanent collection data and never affect combat stats.
+let ownedSkins = new Set(Object.values(DEFAULT_SKIN_BY_CHARACTER));
+let equippedSkinByCharacter = { ...DEFAULT_SKIN_BY_CHARACTER };
+
+function characterSkins(characterId) {
+  return Object.entries(SKIN_DEFS)
+    .filter(([skinId, skin]) => skin.characterId === characterId && ownedSkins.has(skinId))
+    .map(([skinId, skin]) => ({ skinId, ...skin }));
+}
+
+function equippedSkin(characterId) {
+  const skinId = equippedSkinByCharacter[characterId] || DEFAULT_SKIN_BY_CHARACTER[characterId];
+  return SKIN_DEFS[skinId] || SKIN_DEFS[DEFAULT_SKIN_BY_CHARACTER[characterId]];
+}
+
+function characterPortraitPath(characterId) {
+  return `assets/characters/${equippedSkin(characterId).portrait}.png`;
+}
+
+function characterFullArtPath(characterId) {
+  return `assets/characters/${equippedSkin(characterId).fullArt}.png`;
+}
+
+function equipCharacterSkin(characterId, skinId) {
+  const skin = SKIN_DEFS[skinId];
+  if (!skin || skin.characterId !== characterId || !ownedSkins.has(skinId)) return false;
+  equippedSkinByCharacter[characterId] = skinId;
+  return true;
+}
 
 function isCharUnlocked(id) { return unlockedChars.has(id); }
 
@@ -69,37 +99,21 @@ function checkThresholdUnlocks() {
   });
 }
 
-// call once per boss kill - each not-yet-unlocked bossDropChance character
-// gets its own independent roll.
-function checkBossDropUnlocks() {
-  Object.keys(CHAR_DEFS).forEach(id => {
-    if (unlockedChars.has(id)) return;
-    const u = CHAR_DEFS[id].unlock;
-    if (u.type === 'bossDropChance' && Math.random() < u.chance) {
-      unlockChar(id);
-    }
-  });
-}
-
 // human-readable unlock requirement, for prep-card tooltips/overlays
 function unlockReqText(id) {
   const u = CHAR_DEFS[id].unlock;
   if (u.type === 'free') return '';
+  if (!DEBUG_MODE) return '尚未產生共鳴';
   if (u.type === 'killCount') return `擊殺 ${u.count} 隻史萊姆解鎖（目前 ${Math.min(slimeKillCount, u.count)}/${u.count}）`;
   if (u.type === 'potionCount') return `累計使用 ${u.count} 瓶藥水解鎖（目前 ${Math.min(potionUseCount, u.count)}/${u.count}）`;
-  if (u.type === 'bossDropChance') return `擊敗首領，有 ${Math.round(u.chance * 100)}% 機率獲得`;
-  if (u.type === 'soulQuest') {
-    const stage = soulQuestStage[id] || 'hidden';
-    if (stage === 'complete') return '靈魂契約已締結，即將解鎖';
-    if (stage === 'discovered') return `靈魂任務進行中：${conditionProgressText(u.goal)}`;
-    return `${conditionProgressText(u.trigger)}後，會發現一個只有無名看得見的靈魂`;
+  if (u.type === 'resonanceContract') {
+    if (resonanceState[id] === 'resonating') return '正在與未知的共鳴靈同步';
+    return `${conditionProgressText(u.trigger)}後，會與未知的共鳴靈產生同步`;
   }
   return '';
 }
 
-// --- 靈魂任務 condition helpers (see worldview_design.md 靈魂任務) ---
-// soulQuest's trigger/goal reuse the same condition shapes as the plain
-// threshold unlock types above, so this doesn't invent a second vocabulary.
+// --- 共鳴契約條件 helpers (see design.md「契約角色與解鎖」) ---
 function conditionMet(cond) {
   if (cond.type === 'killCount' && cond.monster === 'slime') return slimeKillCount >= cond.count;
   if (cond.type === 'potionCount') return potionUseCount >= cond.count;
@@ -112,31 +126,18 @@ function conditionProgressText(cond) {
   return '';
 }
 
-// call after any progress that could advance a soulQuest character to its
-// next stage. Two shapes, per worldview_design_v2.md (契約不強制要求跑任務):
-//  - has `goal`: two-stage - discovery dialogue first, then (once goal is
-//    met) a separate completion dialogue that unlocks on dismissal.
-//  - no `goal`: single-stage - trigger plays discoverDialogue once, and
-//    unlocks right when that dialogue is dismissed (the encounter IS the
-//    whole contract, e.g. 小初's "殺 50 隻史萊姆" or a boss-kill contract).
-function checkSoulQuestTriggers() {
+// Each character has one hidden trigger and one self-contained contract scene.
+// 'resonating' prevents the scene from being queued repeatedly before it ends.
+function checkResonanceTriggers() {
   Object.keys(CHAR_DEFS).forEach(id => {
     if (unlockedChars.has(id)) return;
     const u = CHAR_DEFS[id].unlock;
-    if (u.type !== 'soulQuest') return;
-    const stage = soulQuestStage[id] || 'hidden';
-    if (stage === 'hidden' && conditionMet(u.trigger)) {
-      if (u.goal) {
-        soulQuestStage[id] = 'discovered';
-        queueDialogue(u.discoverDialogue);
-      } else {
-        soulQuestStage[id] = 'complete';
-        queueDialogue(u.discoverDialogue, () => unlockChar(id));
-      }
-    } else if (stage === 'discovered' && u.goal && conditionMet(u.goal)) {
-      soulQuestStage[id] = 'complete';
-      queueDialogue(u.completeDialogue, () => unlockChar(id));
-    }
+    if (u.type !== 'resonanceContract' || resonanceState[id] || !conditionMet(u.trigger)) return;
+    resonanceState[id] = 'resonating';
+    queueDialogue(u.contractDialogue, () => {
+      resonanceState[id] = 'contracted';
+      unlockChar(id);
+    });
   });
 }
 
@@ -175,11 +176,17 @@ function goldForKill(isBoss, f) { return isBoss ? 20 + f * 5 : 5 + f * 2; }
 
 function calcAtk(c) {
   const gooPenalty = Math.min(GOO_DEBUFF_CAP, gooDebuffStacks * GOO_DEBUFF_PER_STACK);
-  return Math.round(c.atk * (partyBuff.mult || 1) * (1 - gooPenalty) * lineScale(c, 'atk'));
+  const charm = equippedCharmPassive(c, 'atkPct');
+  return Math.round(c.atk * (partyBuff.mult || 1) * (1 - gooPenalty) * lineScale(c, 'atk') * (1 + charm));
 }
 
 function calcDef(c) {
-  return Math.round(c.def * lineScale(c, 'def')) + (partyDefense.bonus || 0);
+  return Math.round(c.def * lineScale(c, 'def')) + (partyDefense.bonus || 0) + equippedCharmPassive(c, 'defFlat');
+}
+
+function equippedCharmPassive(c, type) {
+  const item = c && c.loadout && ITEM_DEFS[c.loadout.activeItemId];
+  return item && item.equipSlot === 'charm' && item.passive && item.passive.type === type ? item.passive.value : 0;
 }
 
 // --- 經驗書 stat/skill lines (see design.md 經驗書／技能點) ---
@@ -190,7 +197,9 @@ function lineScale(c, key) { return 1 + lineLevel(c, key) / STAT_LINE_MAX; }
 
 // this character's own atkInterval multiplier from their 攻速 line - 1 at
 // level 0, 0.5 (interval halved, i.e. acts twice as often) at max.
-function speedLineIntervalMult(c) { return 1 - 0.5 * (lineLevel(c, 'speed') / STAT_LINE_MAX); }
+function speedLineIntervalMult(c) {
+  return (1 - 0.5 * (lineLevel(c, 'speed') / STAT_LINE_MAX)) * (1 - equippedCharmPassive(c, 'speedPct'));
+}
 
 // same halving treatment for 專屬操作's own cooldown, via its 'action' line.
 // Applies regardless of what the action's type does (currently only
