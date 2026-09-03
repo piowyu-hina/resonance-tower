@@ -1316,10 +1316,10 @@ function render() {
   const goldLabel = document.getElementById('goldLabel');
   goldLabel.innerHTML = inFreeVillage
     ? `<img src="assets/item/coin.png" alt="金幣">${bankedGold}`
-    : `<img src="assets/item/coin.png" alt="金幣">${bankedGold}<span class="runGold">本次 +${runGold}</span>`;
+    : `<img src="assets/item/coin.png" alt="金幣">${runGold}`;
   goldLabel.title = inFreeVillage
     ? '已帶回村莊的金幣'
-    : '前方是已帶回村莊的金幣；「本次」是這趟遠征尚未入袋的金幣';
+    : '這趟遠征途中取得、目前可以使用的金幣；撤退或通關後才會帶回村莊';
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();

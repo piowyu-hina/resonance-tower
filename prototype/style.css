@@ -72,7 +72,6 @@ body {
 .debugActions button.danger { border-color: #845050; color: #efb1b1; }
 #goldLabel { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #e0c25a; }
 #goldLabel > img { width: 16px; height: 16px; object-fit: contain; }
-#goldLabel .runGold { margin-left: 4px; padding-left: 8px; border-left: 1px solid #4a504b; color: #8fd18f; font-size: 10px; }
 
 #bagBtn {
   display: flex;
