@@ -1975,7 +1975,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 #bossIntroOverlay { display: none; position: fixed; inset: 0; z-index: 1250; overflow: hidden; background: radial-gradient(circle, rgba(82,84,88,.34), rgba(5,7,8,.97) 66%); align-items: center; justify-content: center; }
 #bossIntroOverlay::after { content: ''; position: absolute; left: 50%; top: 57%; width: 90px; height: 32px; border: 7px solid rgba(205,208,211,.9); border-radius: 50%; opacity: 0; transform: translate(-50%,-50%) scale(.15); box-shadow: 0 0 24px rgba(205,208,211,.45); pointer-events: none; }
 #bossIntroOverlay.open { display: flex; animation: bossIntroBackdrop .35s ease both; }
-#bossIntroOverlay.open::after { animation: bossShockwave .78s cubic-bezier(.1,.7,.2,1) .65s both; }
+#bossIntroOverlay.open::after { animation: bossShockwave .78s cubic-bezier(.1,.7,.2,1) .65s forwards; }
 #bossIntroOverlay.leaving { animation: bossIntroLeave .6s ease both; }
 .bossIntroStage { display: grid; justify-items: center; animation: bossScreenShake .62s linear .62s both; }
 .bossIntroStage img { width: min(560px, 76vw); max-height: 65vh; object-fit: contain; transform: translateY(-120vh) rotate(-7deg) scale(.62); filter: drop-shadow(0 22px 30px rgba(0,0,0,.72)); animation: bossSkyDrop 1.55s linear .03s forwards, bossIdleFloat .82s ease-in-out 1.62s infinite alternate; }
@@ -2004,7 +2004,11 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   74% { transform: translate(-12px,8px); }
   86% { transform: translate(7px,-4px); }
 }
-@keyframes bossShockwave { 0% { opacity: 1; transform: translate(-50%,-50%) scale(.15); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(16); border-width: 1px; } }
+@keyframes bossShockwave {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.15); }
+  10% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(16); border-width: 1px; }
+}
 @keyframes bossTitleReveal { from { opacity: 0; transform: translateY(18px) scale(.82); filter: blur(6px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
 @keyframes bossIntroLeave { to { opacity: 0; } }
 #expeditionView #actionArea { padding-top: 4px; }
