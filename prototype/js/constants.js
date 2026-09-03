@@ -1,7 +1,9 @@
+import { t } from './i18n.js';
+
 // Display-only tiers mirroring each character's unlock difficulty (see each
 // CHAR_DEFS entry's `rarity`) - purely cosmetic, does NOT affect stats. Keeping
 // power gated by level+skill points only (see design.md: 不做裝備／武器系統).
-const RARITY_DEFS = {
+export const RARITY_DEFS = {
   common: { label: '普通', color: '#9aa0a8' },
   rare:   { label: '稀有', color: '#5a8fd6', revealEffect: 'rare_magic_circle' },
   epic:   { label: '史詩', color: '#c979e8' },
@@ -11,12 +13,12 @@ const RARITY_DEFS = {
 // Development-only controls and exact unlock requirements are available with
 // ?debug in the URL. Normal play keeps hidden conditions and destructive reset
 // controls out of the main interface.
-const DEBUG_MODE = new URLSearchParams(window.location.search).has('debug');
+export const DEBUG_MODE = new URLSearchParams(window.location.search).has('debug');
 
 // Floor-1 monster catalogue. Skills describe targets + composable effects;
 // combat.js interprets those declarations without branching on monster names.
 // New variants can therefore be added here without rewriting the turn loop.
-const MONSTER_DEFS = {
+export const MONSTER_DEFS = {
   slime: {
     name: '史萊姆', img: 'floor1/slime',
     skill: {
@@ -63,11 +65,11 @@ const MONSTER_DEFS = {
   },
 };
 
-const FLOOR1_MOB_POOL = Object.keys(MONSTER_DEFS);
+export const FLOOR1_MOB_POOL = Object.keys(MONSTER_DEFS);
 
 // Inventory definitions are display/data only for now. The first backpack
 // pass deliberately has no consume/drop/shop behavior attached yet.
-const ITEM_DEFS = {
+export const ITEM_DEFS = {
   coin: {
     name: '金幣',
     img: 'coin',
@@ -143,7 +145,7 @@ const ITEM_DEFS = {
     desc: '消耗後可為角色某一個自動技能的效果永久 +1 級（最高 100 級，滿級為基礎值的 2 倍）。',
   },
 };
-function localizedItemDef(itemId) {
+export function localizedItemDef(itemId) {
   const item = ITEM_DEFS[itemId];
   if (!item) return item;
   return {
@@ -153,10 +155,10 @@ function localizedItemDef(itemId) {
     rarity: item.rarity === '普通' ? t('rarity.common') : item.rarity,
   };
 }
-const INVENTORY_SLOT_COUNT = 16;
-const SLIME_MONSTER_CRYSTAL_DROP_CHANCE = 0.35;
-const SLIME_STAT_BOOK_DROP_CHANCE = 0.15;
-const SLIME_SKILL_BOOK_DROP_CHANCE = 0.15;
+export const INVENTORY_SLOT_COUNT = 16;
+export const SLIME_MONSTER_CRYSTAL_DROP_CHANCE = 0.35;
+export const SLIME_STAT_BOOK_DROP_CHANCE = 0.15;
+export const SLIME_SKILL_BOOK_DROP_CHANCE = 0.15;
 
 // Per-character stat/skill "lines" unlocked by spending 能力書／技能書 (see
 // design.md 經驗書／技能點強化 section). Each line goes 0~STAT_LINE_MAX; at
@@ -165,36 +167,28 @@ const SLIME_SKILL_BOOK_DROP_CHANCE = 0.15;
 // always skillBook) scale that character's own skills[i] effect magnitude.
 // Kept data-driven so ui.js can render all 6 rows generically instead of
 // hardcoding each stat's label/lookup/book type.
-const STAT_LINE_MAX = 100;
-const GENERAL_STAT_LINES = [
+export const STAT_LINE_MAX = 100;
+export const GENERAL_STAT_LINES = [
   { key: 'atk', label: '攻擊力', bookId: 'statBook' },
   { key: 'def', label: '防禦力', bookId: 'statBook' },
   { key: 'speed', label: '攻速', bookId: 'statBook' }, // maxed: this character's atkInterval is halved
 ];
-const SHOP_IDLE_MS = 10000;
-const SHOP_MONSTER_CRYSTAL_SELL_PRICE = 5;
-const SHOP_ITEMS = [
+export const SHOP_IDLE_MS = 10000;
+export const SHOP_MONSTER_CRYSTAL_SELL_PRICE = 5;
+export const SHOP_ITEMS = [
   { itemId: 'potion', price: 12 },
   { itemId: 'speedPotion', price: 18 },
 ];
 
-// Shared character-card status catalogue. Each entry only declares how to
-// identify and display a status; ui.js renders every active entry through one
-// generic status row instead of maintaining status-specific DOM elements.
-// img points at assets/effect_icon/<img>.png; ui.js falls back to the emoji
-// if the file is missing, same onerror pattern as everywhere else.
-const STATUS_DEFS = [
-  { id: 'sleep', icon: '💤', img: 'sleep', label: '睡眠', tone: 'bad', desc: '下一次行動會用來醒來，該次行動被跳過', blocksCharacterAction: true, isActive: c => c.sleepUntilAction },
-  { id: 'charm', icon: '💕', img: 'charming', label: '魅惑', tone: 'bad', desc: '下一次行動會改為攻擊友軍（沒有友軍時攻擊自己）', blocksCharacterAction: true, isActive: c => c.charmedUntilAction },
-  { id: 'slow', icon: '🐌', img: 'speed_down', label: '降攻速', tone: 'bad', desc: '攻速倒數條累積速度變慢', isActive: c => c.slowUntil > 0, remaining: c => c.slowUntil },
-  { id: 'haste', icon: '⏱️', img: 'speed_up', label: '加速', tone: 'good', desc: '攻速倒數條累積速度變快', isActive: c => c.hasteUntil > 0, remaining: c => c.hasteUntil },
-  { id: 'dodge', icon: '👤', img: 'hide', label: '隱身', tone: 'good', desc: '持續期間閃避敵方所有攻擊', isActive: c => c.dodgeUntil > 0, remaining: c => c.dodgeUntil },
-  { id: 'defenseUp', icon: '🔷', img: 'def_up', label: '防禦提升', tone: 'good', desc: '隊伍防禦力提升，減少受到的傷害', isActive: () => partyDefense.until > 0, remaining: () => partyDefense.until },
-];
+// (STATUS_DEFS moved to state.js - its 'defenseUp' entry needs to read
+// gameState.partyDefense, and keeping it there avoids a real circular-import
+// evaluation-order hazard: state.js's own top-level `gameState` object
+// literal needs several constants.js exports already initialized, so
+// constants.js must never depend on state.js at its own module top level.)
 
 // Keys and asset basenames use stable character ids, never job-class names -
 // 無名 in particular has no fixed class ("無職").
-const CHAR_DEFS = {
+export const CHAR_DEFS = {
   wuming: {
     name: '無名', icon: '🥷', img: 'wuming', rarity: 'common',
     unlock: { type: 'free' }, // starting character, always available
@@ -248,36 +242,36 @@ const CHAR_DEFS = {
 // Character appearance is deliberately separate from character stats.  New
 // skins only need an entry here and matching image files; combat balance and
 // unlock data stay on CHAR_DEFS.
-const SKIN_DEFS = {
+export const SKIN_DEFS = {
   wuming_default: { characterId: 'wuming', name: '原始外觀', portrait: 'wuming', fullArt: 'wuming_full' },
   xiaochu_default: { characterId: 'xiaochu', name: '原始外觀', portrait: 'xiaochu', fullArt: 'xiaochu_full' },
   fengzi_default: { characterId: 'fengzi', name: '原始外觀', portrait: 'fengzi', fullArt: 'fengzi_full' },
 };
 
-const DEFAULT_SKIN_BY_CHARACTER = {
+export const DEFAULT_SKIN_BY_CHARACTER = {
   wuming: 'wuming_default',
   xiaochu: 'xiaochu_default',
   fengzi: 'fengzi_default',
 };
 
-const MAX_PARTY = 3; // full squad size the data model supports, for future multiplayer
-const SOLO_PARTY_LIMIT = 1; // until multiplayer ships, only one character goes on an expedition at a time
+export const MAX_PARTY = 3; // full squad size the data model supports, for future multiplayer
+export const SOLO_PARTY_LIMIT = 1; // until multiplayer ships, only one character goes on an expedition at a time
 // The old design had one global tick where everyone acted in lockstep, which
 // made per-character "attack speed" meaningless. Now each character/monster
 // counts down its own actionCountdown (ms) independently, and this fast
 // master loop just advances all of those clocks + drives the visible bars.
-const MASTER_TICK_MS = 100;
-const DEFEAT_RESTART_DELAY_MS = 10000;
-const MOB_ATK_INTERVAL = 2200;
-const BOSS_ATK_INTERVAL = 2200;
-const BOSS_ENTRY_GRACE_MS = 900;
-const MONSTER_DEATH_ANIMATION_MS = 1100;
-const MAX_IMPLEMENTED_FLOOR = 1; // raise this when floor 2 content is ready
+export const MASTER_TICK_MS = 100;
+export const DEFEAT_RESTART_DELAY_MS = 10000;
+export const MOB_ATK_INTERVAL = 2200;
+export const BOSS_ATK_INTERVAL = 2200;
+export const BOSS_ENTRY_GRACE_MS = 900;
+export const MONSTER_DEATH_ANIMATION_MS = 1100;
+export const MAX_IMPLEMENTED_FLOOR = 1; // raise this when floor 2 content is ready
 // design.md「區域推進」：floor numbers stay the internal progression unit,
 // but are framed to the player as named regions - floor 1 is 森林, the
 // forest just outside the village. Add an entry here when floor 2+ ships;
 // regionName() falls back to the raw floor number for anything not yet named.
-const REGION_DEFS = {
+export const REGION_DEFS = {
   1: {
     localeKey: 'region.slimeForest',
     name: '史萊姆叢林',
@@ -292,8 +286,8 @@ const REGION_DEFS = {
     bossLocaleKey: 'monster.slimeBoss',
   },
 };
-function regionDef(f) { return REGION_DEFS[f] || { name: `樓層 ${f}`, description: '未知區域', image: '', recommendedLevel: 1, threats: ['未知'], drops: ['未知'], boss: '未知' }; }
-function localizedRegionDef(f) {
+export function regionDef(f) { return REGION_DEFS[f] || { name: `樓層 ${f}`, description: '未知區域', image: '', recommendedLevel: 1, threats: ['未知'], drops: ['未知'], boss: '未知' }; }
+export function localizedRegionDef(f) {
   const region = regionDef(f);
   if (!region.localeKey) return region;
   return {
@@ -305,38 +299,38 @@ function localizedRegionDef(f) {
     boss: t(region.bossLocaleKey),
   };
 }
-function regionName(f) { return localizedRegionDef(f).name; }
-const MOBS_PER_FLOOR = 2;   // clear this many mob WAVES (each wave = 2~3 mobs) before the boss shows up
+export function regionName(f) { return localizedRegionDef(f).name; }
+export const MOBS_PER_FLOOR = 2;   // clear this many mob WAVES (each wave = 2~3 mobs) before the boss shows up
 // mob XP share got cut from 0.25 to 0.1 when mobs went from 1-at-a-time to
 // 2~3-at-a-time - otherwise a floor's total mob XP would balloon to roughly
 // double-triple what it used to be, on top of the same boss share.
-const MOB_XP_SHARE = 0.1;   // of xpPoolForFloor(), per mob kill
-const BOSS_XP_SHARE = 0.5;  // of xpPoolForFloor(), on boss kill
+export const MOB_XP_SHARE = 0.1;   // of xpPoolForFloor(), per mob kill
+export const BOSS_XP_SHARE = 0.5;  // of xpPoolForFloor(), on boss kill
 
 // damage randomness: every hit (party or monster) rolls within +/-15% of its
 // computed base instead of always landing the exact same number.
-const DAMAGE_VARIANCE = 0.15;
+export const DAMAGE_VARIANCE = 0.15;
 
 // monsters' own "skill" (黏液潑濺's damage+slow) now has a real cooldown
 // separate from how often they act (atkInterval) - when it's still cooling
 // down they just throw a plain attack (damage only, no slow) instead.
-const MOB_SKILL_CD = 4;   // seconds
-const BOSS_SKILL_CD = 5;  // seconds
-const BOSS_SUMMON_CD_MS = 10000;
-const BOSS_SUMMON_OPENING_MS = 3000;
-const BOSS_SUMMON_MAX = 2;
+export const MOB_SKILL_CD = 4;   // seconds
+export const BOSS_SKILL_CD = 5;  // seconds
+export const BOSS_SUMMON_CD_MS = 10000;
+export const BOSS_SUMMON_OPENING_MS = 3000;
+export const BOSS_SUMMON_MAX = 2;
 
 // Boss-only 黏液陣: clear the whole batch before it matures to earn damage;
 // one missed blob fails the batch and applies the party-wide ATK debuff.
-const GOO_LIFESPAN_MS = 4400;
-const GOO_SKILL_CD_MS = 7000;
-const GOO_BATCH_SIZE = 3;
-const GOO_DEBUFF_PER_STACK = 0.1;
-const GOO_DEBUFF_CAP = 0.5;
-const GOO_PULSE_MS = 1000;        // must match the gooPulse CSS animation duration
-const GOO_PERFECT_WINDOW_MS = 200; // +/- tolerance around the pulse's peak size
-const GOO_PERFECT_MULT = 2;        // damage multiplier on a perfect-timed pop
+export const GOO_LIFESPAN_MS = 4400;
+export const GOO_SKILL_CD_MS = 7000;
+export const GOO_BATCH_SIZE = 3;
+export const GOO_DEBUFF_PER_STACK = 0.1;
+export const GOO_DEBUFF_CAP = 0.5;
+export const GOO_PULSE_MS = 1000;        // must match the gooPulse CSS animation duration
+export const GOO_PERFECT_WINDOW_MS = 200; // +/- tolerance around the pulse's peak size
+export const GOO_PERFECT_MULT = 2;        // damage multiplier on a perfect-timed pop
 
 // monsters' "黏液潑濺" attack slows whoever it hits, on top of its normal damage
-const MONSTER_SLOW_MULT = 1.5; // action countdown recharges 50% slower while active
-const MONSTER_SLOW_MS = 4000;
+export const MONSTER_SLOW_MULT = 1.5; // action countdown recharges 50% slower while active
+export const MONSTER_SLOW_MS = 4000;

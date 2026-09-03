@@ -1,5 +1,4 @@
-globalThis.RT_LOCALES = globalThis.RT_LOCALES || {};
-globalThis.RT_LOCALES['zh-Hant'] = {
+export default {
   'meta.title': '共鳴之塔｜Resonance Tower',
   'brand.name': '共鳴之塔',
   'common.close': '關閉',

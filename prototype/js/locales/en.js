@@ -1,5 +1,4 @@
-globalThis.RT_LOCALES = globalThis.RT_LOCALES || {};
-globalThis.RT_LOCALES.en = {
+export default {
   'meta.title': 'Resonance Tower',
   'brand.name': 'Resonance Tower',
   'common.close': 'Close',

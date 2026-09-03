@@ -4,11 +4,11 @@
 const managedTransitions = new Map();
 const transientAnimationRuns = new WeakMap();
 
-function afterAnimationPaint(callback) {
+export function afterAnimationPaint(callback) {
   requestAnimationFrame(() => requestAnimationFrame(callback));
 }
 
-function beginManagedTransition(key) {
+export function beginManagedTransition(key) {
   managedTransitions.get(key)?.cancel();
   let active = true;
   const cleanups = new Set();
@@ -52,7 +52,7 @@ function beginManagedTransition(key) {
   return transition;
 }
 
-function playTransientAnimation(element, className) {
+export function playTransientAnimation(element, className) {
   if (!element) return;
   let elementRuns = transientAnimationRuns.get(element);
   if (!elementRuns) {
@@ -78,7 +78,7 @@ function playTransientAnimation(element, className) {
   transition.after(600, cleanup);
 }
 
-function removeAfterAnimation(element, fallbackMs) {
+export function removeAfterAnimation(element, fallbackMs) {
   if (!element) return;
   const transition = beginManagedTransition(element);
   const remove = () => transition.finish(() => element.remove());
