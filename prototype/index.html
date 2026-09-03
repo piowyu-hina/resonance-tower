@@ -12,12 +12,12 @@
 <div id="app">
   <div id="header">
     <div class="headerLead">
-      <div class="gameBrand" aria-label="共鳴之塔">
+      <div class="gameBrand" aria-label="共鳴之塔" data-i18n-aria-label="brand.name">
         <span class="brandSigil" aria-hidden="true">
           <img src="assets/story/resonance_orb.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';">
           <span class="brandSigilFallback">◇</span>
         </span>
-        <span class="brandCopy"><b>共鳴之塔</b><small>RESONANCE TOWER</small></span>
+        <span class="brandCopy"><b data-i18n="brand.name">共鳴之塔</b><small>RESONANCE TOWER</small></span>
       </div>
       <div class="headerLeft">
         <span id="floorLabel">史萊姆叢林</span>
@@ -25,10 +25,10 @@
       </div>
     </div>
     <div class="headerActions">
-      <button id="bagBtn" aria-label="開啟背包"><img src="assets/ui/bag.png" alt=""><span>背包</span></button>
-      <div class="saveActions" aria-label="遊戲存檔">
-        <button id="saveGameBtn" type="button">存檔</button>
-        <button id="loadGameBtn" type="button">讀檔</button>
+      <button id="bagBtn" aria-label="開啟背包" data-i18n-aria-label="header.openBag"><img src="assets/ui/bag.png" alt=""><span data-i18n="header.bag">背包</span></button>
+      <div class="saveActions" aria-label="遊戲存檔" data-i18n-aria-label="header.saveGroup">
+        <button id="saveGameBtn" type="button" data-i18n="header.save">存檔</button>
+        <button id="loadGameBtn" type="button" data-i18n="header.load">讀檔</button>
         <input id="loadGameInput" type="file" accept="application/json,.json" hidden>
       </div>
       <button id="debugToggleBtn" type="button" hidden aria-expanded="false" aria-controls="debugPanel">開發工具</button>
@@ -57,68 +57,68 @@
   <div class="panel" id="prepView">
     <div id="villageView">
       <div class="villageIntro">
-        <div class="prepHeading">村莊</div>
-        <div class="prepMsg">回家整備、到商店補給，或從村口展開遠征。</div>
+        <div class="prepHeading" data-i18n="village.title">村莊</div>
+        <div class="prepMsg" data-i18n="village.subtitle">回家整備、到商店補給，或從村口展開遠征。</div>
       </div>
       <div class="villageLocations">
         <button id="homeLocationBtn" class="villageLocation" type="button">
           <span class="villageLocationArt"><img src="assets/ui/house.png" alt=""></span>
-          <span class="villageLocationCopy"><b>家</b><small>查看角色與進行培養</small></span>
+          <span class="villageLocationCopy"><b data-i18n="village.home">家</b><small data-i18n="village.homeDesc">查看角色與進行培養</small></span>
           <span id="homeGuideHina" class="homeGuideHina" hidden>
             <img src="assets/characters/hina_guide.png" alt="Hina">
-            <span>回家看看吧</span>
+            <span data-i18n="village.goHome">回家看看吧</span>
           </span>
         </button>
         <button id="townShopBtn" class="villageLocation" type="button">
           <span class="villageLocationArt"><img src="assets/ui/shop.png" alt=""></span>
-          <span class="villageLocationCopy"><b>商店</b><small>出售素材與購買補給</small></span>
+          <span class="villageLocationCopy"><b data-i18n="village.shop">商店</b><small data-i18n="village.shopDesc">出售素材與購買補給</small></span>
         </button>
         <button id="expeditionLocationBtn" class="villageLocation villageExpedition" type="button">
           <span class="villageLocationArt"><img src="assets/ui/village_out.png" alt="離開村莊的村口"></span>
-          <span class="villageLocationCopy"><b>遠征入口</b><small>選擇地區並準備出發</small></span>
+          <span class="villageLocationCopy"><b data-i18n="village.expedition">遠征入口</b><small data-i18n="village.expeditionDesc">選擇地區並準備出發</small></span>
         </button>
       </div>
     </div>
     <div id="homeView">
       <div class="homeTopbar">
-        <button id="homeBackBtn" class="navBackBtn" type="button">← 村莊</button>
+        <button id="homeBackBtn" class="navBackBtn" type="button" data-i18n="common.back.village">← 村莊</button>
         <div>
-          <div class="prepHeading">家</div>
-          <div class="prepMsg">培養靈魂夥伴，或整理遠征物資。</div>
+          <div class="prepHeading" data-i18n="home.title">家</div>
+          <div class="prepMsg" data-i18n="home.subtitle">培養靈魂夥伴，或整理遠征物資。</div>
         </div>
       </div>
       <div id="homeMenu" class="homeContentGrid">
         <button id="homeGrowthBtn" class="homeFacilityBtn homeGrowthBtn" type="button">
           <img src="assets/characters/hina_full.png" alt="Hina">
-          <span><b>角色培養</b><small>查看角色、能力與技能成長</small></span>
+          <span><b data-i18n="home.growth">角色培養</b><small data-i18n="home.growthDesc">查看角色、能力與技能成長</small></span>
         </button>
         <button id="homeStorageBtn" class="homeFacilityBtn homeStorageBtn" type="button">
           <img src="assets/ui/warehouse.png" alt="">
-          <span><b>倉庫</b><small>整理背包與存放物品</small></span>
+          <span><b data-i18n="home.storage">倉庫</b><small data-i18n="home.storageDesc">整理背包與存放物品</small></span>
         </button>
         <button id="travelJournalBtn" class="homeFacilityBtn journalFacilityBtn" type="button">
           <img src="assets/ui/book.png" alt="">
-          <span><b>旅人手記</b><small>查看旅途中記下的知識與故事</small></span>
+          <span><b data-i18n="home.journal">旅人手記</b><small data-i18n="home.journalDesc">查看旅途中記下的知識與故事</small></span>
         </button>
         <button id="contractFacilityBtn" class="homeFacilityBtn contractFacilityBtn" type="button" hidden>
           <img src="assets/skills/wuming_unique.png" alt="">
-          <span><b>締結誓約</b><small>回應正在等待的靈魂</small></span>
+          <span><b data-i18n="home.contract">締結誓約</b><small data-i18n="home.contractDesc">回應正在等待的靈魂</small></span>
         </button>
       </div>
       <div id="homeGrowthView" hidden>
-        <button id="homeGrowthBackBtn" class="navBackBtn" type="button">← 家</button>
+        <button id="homeGrowthBackBtn" class="navBackBtn" type="button" data-i18n="common.back.home">← 家</button>
         <div class="homeRosterShell homeGrowthShell">
-          <div class="homeSectionHeading">角色培養</div>
+          <div class="homeSectionHeading" data-i18n="home.growth">角色培養</div>
           <div id="homeRoster"></div>
         </div>
       </div>
     </div>
     <div id="regionView">
       <div class="homeTopbar">
-        <button id="regionBackBtn" class="navBackBtn" type="button">← 村莊</button>
+        <button id="regionBackBtn" class="navBackBtn" type="button" data-i18n="common.back.village">← 村莊</button>
         <div>
-          <div class="prepHeading">遠征入口</div>
-          <div class="prepMsg">選擇這次遠征要前往的地區。</div>
+          <div class="prepHeading" data-i18n="region.title">遠征入口</div>
+          <div class="prepMsg" data-i18n="region.subtitle">選擇這次遠征要前往的地區。</div>
         </div>
       </div>
       <div class="regionGrid">
@@ -127,37 +127,37 @@
           <span class="regionCopy">
             <span class="regionTitleRow"><b id="forestRegionName">史萊姆叢林</b><em id="forestRegionLevel">推薦 Lv.1</em></span>
             <small id="forestRegionDescription">史萊姆棲息的近郊叢林</small>
-            <span class="regionIntel"><span>主要威脅</span><span id="forestRegionThreats" class="regionTags"></span></span>
-            <span class="regionIntel"><span>可能掉落</span><span id="forestRegionDrops" class="regionDrops"></span></span>
-            <span class="regionChoose">選擇此區域 <i aria-hidden="true">›</i></span>
+            <span class="regionIntel"><span data-i18n="region.threats">主要威脅</span><span id="forestRegionThreats" class="regionTags"></span></span>
+            <span class="regionIntel"><span data-i18n="region.drops">可能掉落</span><span id="forestRegionDrops" class="regionDrops"></span></span>
+            <span class="regionChoose"><span data-i18n="region.choose">選擇此區域</span> <i aria-hidden="true">›</i></span>
           </span>
         </button>
       </div>
     </div>
     <div id="expeditionView">
       <div class="homeTopbar">
-        <button id="expeditionBackBtn" class="navBackBtn" type="button">← 遠征入口</button>
+        <button id="expeditionBackBtn" class="navBackBtn" type="button" data-i18n="common.back.expedition">← 遠征入口</button>
         <div>
           <div class="prepHeading" id="prepHeading"></div>
           <div class="prepMsg" id="prepMsg"></div>
         </div>
       </div>
-      <div class="expeditionStepLabel"><span>1</span>確認區域</div>
+      <div class="expeditionStepLabel"><span>1</span><span data-i18n="expedition.step.region">確認區域</span></div>
       <section id="expeditionRegionBrief" aria-label="目前選擇的遠征區域">
         <img id="expeditionRegionImage" src="assets/ui/slime_forest.png" alt="">
         <div class="expeditionRegionMain">
-          <span class="regionBriefKicker">本次遠征區域</span>
+          <span class="regionBriefKicker" data-i18n="expedition.currentRegion">本次遠征區域</span>
           <b id="expeditionRegionName"></b>
           <small id="expeditionRegionDescription"></small>
         </div>
         <div class="expeditionRegionFacts">
-          <span><small>推薦等級</small><b id="expeditionRegionLevel"></b></span>
-          <span><small>區域首領</small><b id="expeditionRegionBoss"></b></span>
-          <span><small>主要威脅</small><b id="expeditionRegionThreats"></b></span>
+          <span><small data-i18n="expedition.recommendedLevel">推薦等級</small><b id="expeditionRegionLevel"></b></span>
+          <span><small data-i18n="expedition.boss">區域首領</small><b id="expeditionRegionBoss"></b></span>
+          <span><small data-i18n="region.threats">主要威脅</small><b id="expeditionRegionThreats"></b></span>
         </div>
       </section>
       <div class="homeRosterShell">
-        <div class="homeSectionHeading expeditionStepLabel" id="expeditionCharacterHeading"><span>2</span>選擇附身角色</div>
+        <div class="homeSectionHeading expeditionStepLabel" id="expeditionCharacterHeading"><span>2</span><span data-i18n="expedition.step.character">選擇附身角色</span></div>
         <div id="prepRoster"></div>
         <div id="expeditionSelectedSummary"></div>
       </div>
@@ -169,20 +169,20 @@
   <div id="combatView">
     <div class="combatColumns">
       <section class="panel battleColumn partyColumn">
-        <div class="columnHeading"><span>附身者</span><small>自動戰鬥中</small></div>
+        <div class="columnHeading"><span data-i18n="combat.party">附身者</span><small data-i18n="combat.auto">自動戰鬥中</small></div>
         <div id="partySide"></div>
         <div id="combatActionBar"></div>
       </section>
 
       <section class="panel battleColumn enemyColumn">
-        <div class="columnHeading"><span>魔物</span><small>區域威脅</small></div>
+        <div class="columnHeading"><span data-i18n="combat.monsters">魔物</span><small data-i18n="combat.regionThreat">區域威脅</small></div>
         <div id="monsterSide"></div>
         <div id="bossArena"></div>
       </section>
     </div>
   </div>
 
-  <div id="log" role="log" aria-live="polite" aria-label="戰鬥紀錄"></div>
+  <div id="log" role="log" aria-live="polite" aria-label="戰鬥紀錄" data-i18n-aria-label="combat.log"></div>
 </div>
 
 <div id="tooltip"></div>
@@ -198,13 +198,13 @@
 </div>
 
 <div id="combatItemPicker" aria-hidden="true">
-  <div class="pickerTitle">選擇藥水</div>
+  <div class="pickerTitle" data-i18n="picker.potion">選擇藥水</div>
   <div id="combatItemPickerList"></div>
 </div>
 
 <div id="characterDetailOverlay" aria-hidden="true">
   <div id="characterDetailModal" role="dialog" aria-modal="true" aria-labelledby="characterDetailName">
-    <button id="characterDetailCloseBtn" type="button" aria-label="關閉角色詳情">×</button>
+    <button id="characterDetailCloseBtn" type="button" aria-label="關閉角色詳情" data-i18n-aria-label="character.close">×</button>
     <div id="characterDetailContent"></div>
   </div>
 </div>
@@ -217,7 +217,7 @@
         <div><span id="shopTitle">地城商店</span></div>
       </div>
       <div class="shopHeaderMeta"><span id="shopCountdown"></span></div>
-      <button id="shopLeaveBtn" type="button" aria-label="關閉商店">×</button>
+      <button id="shopLeaveBtn" type="button" aria-label="關閉商店" data-i18n-aria-label="shop.close">×</button>
     </div>
     <div class="shopLayout">
       <aside class="shopKeeperPanel">
@@ -230,16 +230,16 @@
         </button>
       </aside>
       <main class="shopGoodsPanel">
-        <div id="shopWallet" aria-label="目前金幣"></div>
-        <div class="shopTabs" role="tablist" aria-label="商店功能">
-          <button id="shopBuyTab" class="shopTab active" type="button" role="tab" aria-selected="true">購買</button>
-          <button id="shopSellTab" class="shopTab" type="button" role="tab" aria-selected="false">出售</button>
+        <div id="shopWallet" aria-label="目前金幣" data-i18n-aria-label="shop.gold"></div>
+        <div class="shopTabs" role="tablist" aria-label="商店功能" data-i18n-aria-label="shop.features">
+          <button id="shopBuyTab" class="shopTab active" type="button" role="tab" aria-selected="true" data-i18n="shop.buy">購買</button>
+          <button id="shopSellTab" class="shopTab" type="button" role="tab" aria-selected="false" data-i18n="shop.sell">出售</button>
         </div>
         <div id="shopSellSection" class="shopSection" role="tabpanel" hidden>
-          <div class="shopSectionTitle"><span>出售素材</span><small>把遠征收穫換成金幣</small></div>
+          <div class="shopSectionTitle"><span data-i18n="shop.sellMaterials">出售素材</span><small data-i18n="shop.sellMaterialsDesc">把遠征收穫換成金幣</small></div>
           <div class="shopSellRow">
             <img src="assets/item/monster_crystal.png" alt="魔物結晶">
-            <span class="shopItemCopy"><b>魔物結晶</b><small>單價 5 金幣</small></span>
+            <span class="shopItemCopy"><b data-i18n="item.monsterCrystal">魔物結晶</b><small data-i18n="shop.crystalPrice">單價 5 金幣</small></span>
             <span id="shopMonsterCrystalQty"></span>
             <div class="shopSellActions">
               <button id="shopSellOneBtn" type="button">賣 1 顆</button>
@@ -248,7 +248,7 @@
           </div>
         </div>
         <div id="shopBuySection" class="shopSection" role="tabpanel">
-          <div class="shopSectionTitle"><span>旅行補給</span><small>為下一次戰鬥做好準備</small></div>
+          <div class="shopSectionTitle"><span data-i18n="shop.supplies">旅行補給</span><small data-i18n="shop.suppliesDesc">為下一次戰鬥做好準備</small></div>
           <div id="shopBuyList"></div>
         </div>
         <div class="shopFooter">
@@ -260,21 +260,21 @@
 </div>
 
 <div id="charmPicker" aria-hidden="true">
-  <div class="pickerTitle">選擇護符</div>
+  <div class="pickerTitle" data-i18n="picker.charm">選擇護符</div>
   <div id="charmPickerList"></div>
 </div>
 
 <div id="inventoryOverlay" aria-hidden="true">
   <div id="inventoryModal" role="dialog" aria-modal="true" aria-labelledby="inventoryTitle">
     <div class="inventoryHeader">
-      <span id="inventoryTitle">背包</span>
-      <button id="inventoryCloseBtn" aria-label="關閉背包">×</button>
+      <span id="inventoryTitle" data-i18n="inventory.title">背包</span>
+      <button id="inventoryCloseBtn" aria-label="關閉背包" data-i18n-aria-label="inventory.close">×</button>
     </div>
     <div id="inventoryTransferLayout">
       <section class="inventoryPane backpackPane">
         <div class="inventoryPaneTitle">
           <img src="assets/ui/bag.png" alt="">
-          <b>背包</b>
+          <b data-i18n="inventory.title">背包</b>
         </div>
         <div id="inventoryGrid"></div>
       </section>
@@ -282,7 +282,7 @@
       <section id="storagePane" class="inventoryPane storagePane" hidden>
         <div class="inventoryPaneTitle">
           <img src="assets/ui/warehouse.png" alt="">
-          <b>倉庫</b>
+          <b data-i18n="inventory.storage">倉庫</b>
         </div>
         <div id="storageGrid"></div>
       </section>
@@ -292,36 +292,36 @@
 
 <div id="defeatOverlay" aria-hidden="true">
   <div id="defeatModal" role="dialog" aria-modal="true" aria-labelledby="defeatTitle">
-    <div class="defeatMark">遠征失敗</div>
-    <h2 id="defeatTitle">意識逐漸遠去……</h2>
-    <p>這些尚未入袋的戰利品已經遺失。</p>
-    <div id="defeatSummary" class="runResultSummary lost" aria-label="遺失的戰利品"></div>
-    <div class="runResultFoot">休息之後，再從村莊重新出發。</div>
-    <button id="defeatConfirmBtn" type="button">回到村莊</button>
+    <div class="defeatMark" data-i18n="result.defeat">遠征失敗</div>
+    <h2 id="defeatTitle" data-i18n="result.defeatTitle">意識逐漸遠去……</h2>
+    <p data-i18n="result.lost">這些尚未入袋的戰利品已經遺失。</p>
+    <div id="defeatSummary" class="runResultSummary lost" aria-label="遺失的戰利品" data-i18n-aria-label="result.lostLabel"></div>
+    <div class="runResultFoot" data-i18n="result.defeatFoot">休息之後，再從村莊重新出發。</div>
+    <button id="defeatConfirmBtn" type="button" data-i18n="result.backVillage">回到村莊</button>
   </div>
 </div>
 
 <div id="victoryOverlay" aria-hidden="true">
   <div id="victoryModal" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
-    <div class="victoryMark">遠征完成</div>
-    <h2 id="victoryTitle">首領已被擊敗</h2>
-    <p>本次遠征的戰利品已安全帶回。</p>
-    <div id="victorySummary" class="runResultSummary secured" aria-label="帶回的戰利品"></div>
-    <button id="victoryConfirmBtn" type="button">返回村莊</button>
+    <div class="victoryMark" data-i18n="result.victory">遠征完成</div>
+    <h2 id="victoryTitle" data-i18n="result.victoryTitle">首領已被擊敗</h2>
+    <p data-i18n="result.secured">本次遠征的戰利品已安全帶回。</p>
+    <div id="victorySummary" class="runResultSummary secured" aria-label="帶回的戰利品" data-i18n-aria-label="result.securedLabel"></div>
+    <button id="victoryConfirmBtn" type="button" data-i18n="result.returnVillage">返回村莊</button>
   </div>
 </div>
 
 <div id="bossIntroOverlay" aria-hidden="true">
   <div class="bossIntroStage">
-    <img src="assets/monsters/floor1/slime_boss.png" alt="史萊姆王">
-    <div class="bossIntroName">史萊姆王</div>
+    <img src="assets/monsters/floor1/slime_boss.png" alt="史萊姆王" data-i18n-alt="monster.slimeBoss">
+    <div class="bossIntroName" data-i18n="monster.slimeBoss">史萊姆王</div>
   </div>
 </div>
 
 <div id="journalOverlay" class="storyPanelOverlay" aria-hidden="true">
   <section class="journalPanel" role="dialog" aria-modal="true" aria-labelledby="journalTitle">
-    <header><div><small>緋雨 著</small><h2 id="journalTitle">旅人手記</h2></div><button id="journalCloseBtn" type="button" aria-label="關閉旅人手記">×</button></header>
-    <div class="journalChapter">擁有百種身形的男人</div>
+    <header><div><small data-i18n="journal.author">緋雨 著</small><h2 id="journalTitle" data-i18n="journal.title">旅人手記</h2></div><button id="journalCloseBtn" type="button" aria-label="關閉旅人手記" data-i18n-aria-label="journal.close">×</button></header>
+    <div class="journalChapter" data-i18n="journal.chapter.shapeshifter">擁有百種身形的男人</div>
     <div id="journalPageText" class="journalPageText"></div>
     <footer><span id="journalPageNumber"></span><button id="journalNextBtn" type="button">下一頁</button></footer>
   </section>
@@ -331,8 +331,8 @@
   <section class="contractPanel" role="dialog" aria-modal="true" aria-labelledby="contractPanelTitle">
     <div class="contractBackdrop" aria-hidden="true"><span></span></div>
     <header class="contractHeader">
-      <div><small>RESONANCE COVENANT</small><h2 id="contractPanelTitle">締結誓約</h2><p>回應跨越生死而來的靈魂頻率</p></div>
-      <button id="contractCloseBtn" type="button" aria-label="關閉締結誓約">×</button>
+      <div><small>RESONANCE COVENANT</small><h2 id="contractPanelTitle" data-i18n="contract.title">締結誓約</h2><p data-i18n="contract.subtitle">回應跨越生死而來的靈魂頻率</p></div>
+      <button id="contractCloseBtn" type="button" aria-label="關閉締結誓約" data-i18n-aria-label="contract.close">×</button>
     </header>
     <div class="contractStage">
       <button id="xiaochuSoulBtn" class="soulChoice" type="button">
@@ -344,50 +344,50 @@
         <span class="contractSoulInfo">
           <small class="contractSignal">RESONANCE DETECTED</small>
           <b>小初</b>
-          <em>稀有 · 劍士之魂</em>
-          <span class="contractSoulMessage">「我聽見妳的聲音了。<br>這一次，換我回應妳。」</span>
-          <span class="contractRespond">回應這道共鳴 <i aria-hidden="true">›</i></span>
+          <em data-i18n="contract.xiaochuRarity">稀有 · 劍士之魂</em>
+          <span class="contractSoulMessage" data-i18n="contract.xiaochuMessage">「我聽見妳的聲音了。這一次，換我回應妳。」</span>
+          <span class="contractRespond"><span data-i18n="contract.respond">回應這道共鳴</span> <i aria-hidden="true">›</i></span>
         </span>
       </button>
       <div id="contractConfirm" class="contractConfirm" hidden>
         <small>COVENANT CONFIRMATION</small>
-        <h3>讓彼此的靈魂產生共鳴</h3>
-        <p>誓約一旦締結，小初將成為可附身的靈魂夥伴，與妳一同踏上之後的遠征。</p>
-        <div><button id="contractCancelBtn" type="button">再想一下</button><button id="contractConfirmBtn" type="button">締結誓約</button></div>
+        <h3 data-i18n="contract.confirmTitle">讓彼此的靈魂產生共鳴</h3>
+        <p data-i18n="contract.confirmDesc">誓約一旦締結，小初將成為可附身的靈魂夥伴，與妳一同踏上之後的遠征。</p>
+        <div><button id="contractCancelBtn" type="button" data-i18n="contract.cancel">再想一下</button><button id="contractConfirmBtn" type="button" data-i18n="contract.confirm">締結誓約</button></div>
       </div>
       <div id="contractEmpty" class="contractEmpty" hidden>
         <img src="assets/story/resonance_orb.png" alt="">
-        <b>此刻沒有等待回應的靈魂</b>
-        <span>新的頻率出現時，誓約之間會再次亮起。</span>
+        <b data-i18n="contract.empty">此刻沒有等待回應的靈魂</b>
+        <span data-i18n="contract.emptyDesc">新的頻率出現時，誓約之間會再次亮起。</span>
       </div>
     </div>
-    <footer class="contractFooter"><span>靈魂的回應出自彼此意志</span><i aria-hidden="true"></i></footer>
+    <footer class="contractFooter"><span data-i18n="contract.footer">靈魂的回應出自彼此意志</span><i aria-hidden="true"></i></footer>
   </section>
 </div>
 
 <!-- 對話系統：靈魂契約等劇情橋段用，見 design.md「契約角色與解鎖」 -->
 <div id="dialogueOverlay" aria-hidden="true">
-  <div id="soulResonance" role="button" tabindex="-1" aria-label="繼續靈魂共鳴演出" aria-hidden="true">
+  <div id="soulResonance" role="button" tabindex="-1" aria-label="繼續靈魂共鳴演出" aria-hidden="true" data-i18n-aria-label="aria.continueResonance">
     <div class="soulResonanceGlow"></div>
     <img id="soulResonanceOrb" src="assets/story/xiaochu_resonance_orb.png" alt="靈魂共鳴">
     <div class="soulMissingArt">缺少圖片<br><small>assets/story/xiaochu_resonance_orb.png</small></div>
-    <div class="soulResonanceTitle">靈魂共鳴</div>
-    <div class="soulInteractionHint">點擊繼續</div>
+    <div class="soulResonanceTitle" data-i18n="dialogue.resonance">靈魂共鳴</div>
+    <div class="soulInteractionHint" data-i18n="dialogue.continue">點擊繼續</div>
   </div>
-  <div id="contractFormed" role="button" tabindex="-1" aria-label="完成契約演出" aria-hidden="true">
+  <div id="contractFormed" role="button" tabindex="-1" aria-label="完成契約演出" aria-hidden="true" data-i18n-aria-label="aria.finishContract">
     <div class="contractFormedStage">
       <img id="contractFormedMagicCircle" alt="">
       <img id="contractFormedCharacter" alt="">
     </div>
     <div id="contractFormedTitle"></div>
-    <div class="contractFormedSubtitle">締結共鳴契約</div>
-    <div class="contractFormedKicker">— 契約成立 —</div>
-    <div class="soulInteractionHint">點擊完成</div>
+    <div class="contractFormedSubtitle" data-i18n="dialogue.contractFormed">締結共鳴契約</div>
+    <div class="contractFormedKicker" data-i18n="dialogue.contractComplete">— 契約成立 —</div>
+    <div class="soulInteractionHint" data-i18n="dialogue.finish">點擊完成</div>
   </div>
   <div id="dialogueModal" role="dialog" aria-modal="true" aria-labelledby="dialogueSpeakerName">
     <div id="dialoguePortraitFrame">
       <img id="dialoguePortraitImg" alt="">
-      <div class="dialogueMissingArt" id="dialoguePortraitMissing">缺少立繪</div>
+      <div class="dialogueMissingArt" id="dialoguePortraitMissing" data-i18n="dialogue.missingPortrait">缺少立繪</div>
     </div>
     <div id="dialogueBox">
       <div id="dialogueSpeakerName"></div>
@@ -397,14 +397,16 @@
   </div>
 </div>
 
+<script src="js/locales/zh-Hant.js?v=20260903-1"></script>
+<script src="js/i18n.js?v=20260903-1"></script>
 <script src="js/constants.js?v=20260903-18"></script>
 <script src="js/state.js?v=20260903-37"></script>
 <script src="js/goo.js?v=20260903-1"></script>
 <script src="js/combat.js?v=20260903-35"></script>
-<script src="js/story.js?v=20260903-11"></script>
-<script src="js/ui.js?v=20260903-40"></script>
+<script src="js/story.js?v=20260903-12"></script>
+<script src="js/ui.js?v=20260903-41"></script>
 <script src="js/debug.js?v=20260903-6"></script>
 <script src="js/save.js?v=20260903-1"></script>
-<script src="js/main.js?v=20260903-34"></script>
+<script src="js/main.js?v=20260903-35"></script>
 </body>
 </html>

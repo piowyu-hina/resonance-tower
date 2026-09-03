@@ -50,7 +50,7 @@ function renderRunResultSummary(targetId, gold) {
 
   const summary = document.getElementById(targetId);
   if (!rewards.length) {
-    summary.innerHTML = '<div class="runResultEmpty">本次沒有取得戰利品</div>';
+    summary.innerHTML = `<div class="runResultEmpty">${t('result.empty')}</div>`;
     return;
   }
 
@@ -58,7 +58,7 @@ function renderRunResultSummary(targetId, gold) {
     <div class="runResultItem">
       <img src="assets/item/${reward.img}.png" alt="">
       <span>${reward.name}</span>
-      <b>×${reward.qty.toLocaleString()}</b>
+      <b>×${formatLocaleNumber(reward.qty)}</b>
     </div>
   `).join('');
 }
@@ -903,7 +903,7 @@ function renderShopView() {
     lastShopTabMode = shopMode;
   }
   wasShopOpen = true;
-  document.getElementById('shopTitle').textContent = shopMode === 'town' ? '城外商店' : '地城商店';
+  document.getElementById('shopTitle').textContent = t(shopMode === 'town' ? 'shop.town' : 'shop.dungeon');
   const shopWallet = document.getElementById('shopWallet');
   const shopCoinIcon = 'coin.png';
   shopWallet.innerHTML = `<img src="assets/item/${shopCoinIcon}" alt="">${shopGold()}`;
@@ -918,21 +918,29 @@ function renderShopView() {
   renderShopDialogue();
   document.getElementById('shopCountdown').textContent = shopMode === 'town'
     ? ''
-    : (shopAutoLeave ? `${Math.ceil(shopCountdown / 1000)} 秒後自動離開` : '自動離開已關閉');
+    : (shopAutoLeave
+      ? t('shop.autoLeaveIn', { seconds: formatLocaleNumber(Math.ceil(shopCountdown / 1000)) })
+      : t('shop.autoLeaveOff'));
   const crystalQty = inventoryItemCount('monsterCrystal');
-  document.getElementById('shopMonsterCrystalQty').textContent = `持有 ×${crystalQty}`;
+  document.getElementById('shopMonsterCrystalQty').textContent = t('shop.owned', {
+    quantity: formatLocaleNumber(crystalQty),
+  });
   const sellBtn = document.getElementById('shopSellAllBtn');
-  sellBtn.textContent = crystalQty > 0 ? `全部賣出（+${crystalQty * SHOP_MONSTER_CRYSTAL_SELL_PRICE}）` : '沒有可出售物';
+  sellBtn.textContent = crystalQty > 0
+    ? t('shop.sellAll', { gold: formatLocaleNumber(crystalQty * SHOP_MONSTER_CRYSTAL_SELL_PRICE) })
+    : t('shop.nothingToSell');
   sellBtn.disabled = crystalQty <= 0;
   const sellOneBtn = document.getElementById('shopSellOneBtn');
   sellOneBtn.innerHTML = `<img class="shopPriceCoin" src="assets/item/${shopCoinIcon}" alt="">${SHOP_MONSTER_CRYSTAL_SELL_PRICE}`;
   sellOneBtn.disabled = crystalQty <= 0;
   const autoLeaveBtn = document.getElementById('shopAutoLeaveBtn');
   autoLeaveBtn.style.display = shopMode === 'dungeon' ? '' : 'none';
-  autoLeaveBtn.textContent = shopAutoLeave ? '關閉 10 秒倒數' : '開啟 10 秒倒數';
+  autoLeaveBtn.textContent = t(shopAutoLeave ? 'shop.disableCountdown' : 'shop.enableCountdown');
   SHOP_ITEMS.forEach(offer => {
     const row = document.querySelector(`.shopBuyRow[data-item-id="${offer.itemId}"]`);
-    row.querySelector('.shopOwned').textContent = `持有 ×${inventoryItemCount(offer.itemId)}`;
+    row.querySelector('.shopOwned').textContent = t('shop.owned', {
+      quantity: formatLocaleNumber(inventoryItemCount(offer.itemId)),
+    });
     const buyBtn = row.querySelector('button');
     buyBtn.innerHTML = `<img class="shopPriceCoin" src="assets/item/${shopCoinIcon}" alt="">${offer.price}`;
     buyBtn.disabled = shopGold() < offer.price;
@@ -1558,7 +1566,7 @@ function render() {
     || logEl.scrollHeight - logEl.scrollTop - logEl.clientHeight <= 8;
   const previousLogScrollTop = logEl.scrollTop;
   logEl.style.display = phase === 'combat' ? 'block' : 'none';
-  const logMarkup = `<div class="logHeading"><span>戰鬥紀錄</span></div>${logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('')}`;
+  const logMarkup = `<div class="logHeading"><span>${t('combat.log')}</span></div>${logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('')}`;
   if (logEl.innerHTML !== logMarkup) {
     logEl.innerHTML = logMarkup;
     logEl.scrollTop = logWasAtBottom ? logEl.scrollHeight : previousLogScrollTop;

@@ -20,7 +20,12 @@ function initGame() {
 // Game surface: suppress the browser context menu so right-clicks during
 // dragging/combat interaction do not interrupt play.
 document.addEventListener('contextmenu', event => event.preventDefault());
+document.addEventListener('localechange', () => {
+  render();
+  if (activeOverlay === 'journal') renderJournalPage();
+});
 
+initI18n();
 initGame();
 buildUI();
 initDebugTools();

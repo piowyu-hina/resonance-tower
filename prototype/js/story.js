@@ -221,8 +221,13 @@ function renderJournalPage() {
   page.classList.remove('pageTurning');
   void page.offsetWidth;
   page.classList.add('pageTurning');
-  document.getElementById('journalPageNumber').textContent = `${journalPage + 1}／${JOURNAL_PAGES.length}`;
-  document.getElementById('journalNextBtn').textContent = journalPage === JOURNAL_PAGES.length - 1 ? '讀完' : '下一頁';
+  document.getElementById('journalPageNumber').textContent = t('format.page', {
+    current: formatLocaleNumber(journalPage + 1),
+    total: formatLocaleNumber(JOURNAL_PAGES.length),
+  });
+  document.getElementById('journalNextBtn').textContent = t(
+    journalPage === JOURNAL_PAGES.length - 1 ? 'journal.done' : 'journal.next',
+  );
 }
 
 function openTravelJournal() {
