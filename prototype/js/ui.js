@@ -749,6 +749,9 @@ function renderCharacterDetail(characterId) {
 
 let shopDialogueIndex = 0;
 let lastShopDialogueMode = null;
+let shopTab = 'buy';
+let lastShopTabMode = null;
+let wasShopOpen = false;
 
 const SHOP_DIALOGUE = {
   town: [
@@ -793,6 +796,16 @@ function buildShopUI() {
   document.getElementById('shopSellAllBtn').addEventListener('click', () => sellMonsterCrystals(inventoryItemCount('monsterCrystal')));
   document.getElementById('shopAutoLeaveBtn').addEventListener('click', toggleShopAutoLeave);
   document.getElementById('shopLeaveBtn').addEventListener('click', () => leaveShop(false));
+  document.getElementById('shopBuyTab').addEventListener('click', () => {
+    shopTab = 'buy';
+    resetShopIdleTimer();
+    renderShopView();
+  });
+  document.getElementById('shopSellTab').addEventListener('click', () => {
+    shopTab = 'sell';
+    resetShopIdleTimer();
+    renderShopView();
+  });
   document.querySelector('.shopKeeperPanel').addEventListener('click', () => {
     shopDialogueIndex += 1;
     renderShopDialogue();
@@ -804,11 +817,27 @@ function renderShopView() {
   const overlay = document.getElementById('shopOverlay');
   overlay.classList.toggle('open', shopOpen);
   overlay.setAttribute('aria-hidden', String(!shopOpen));
-  if (!shopOpen) return;
+  if (!shopOpen) {
+    wasShopOpen = false;
+    return;
+  }
+  if (!wasShopOpen || lastShopTabMode !== shopMode) {
+    shopTab = 'buy';
+    lastShopTabMode = shopMode;
+  }
+  wasShopOpen = true;
   document.getElementById('shopTitle').textContent = shopMode === 'town' ? '城外商店' : '地城商店';
   const shopWallet = document.getElementById('shopWallet');
   const shopCoinIcon = shopMode === 'town' ? 'coin.png' : 'coin_out.png';
   shopWallet.innerHTML = `<img src="assets/item/${shopCoinIcon}" alt="">${shopGold()}`;
+  const buyTab = document.getElementById('shopBuyTab');
+  const sellTab = document.getElementById('shopSellTab');
+  buyTab.classList.toggle('active', shopTab === 'buy');
+  sellTab.classList.toggle('active', shopTab === 'sell');
+  buyTab.setAttribute('aria-selected', String(shopTab === 'buy'));
+  sellTab.setAttribute('aria-selected', String(shopTab === 'sell'));
+  document.getElementById('shopBuySection').hidden = shopTab !== 'buy';
+  document.getElementById('shopSellSection').hidden = shopTab !== 'sell';
   renderShopDialogue();
   document.getElementById('shopCountdown').textContent = shopMode === 'town'
     ? ''

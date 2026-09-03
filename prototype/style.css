@@ -1438,6 +1438,11 @@ button:focus-visible,
 #shopKeeperName { padding: 2px 7px; border-radius: 8px; background: #765b2e; color: #ffe4a0; }
 #shopDialogueText { color: #ded7ca; font-size: 13px; line-height: 1.6; }
 .shopGoodsPanel { display: grid; align-content: start; gap: 12px; }
+.shopTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 4px; border: 1px solid #45484e; border-radius: 10px; background: #1d2024; }
+.shopTab { min-height: 38px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #858c94; font-size: 12px; font-weight: 700; cursor: pointer; }
+.shopTab:hover { color: #d8c394; background: rgba(115,91,49,.18); }
+.shopTab.active { border-color: #7b6742; background: linear-gradient(180deg, #55452c, #3c3325); color: #f2d38c; box-shadow: inset 0 1px rgba(255,255,255,.05); }
+.shopSection[hidden] { display: none; }
 .shopSection { margin: 0; padding: 15px; border-color: #484b4f; border-radius: 11px; background: rgba(29,32,36,.84); box-shadow: inset 0 1px rgba(255,255,255,.025); }
 .shopSectionTitle { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; padding-bottom: 9px; border-bottom: 1px solid #3e4146; }
 .shopSectionTitle span { color: #e0bd72; font-size: 14px; }

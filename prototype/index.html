@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="style.css?v=20260903-9">
+<link rel="stylesheet" href="style.css?v=20260903-10">
 </head>
 <body>
 
@@ -188,7 +188,11 @@
       </aside>
       <main class="shopGoodsPanel">
         <div id="shopWallet" aria-label="目前金幣"></div>
-        <div class="shopSection">
+        <div class="shopTabs" role="tablist" aria-label="商店功能">
+          <button id="shopBuyTab" class="shopTab active" type="button" role="tab" aria-selected="true">購買</button>
+          <button id="shopSellTab" class="shopTab" type="button" role="tab" aria-selected="false">出售</button>
+        </div>
+        <div id="shopSellSection" class="shopSection" role="tabpanel" hidden>
           <div class="shopSectionTitle"><span>出售素材</span><small>把遠征收穫換成金幣</small></div>
           <div class="shopSellRow">
             <img src="assets/item/monster_crystal.png" alt="魔物結晶">
@@ -200,7 +204,7 @@
             </div>
           </div>
         </div>
-        <div class="shopSection">
+        <div id="shopBuySection" class="shopSection" role="tabpanel">
           <div class="shopSectionTitle"><span>旅行補給</span><small>為下一次戰鬥做好準備</small></div>
           <div id="shopBuyList"></div>
         </div>
@@ -290,7 +294,7 @@
 <script src="js/goo.js?v=20260903-1"></script>
 <script src="js/combat.js?v=20260903-1"></script>
 <script src="js/story.js?v=20260903-1"></script>
-<script src="js/ui.js?v=20260903-7"></script>
+<script src="js/ui.js?v=20260903-10"></script>
 <script src="js/debug.js?v=20260903-1"></script>
 <script src="js/main.js?v=20260903-1"></script>
 </body>
