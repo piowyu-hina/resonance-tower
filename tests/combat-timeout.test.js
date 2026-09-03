@@ -18,13 +18,11 @@ function freshContext() {
     document: { getElementById: () => null },
   });
   context.globalThis = context;
-  for (const file of ['prototype/js/constants.js', 'prototype/js/state.js', 'prototype/js/combat.js']) {
+  for (const file of ['prototype/js/constants.js', 'prototype/js/state.js', 'prototype/js/combat-events.js', 'prototype/js/combat.js']) {
     vm.runInContext(fs.readFileSync(file, 'utf8'), context, { filename: file });
   }
   vm.runInContext(`
     clearGooArena = () => {};
-    render = () => {};
-    showVictoryOverlay = () => { globalThis.__victoryShown = true; };
     addInventoryItem = () => {}; // shop.js isn't loaded here - loot drops aren't under test
     t = key => key; // i18n stub - regionName() needs it, translated text isn't under test here
   `, context);
@@ -44,13 +42,13 @@ function freshContext() {
   `, context);
   assert.ok(context.__capturedTimeout, 'boss-defeat setTimeout should have been scheduled');
 
-  vm.runInContext(`endRun(); globalThis.__afterRetreat = { phase, floor };`, context); // player retreats mid-animation
+  vm.runInContext(`drainCombatEvents(); endRun(); globalThis.__afterRetreat = { phase, floor };`, context); // player retreats mid-animation
   const { phase: phaseAfterRetreat, floor: floorAfterRetreat } = context.__afterRetreat;
 
   context.__capturedTimeout(); // the stale callback finally fires
-  vm.runInContext(`globalThis.__final = { phase, floor };`, context);
+  vm.runInContext(`globalThis.__final = { phase, floor, events: drainCombatEvents() };`, context);
 
-  assert.equal(context.__victoryShown, undefined, 'stale boss-defeat callback must not show the victory overlay');
+  assert.ok(!context.__final.events.some(e => e.type === 'victory'), 'stale boss-defeat callback must not queue a victory event');
   assert.equal(context.__final.phase, phaseAfterRetreat, 'stale callback must not change phase past what endRun() already set');
   assert.equal(context.__final.floor, floorAfterRetreat, 'stale callback must not advance floor after a retreat');
 }
@@ -68,10 +66,10 @@ function freshContext() {
   `, context);
 
   context.__capturedTimeout();
-  vm.runInContext(`globalThis.__final = { phase, floor };`, context);
+  vm.runInContext(`globalThis.__final = { phase, floor, events: drainCombatEvents() };`, context);
 
   // floor 1 === MAX_IMPLEMENTED_FLOOR in this build, so a real callback takes the victory branch
-  assert.equal(context.__victoryShown, true, 'a real (non-stale) boss-defeat callback should still show the victory overlay');
+  assert.ok(context.__final.events.some(e => e.type === 'victory'), 'a real (non-stale) boss-defeat callback should queue a victory event');
   assert.equal(context.__final.phase, 'victory', 'setPhase(VICTORY) should run normally when the callback is not stale');
 }
 

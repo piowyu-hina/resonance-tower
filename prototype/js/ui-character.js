@@ -74,6 +74,7 @@ function attachCharacterCardPress(card, characterId) {
       return;
     }
     toggleParty(characterId);
+    flushCombat();
   });
 }
 
@@ -288,7 +289,7 @@ function renderCharacterDetail(characterId) {
   selectBtn.addEventListener('click', () => {
     toggleParty(characterId);
     renderCharacterDetail(characterId);
-    render();
+    flushCombat();
   });
 }
 

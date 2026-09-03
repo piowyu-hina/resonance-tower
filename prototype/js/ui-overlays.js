@@ -206,7 +206,7 @@ function prepareCombat(entryPhase) {
     const c = roster.find(r => r.id === id);
     c.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(c);
   });
-  render();
+  flushCombat();
 }
 
 function prepareDungeonCombat() {

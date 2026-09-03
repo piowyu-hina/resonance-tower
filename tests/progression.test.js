@@ -9,7 +9,7 @@ const context = vm.createContext({
 });
 context.globalThis = context;
 
-for (const file of ['prototype/js/constants.js', 'prototype/js/state.js', 'prototype/js/combat.js', 'prototype/js/shop.js']) {
+for (const file of ['prototype/js/constants.js', 'prototype/js/state.js', 'prototype/js/combat-events.js', 'prototype/js/combat.js', 'prototype/js/shop.js']) {
   vm.runInContext(fs.readFileSync(file, 'utf8'), context, { filename: file });
 }
 

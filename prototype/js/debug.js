@@ -146,7 +146,7 @@ function runDebugAction(action) {
     return;
   }
 
-  render();
+  flushCombat();
   renderDebugStatus();
 }
 

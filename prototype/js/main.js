@@ -31,6 +31,12 @@ initGame();
 buildUI();
 initDebugTools();
 initSaveSystem();
-render();
+flushCombat(); // debug ?view= params can have already queued combat events (e.g. a forced boss fight)
 runContractPreviewFromUrl();
-setInterval(tick, MASTER_TICK_MS);
+// combat.js never renders itself (see its file header) - flush whenever the
+// battle tick actually ran, or whenever an async death-transition timeout
+// queued an event while phase had already moved off COMBAT (e.g. victory).
+setInterval(() => {
+  tick();
+  if (phase === PHASES.COMBAT || combatEventQueue.length > 0) flushCombat();
+}, MASTER_TICK_MS);

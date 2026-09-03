@@ -107,7 +107,7 @@ function buildUI() {
   retreatBtnEl.textContent = '返回村莊';
   retreatBtnEl.addEventListener('click', () => {
     doRetreat();
-    render();
+    flushCombat();
   });
   actionArea.appendChild(startBtnEl);
   actionArea.appendChild(retreatBtnEl);
@@ -146,7 +146,7 @@ function buildUI() {
       lockReq: card.querySelector('.lockReq'),
       portrait: card.querySelector('.portrait img'),
     };
-    card.addEventListener('click', () => toggleParty(c.id));
+    card.addEventListener('click', () => { toggleParty(c.id); flushCombat(); });
     attachCharTooltip(card.querySelector('.portrait'), c.id);
   });
 
@@ -285,7 +285,7 @@ function buildCombatActionBar() {
     relicActions.appendChild(group);
     if (action) {
       charEls[id].manualActionButton = group.querySelector('.charActionButton');
-      charEls[id].manualActionButton.addEventListener('click', () => useCharacterAction(id));
+      charEls[id].manualActionButton.addEventListener('click', () => { useCharacterAction(id); flushCombat(); });
       attachCharacterActionTooltip(charEls[id].manualActionButton, action);
     }
     charEls[id].activeQuickSlot = group.querySelector('.activeQuickSlot');

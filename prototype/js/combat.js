@@ -1,3 +1,10 @@
+// This file only mutates game state and queues one-shot effects via
+// emitCombatEvent() (combat-events.js) - it never touches the DOM, calls
+// popup/flash/showSkillCastEffect, or calls render() itself. Callers (click
+// handlers in ui-*.js, and the ambient tick loop in main.js) call
+// flushCombat() (ui-combat-effects.js) afterward to play queued effects and
+// re-render. This keeps combat logic testable headless - see
+// tests/combat-events.test.js.
 function enterPrepFloor() {
   setPhase(PHASES.PREP_FLOOR);
   prepLocation = 'village';
@@ -95,57 +102,11 @@ function spawnWave() {
     monsters.push(makeBoss());
     gooSpawnCountdown = 800; // faster opening spawn than the steady-state cooldown, so the fight doesn't feel dead at the start
   }
-  buildMonsterCards();
+  emitCombatEvent({ type: 'waveSpawned' });
 }
 
-// mobs only ever have the one "move" (skill), shown as a skill icon just
-// like characters - same cooldown-fill visual language, even if it's just a
-// basic attack. The boss additionally has skill3 (黏液陣, the arena minigame),
-// shown as a second icon with its own independent cooldown.
-function updateMonsterSkillIcons(m) {
-  const refs = monsterEls[m.id];
-  const container = refs.skillsEl;
-  container.innerHTML = '';
-
-  const el = document.createElement('div');
-  el.className = 'skillIcon';
-  el.innerHTML = `
-    <img src="assets/skills/${m.skill.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-    <span class="fallback">${m.skill.icon}</span>
-    <div class="cdOverlay"></div>
-  `;
-  container.appendChild(el);
-  attachSkillTooltip(el, m.skill);
-  refs.skillCdOverlayEl = el.querySelector('.cdOverlay');
-
-  refs.skill2CdOverlayEl = null;
-  if (m.skill2) {
-    const el2 = document.createElement('div');
-    el2.className = 'skillIcon';
-    el2.innerHTML = `
-      <img src="assets/skills/${m.skill2.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-      <span class="fallback">${m.skill2.icon}</span>
-      <div class="cdOverlay"></div>
-    `;
-    container.appendChild(el2);
-    attachSkillTooltip(el2, m.skill2);
-    refs.skill2CdOverlayEl = el2.querySelector('.cdOverlay');
-  }
-
-  refs.skill3CdOverlayEl = null;
-  if (m.skill3) {
-    const el3 = document.createElement('div');
-    el3.className = 'skillIcon';
-    el3.innerHTML = `
-      <img src="assets/skills/${m.skill3.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-      <span class="fallback">${m.skill3.icon}</span>
-      <div class="cdOverlay"></div>
-    `;
-    container.appendChild(el3);
-    attachSkillTooltip(el3, m.skill3);
-    refs.skill3CdOverlayEl = el3.querySelector('.cdOverlay');
-  }
-}
+// (updateMonsterSkillIcons moved to ui-combat-effects.js - pure DOM
+// construction, no battle logic, so it doesn't belong here.)
 
 function bossSummonTick(boss) {
   boss.skill2Cd = Math.max(0, boss.skill2Cd - MASTER_TICK_MS);
@@ -158,11 +119,8 @@ function bossSummonTick(boss) {
   const summoned = makeMob();
   summoned.isSummoned = true;
   monsters.push(summoned);
-  buildMonsterCards();
-  const bossPortrait = monsterEls[boss.id] && monsterEls[boss.id].portraitEl;
-  showSkillCastEffect(bossPortrait, boss.skill2);
-  popup(bossPortrait, 'SUMMON', 'buff');
   log(`${boss.name} 使用【${boss.skill2.name}】，召喚了 ${summoned.name}！`, 'enemy');
+  emitCombatEvent({ type: 'monsterSummoned', bossId: boss.id, skill: boss.skill2 });
 }
 
 function selectMonsterSkillTarget(skill) {
@@ -183,16 +141,16 @@ function performMonsterSkill(m) {
   if (!target) return false;
 
   const targetsParty = skill.target === 'randomParty';
+  const targetKind = targetsParty ? 'char' : 'monster';
   if (targetsParty && target.dodgeUntil > 0) {
     log(`${m.name} 使用【${skill.name}】，但被 ${CHAR_DEFS[target.id].name} 閃避了！`, 'party');
-    popup(charEls[target.id].portraitEl, 'MISS', 'buff');
+    emitCombatEvent({ type: 'popup', targetKind, targetId: target.id, text: 'MISS', cls: 'buff' });
     m.skillCd = skill.cd * 1000;
     return true;
   }
 
   m.skillCd = skill.cd * 1000;
-  const targetPortrait = targetsParty ? charEls[target.id].portraitEl : monsterEls[target.id].portraitEl;
-  showSkillCastEffect(targetPortrait, skill);
+  emitCombatEvent({ type: 'skillCast', targetKind, targetId: target.id, skill });
 
   skill.effects.forEach(effect => {
     if (effect.type === 'damage') {
@@ -200,26 +158,26 @@ function performMonsterSkill(m) {
       const dmg = rollDamage(base);
       target.curHp -= dmg;
       log(`${m.name} 使用【${skill.name}】攻擊 ${CHAR_DEFS[target.id].name}，造成 ${dmg} 傷害`, 'enemy');
-      popup(targetPortrait, '-' + dmg, 'dmg');
-      flash(targetPortrait);
+      emitCombatEvent({ type: 'popup', targetKind, targetId: target.id, text: '-' + dmg, cls: 'dmg' });
+      emitCombatEvent({ type: 'flash', targetKind, targetId: target.id });
     } else if (effect.type === 'slow') {
       target.slowMult = effect.mult;
       target.slowUntil = effect.duration * 1000;
       log(`${CHAR_DEFS[target.id].name} 的攻速降低`, 'enemy');
-      popup(targetPortrait, 'SLOW', 'dmg');
+      emitCombatEvent({ type: 'popup', targetKind, targetId: target.id, text: 'SLOW', cls: 'dmg' });
     } else if (effect.type === 'sleepUntilAction') {
       target.sleepUntilAction = true;
       log(`${CHAR_DEFS[target.id].name} 睡著了，下一次行動會用來醒來`, 'enemy');
-      popup(targetPortrait, 'SLEEP', 'dmg');
+      emitCombatEvent({ type: 'popup', targetKind, targetId: target.id, text: 'SLEEP', cls: 'dmg' });
     } else if (effect.type === 'charmAttackAlly') {
       target.charmedUntilAction = true;
       log(`${CHAR_DEFS[target.id].name} 被魅惑了，下一次行動會攻擊友軍`, 'enemy');
-      popup(targetPortrait, 'CHARM', 'dmg');
+      emitCombatEvent({ type: 'popup', targetKind, targetId: target.id, text: 'CHARM', cls: 'dmg' });
     } else if (effect.type === 'heal') {
       const heal = Math.min(target.maxHp - target.hp, Math.round(target.maxHp * effect.pct));
       target.hp += heal;
       log(`${m.name} 使用【${skill.name}】，治療 ${target.name} ${heal} 生命`, 'enemy');
-      popup(targetPortrait, '+' + heal, 'heal');
+      emitCombatEvent({ type: 'popup', targetKind, targetId: target.id, text: '+' + heal, cls: 'heal' });
     }
   });
 
@@ -238,8 +196,8 @@ function performCharmedAction(c) {
   const dmg = rollDamage(base);
   target.curHp -= dmg;
   log(`${CHAR_DEFS[c.id].name} 受到魅惑，攻擊 ${target === c ? '自己' : CHAR_DEFS[target.id].name}，造成 ${dmg} 傷害`, 'warn');
-  popup(charEls[target.id].portraitEl, '-' + dmg, 'dmg');
-  flash(charEls[target.id].portraitEl);
+  emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
+  emitCombatEvent({ type: 'flash', targetKind: 'char', targetId: target.id });
   if (target.curHp <= 0) {
     target.curHp = 0;
     target.alive = false;
@@ -258,15 +216,15 @@ function performSkill(c, skill, idx, target) {
     const dmg = rollDamage(calcAtk(c) * skill.mult * lineScaleForThisSkill);
     target.hp -= dmg;
     log(`${name} 使用【${skill.name}】攻擊 ${target.name}，造成 ${dmg} 傷害`, 'party');
-    showSkillCastEffect(monsterEls[target.id].portraitEl, skill);
-    popup(monsterEls[target.id].portraitEl, '-' + dmg, 'dmg');
-    flash(monsterEls[target.id].portraitEl);
+    emitCombatEvent({ type: 'skillCast', targetKind: 'monster', targetId: target.id, skill });
+    emitCombatEvent({ type: 'popup', targetKind: 'monster', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
+    emitCombatEvent({ type: 'flash', targetKind: 'monster', targetId: target.id });
   } else if (skill.type === 'healSelf') {
     const heal = Math.round(c.maxHp * skill.pct * lineScaleForThisSkill);
     c.curHp = Math.min(c.maxHp, c.curHp + heal);
     log(`${name} 使用【${skill.name}】，恢復 ${heal} 生命`, 'party');
-    showSkillCastEffect(charEls[c.id].portraitEl, skill);
-    popup(charEls[c.id].portraitEl, '+' + heal, 'heal');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: '+' + heal, cls: 'heal' });
   } else if (skill.type === 'healAlly') {
     const alive = activeAliveMembers();
     if (alive.length === 0) return;
@@ -274,20 +232,20 @@ function performSkill(c, skill, idx, target) {
     const heal = Math.round(healTarget.maxHp * skill.pct * lineScaleForThisSkill);
     healTarget.curHp = Math.min(healTarget.maxHp, healTarget.curHp + heal);
     log(`${name} 使用【${skill.name}】，治療 ${CHAR_DEFS[healTarget.id].name} ${heal} 生命`, 'party');
-    showSkillCastEffect(charEls[healTarget.id].portraitEl, skill);
-    popup(charEls[healTarget.id].portraitEl, '+' + heal, 'heal');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: healTarget.id, skill });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: healTarget.id, text: '+' + heal, cls: 'heal' });
   } else if (skill.type === 'buffAtk') {
     partyBuff.mult = 1 + skill.pct * lineScaleForThisSkill;
     partyBuff.until = skill.duration * 1000; // skill.duration is authored in seconds
     log(`${name} 使用【${skill.name}】，隊伍攻擊力提升 ${Math.round(skill.pct * lineScaleForThisSkill * 100)}%`, 'party');
-    showSkillCastEffect(charEls[c.id].portraitEl, skill);
-    popup(charEls[c.id].portraitEl, 'ATK UP', 'buff');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: 'ATK UP', cls: 'buff' });
   } else if (skill.type === 'buffDefParty') {
     partyDefense.bonus = Math.round(skill.amount * lineScaleForThisSkill);
     partyDefense.until = skill.duration * 1000; // skill.duration is authored in seconds
     log(`${name} 使用【${skill.name}】，隊伍防禦提升 ${partyDefense.bonus} 點`, 'party');
-    showSkillCastEffect(charEls[c.id].portraitEl, skill);
-    popup(charEls[c.id].portraitEl, 'DEF UP', 'buff');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: 'DEF UP', cls: 'buff' });
   } else if (skill.type === 'hasteSelf') {
     // skill.mult is a multiplier BELOW 1 (smaller = faster), so scaling it up
     // like the other fields would backwards it into slower. Scale the boost
@@ -296,13 +254,13 @@ function performSkill(c, skill, idx, target) {
     const boostFraction = Math.min(0.95, (1 - skill.mult) * lineScaleForThisSkill);
     grantHaste(c, 1 - boostFraction, skill.duration);
     log(`${name} 使用【${skill.name}】，攻速提升`, 'party');
-    showSkillCastEffect(charEls[c.id].portraitEl, skill);
-    popup(charEls[c.id].portraitEl, 'HASTE', 'buff');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: 'HASTE', cls: 'buff' });
   } else if (skill.type === 'dodgeSelf') {
     c.dodgeUntil = skill.duration * 1000;
     log(`${name} 使用【${skill.name}】，進入隱身狀態`, 'party');
-    showSkillCastEffect(charEls[c.id].portraitEl, skill);
-    popup(charEls[c.id].portraitEl, 'STEALTH', 'buff');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: 'STEALTH', cls: 'buff' });
   }
 }
 
@@ -313,19 +271,7 @@ function onMonsterDefeated(m) {
   if (!m.alive) return;
   m.alive = false;
   m.hp = 0;
-
-  // renderCombatView() only updates ALIVE monsters' cards, so without this
-  // the dead one's card would just freeze on-screen at its last HP reading
-  // (never visibly reaching 0) instead of actually disappearing.
-  const refs = monsterEls[m.id];
-  if (refs) {
-    refs.hpBar.style.width = '0%';
-    refs.hpText.textContent = `0/${m.maxHp}`;
-    refs.card.classList.add('down', 'dying');
-    // Keep the now-transparent card as a layout placeholder until the next
-    // wave rebuild. Removing it here makes every surviving enemy snap toward
-    // the centre on the animation's final frame.
-  }
+  emitCombatEvent({ type: 'monsterDefeated', monsterId: m.id, maxHp: m.maxHp });
 
   const alive = activeAliveMembers();
   const gold = goldForKill(m.isBoss, floor);
@@ -356,11 +302,12 @@ function onMonsterDefeated(m) {
     // Summons do not keep a cleared boss fight alive. This also leaves room
     // for a future dual-boss fight: victory waits until every boss is down.
     if (aliveMonsters().some(other => other.isBoss)) return;
+    const clearedIds = [];
     monsters.filter(other => other.alive && !other.isBoss).forEach(other => {
       other.alive = false;
-      const otherCard = monsterEls[other.id] && monsterEls[other.id].card;
-      if (otherCard) otherCard.remove();
+      clearedIds.push(other.id);
     });
+    if (clearedIds.length > 0) emitCombatEvent({ type: 'bossVictoryCleanup', clearedIds });
     const expectedRunId = runId;
     setTimeout(() => {
       if (runId !== expectedRunId) return; // player retreated during the death animation - this run is gone
@@ -369,13 +316,15 @@ function onMonsterDefeated(m) {
         const securedGold = runGold;
         log(`目前開放的區域已全部完成，本次取得 ${securedGold} 金幣！`, 'good');
         setPhase(PHASES.VICTORY);
-        showVictoryOverlay(securedGold);
+        emitCombatEvent({ type: 'victory', securedGold });
       } else {
         floor++;
         mobsCleared = 0;
         enterPrepFloor();
       }
-      render();
+      // No render()/flushCombat() here: this fires async, up to 100ms later
+      // the ambient tick loop (main.js) drains this event and re-renders -
+      // see combat.js's file-header note on why combat.js never renders itself.
     }, MONSTER_DEATH_ANIMATION_MS);
     return;
   }
@@ -390,7 +339,6 @@ function onMonsterDefeated(m) {
     const encounterId = checkResonanceTriggers();
     if (encounterId) {
       startCharacterEncounter(encounterId, continueAfterClearedWave);
-      render();
       return;
     }
     continueAfterClearedWave();
@@ -398,12 +346,11 @@ function onMonsterDefeated(m) {
 }
 
 function continueAfterClearedWave() {
-    if (mobsCleared >= MOBS_PER_FLOOR) {
-      enterPrepBoss();
-    } else {
-      spawnWave();
-    }
-    render();
+  if (mobsCleared >= MOBS_PER_FLOOR) {
+    enterPrepBoss();
+  } else {
+    spawnWave();
+  }
 }
 
 // Every way an expedition ends keeps its rewards. Defeat only costs time and
@@ -471,7 +418,7 @@ function useCharacterAction(characterId) {
     const targets = aliveMonsters();
     const target = targets[Math.floor(Math.random() * targets.length)];
     log(`${def.name} 發動【${action.name}】！`, 'party');
-    popup(charEls[characterId] && charEls[characterId].portraitEl, 'RANDOM', 'buff');
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: characterId, text: 'RANDOM', cls: 'buff' });
     performSkill(c, skill, skillIndex, target);
   } else if (action.type === 'selfBuffAtkDef') {
     // 小初「全力以赴」- 見 design.md「契約角色與解鎖」。跟技能線一樣用 'action' 這條
@@ -483,16 +430,15 @@ function useCharacterAction(characterId) {
     partyDefense.bonus = Math.round(action.defAmount * scale);
     partyDefense.until = action.duration * 1000;
     log(`${def.name} 發動【${action.name}】，攻擊力與防禦力同時提升！`, 'party');
-    showSkillCastEffect(charEls[characterId] && charEls[characterId].portraitEl, action);
-    popup(charEls[characterId] && charEls[characterId].portraitEl, 'ATK/DEF UP', 'buff');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: characterId, skill: action });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: characterId, text: 'ATK/DEF UP', cls: 'buff' });
   }
-  render();
 }
 
 function doWipeReset() {
   if (phase === PHASES.DEFEAT) return;
   setPhase(PHASES.DEFEAT);
-  showDefeatOverlay();
+  emitCombatEvent({ type: 'defeat' });
 }
 
 function doRetreat() {
@@ -513,7 +459,6 @@ function tick() {
 
   if (alive.length === 0) {
     doWipeReset();
-    render();
     return;
   }
 
@@ -524,8 +469,6 @@ function tick() {
   // centralized death sweep - catches monsters killed by attacks, skills, or
   // (via popGoo, which runs outside this loop on click) a goo pop.
   monsters.filter(m => m.alive && m.hp <= 0).forEach(m => onMonsterDefeated(m));
-
-  render();
 }
 
 function tickCharacters(alive) {
@@ -561,7 +504,7 @@ function tickCharacters(alive) {
     if (c.sleepUntilAction) {
       c.sleepUntilAction = false;
       log(`${CHAR_DEFS[c.id].name} 醒來了，但錯過了這次行動`, 'warn');
-      popup(charEls[c.id].portraitEl, 'WAKE', 'buff');
+      emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: 'WAKE', cls: 'buff' });
       return;
     }
     if (c.charmedUntilAction) {
@@ -584,8 +527,8 @@ function tickCharacters(alive) {
       const dmg = rollDamage(calcAtk(c));
       target.hp -= dmg;
       log(`${CHAR_DEFS[c.id].name} 普通攻擊 ${target.name}，造成 ${dmg} 傷害`, 'party');
-      popup(monsterEls[target.id].portraitEl, '-' + dmg, 'dmg');
-      flash(monsterEls[target.id].portraitEl);
+      emitCombatEvent({ type: 'popup', targetKind: 'monster', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
+      emitCombatEvent({ type: 'flash', targetKind: 'monster', targetId: target.id });
     }
   });
 }
@@ -630,15 +573,15 @@ function tickMonsters() {
     const target = stillAlive[Math.floor(Math.random() * stillAlive.length)];
     if (target.dodgeUntil > 0) {
       log(`${m.name} 攻擊 ${CHAR_DEFS[target.id].name}，但被隱身閃避了！`, 'party');
-      popup(charEls[target.id].portraitEl, 'MISS', 'buff');
+      emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: target.id, text: 'MISS', cls: 'buff' });
       return;
     }
     const baseDmg = Math.max(1, m.atk - calcDef(target));
     const dmg = rollDamage(baseDmg);
     target.curHp -= dmg;
     log(`${m.name} 普通攻擊 ${CHAR_DEFS[target.id].name}，造成 ${dmg} 傷害`, 'enemy');
-    popup(charEls[target.id].portraitEl, '-' + dmg, 'dmg');
-    flash(charEls[target.id].portraitEl);
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
+    emitCombatEvent({ type: 'flash', targetKind: 'char', targetId: target.id });
     if (target.curHp <= 0) {
       target.curHp = 0;
       target.alive = false;
@@ -657,5 +600,4 @@ function toggleParty(id) {
   if (!isCharUnlocked(id)) return; // can't take a locked character into the dungeon
   if (party.includes(id)) return; // already the chosen one - clicking it again does nothing
   party = [id];
-  render();
 }
