@@ -351,9 +351,12 @@ function renderExpeditionSelectedSummary() {
     </div>` : '';
   summary.innerHTML = `
     ${bossIdentity}
-    <div class="expeditionLoadout">
-      <div><small>藥水</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
-      <div><small>護符</small><div class="quickSlot activeQuickSlot"></div></div>
+    <div class="expeditionLoadoutBlock">
+      <div class="expeditionStepLabel"><span>3</span>遠征裝備</div>
+      <div class="expeditionLoadout">
+        <div><small>藥水</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
+        <div><small>護符</small><div class="quickSlot activeQuickSlot"></div></div>
+      </div>
     </div>`;
   const combatSlot = summary.querySelector('.combatItemQuickSlot');
   combatSlot.innerHTML = loadoutItemHTML(equippedCombatItemId, '＋', '選擇藥水');
