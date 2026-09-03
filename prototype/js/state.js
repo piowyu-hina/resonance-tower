@@ -17,17 +17,9 @@ let bankedGold = 0; // permanent - see endRun(): a wipe now clears this too, onl
 let runGold = 0;    // this run's unbanked gold - lost on wipe, kept only if you retreat
 let logLines = [];
 
-// New-run starter inventory. Permanent progression books are intentionally
-// excluded: they must come from combat drops instead of debug seed data.
-let inventory = Array.from({ length: INVENTORY_SLOT_COUNT }, (_, index) => {
-  if (index === 0) return { itemId: 'potion', qty: 2 };
-  if (index === 1) return { itemId: 'monsterCrystal', qty: 3 };
-  if (index === 2) return { itemId: 'speedPotion', qty: 2 };
-  if (index === 5) return { itemId: 'powerCharm', qty: 1 };
-  if (index === 6) return { itemId: 'guardCharm', qty: 1 };
-  if (index === 7) return { itemId: 'windCharm', qty: 1 };
-  return null;
-});
+// Normal play starts with an empty backpack. Test items are only available
+// through the opt-in ?debug panel, never as invisible production seed data.
+let inventory = Array.from({ length: INVENTORY_SLOT_COUNT }, () => null);
 let storage = Array.from({ length: STORAGE_SLOT_COUNT }, () => null);
 let runInventoryGains = {}; // itemId -> unsecured quantity found this expedition
 

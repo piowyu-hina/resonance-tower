@@ -30,8 +30,12 @@ function runDebugAction(action) {
     bankedGold += 500;
     addInventoryItem('potion', 10);
     addInventoryItem('speedPotion', 10);
+    addInventoryItem('monsterCrystal', 10);
     addInventoryItem('statBook', 20);
     addInventoryItem('skillBook', 20);
+    addInventoryItem('powerCharm', 1);
+    addInventoryItem('guardCharm', 1);
+    addInventoryItem('windCharm', 1);
     log('開發工具：已補充測試資源', 'good');
   } else if (action === 'unlock') {
     unlockedChars = new Set(Object.keys(CHAR_DEFS));
