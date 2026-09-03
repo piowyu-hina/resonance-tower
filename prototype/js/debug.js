@@ -19,6 +19,14 @@ function initDebugTools() {
   });
 
   const requestedView = new URLSearchParams(window.location.search).get('view');
+  if (requestedView === 'home') {
+    prepLocation = 'home';
+    homeMode = 'menu';
+  }
+  if (requestedView === 'growth') {
+    prepLocation = 'home';
+    homeMode = 'growth';
+  }
   if (requestedView === 'regions') prepLocation = 'regions';
   if (requestedView === 'expedition') prepLocation = 'expedition';
   if (requestedView === 'shop') openTownShop();

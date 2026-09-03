@@ -1466,7 +1466,7 @@ function render() {
 
   const logEl = document.getElementById('log');
   logEl.style.display = phase === 'combat' ? 'block' : 'none';
-  logEl.innerHTML = logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('');
+  logEl.innerHTML = `<div class="logHeading"><span>戰鬥紀錄</span><small>最新動態</small></div>${logLines.map(l => `<div class="logLine ${l.type}">${l.msg}</div>`).join('')}`;
   logEl.scrollTop = logEl.scrollHeight;
   if (typeof renderSaveControls === 'function') renderSaveControls();
 }
