@@ -237,6 +237,30 @@ function attachItemTooltip(el, item, entry) {
   el.addEventListener('mouseleave', hideTooltip);
 }
 
+function coinTooltipHTML(context) {
+  const inShop = context === 'shop';
+  const inTown = inShop ? shopMode === 'town' : phase === 'prepFloor' && !partyLocked;
+  const amount = inShop ? shopGold() : (inTown ? bankedGold : runGold);
+  const heading = inTown ? '村莊金幣' : '遠征中的金幣';
+  const description = inTown
+    ? '已帶回村莊，可在城外商店使用。'
+    : '這趟遠征途中取得，可在地城商店使用；撤退或通關後才會帶回村莊。';
+  return `<div class="coinTip"><img src="assets/item/coin.png" alt=""><div><small>${heading}</small><b>${amount}</b></div><p>${description}</p></div>`;
+}
+
+function attachCoinTooltip(el, context) {
+  const show = event => {
+    tooltipEl.innerHTML = coinTooltipHTML(context);
+    tooltipEl.style.display = 'block';
+    event && event.clientX ? positionTooltip(event) : positionTooltipAbove(el);
+  };
+  el.addEventListener('mouseenter', show);
+  el.addEventListener('mousemove', positionTooltip);
+  el.addEventListener('mouseleave', hideTooltip);
+  el.addEventListener('focus', show);
+  el.addEventListener('blur', hideTooltip);
+}
+
 function attachCombatActionTooltip(el, getItemId) {
   el.addEventListener('mouseenter', e => {
     const itemId = getItemId();
@@ -808,9 +832,6 @@ function renderShopView() {
   document.getElementById('shopTitle').textContent = shopMode === 'town' ? '城外商店' : '地城商店';
   const shopWallet = document.getElementById('shopWallet');
   shopWallet.innerHTML = `<img src="assets/item/coin.png" alt="">${shopGold()}`;
-  shopWallet.title = shopMode === 'town'
-    ? '目前持有、可以在村莊使用的金幣'
-    : '本次遠征途中取得、目前可以使用的金幣';
   renderShopDialogue();
   document.getElementById('shopCountdown').textContent = shopMode === 'town'
     ? ''
@@ -901,6 +922,8 @@ function setInventoryOpen(open) {
 
 function buildUI() {
   tooltipEl = document.getElementById('tooltip');
+  attachCoinTooltip(document.getElementById('goldLabel'), 'header');
+  attachCoinTooltip(document.getElementById('shopWallet'), 'shop');
   buildShopUI();
   bindDialogueUI();
 
@@ -1317,9 +1340,6 @@ function render() {
   goldLabel.innerHTML = inFreeVillage
     ? `<img src="assets/item/coin.png" alt="金幣">${bankedGold}`
     : `<img src="assets/item/coin.png" alt="金幣">${runGold}`;
-  goldLabel.title = inFreeVillage
-    ? '已帶回村莊的金幣'
-    : '這趟遠征途中取得、目前可以使用的金幣；撤退或通關後才會帶回村莊';
   const townShopBtn = document.getElementById('townShopBtn');
   townShopBtn.style.display = (phase === 'prepFloor' && !partyLocked) ? '' : 'none';
   renderShopView();
