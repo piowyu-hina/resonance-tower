@@ -1004,6 +1004,16 @@ function buildUI() {
 
   document.getElementById('townShopBtn').addEventListener('click', openTownShop);
   document.getElementById('homeLocationBtn').addEventListener('click', () => {
+    if (resonanceState.xiaochu === 'goHome') {
+      prepLocation = 'home';
+      homeMode = 'menu';
+      render();
+      queueDialogue('xiaochu_home_search', () => {
+        resonanceState.xiaochu = 'bookPending';
+        render();
+      });
+      return;
+    }
     if (contractStoryLocked()) return;
     prepLocation = 'home';
     homeMode = 'menu';
@@ -1474,11 +1484,23 @@ function renderPrepView() {
   const storyLocked = contractStoryLocked();
   const waitingForBook = ['bookPending', 'bookReading'].includes(resonanceState.xiaochu);
   const oathReady = resonanceState.xiaochu === 'oathReady';
+  const mustGoHome = resonanceState.xiaochu === 'goHome';
   const journalUnlocked = ['bookPending', 'bookReading', 'oathReady', 'contracting', 'contracted'].includes(resonanceState.xiaochu);
+  const contractAvailable = ['oathReady', 'contracting', 'contracted'].includes(resonanceState.xiaochu);
   document.getElementById('travelJournalBtn').hidden = !journalUnlocked;
-  document.getElementById('contractFacilityBtn').hidden = !oathReady;
+  document.getElementById('contractFacilityBtn').hidden = !contractAvailable;
   document.getElementById('travelJournalBtn').classList.toggle('storyRequired', waitingForBook);
   document.getElementById('contractFacilityBtn').classList.toggle('storyRequired', oathReady);
+  document.getElementById('homeLocationBtn').classList.toggle('storyRequired', mustGoHome);
+  document.getElementById('homeGuideHina').hidden = !mustGoHome;
+  document.body.classList.toggle('storyOperationLock', storyLocked && !['villageReturn', 'contracting'].includes(resonanceState.xiaochu));
+  document.querySelectorAll('.storyFocusTarget').forEach(element => element.classList.remove('storyFocusTarget'));
+  if (mustGoHome) document.getElementById('homeLocationBtn').classList.add('storyFocusTarget');
+  if (waitingForBook) document.getElementById('travelJournalBtn').classList.add('storyFocusTarget');
+  if (oathReady) document.getElementById('contractFacilityBtn').classList.add('storyFocusTarget');
+  document.getElementById('homeLocationBtn').disabled = storyLocked && !mustGoHome;
+  document.getElementById('townShopBtn').disabled = storyLocked;
+  document.getElementById('expeditionLocationBtn').disabled = storyLocked;
   document.getElementById('homeBackBtn').disabled = storyLocked;
   document.getElementById('homeGrowthBtn').disabled = storyLocked;
   document.getElementById('homeStorageBtn').disabled = storyLocked;

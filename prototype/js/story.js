@@ -25,7 +25,6 @@ const DIALOGUE_DEFS = {
     { speaker: 'wuming', text: '對了，我們先回家吧。' },
     { speaker: 'wuming', text: '我記得有一本書，好像提過這種情況。' },
     { speaker: 'xiaochu_orb', text: '嗯……' },
-    { speaker: 'hina_guide', text: '先回家看看吧。也許能在那本書裡找到答案。' },
   ],
   xiaochu_home_search: [
     { speaker: 'wuming', text: '我記得……應該放在這裡才對。' },
@@ -65,7 +64,7 @@ const DIALOGUE_DEFS = {
     { speaker: 'xiaochu', text: '奇怪……我好像知道該怎麼做。' },
     { speaker: 'xiaochu', text: '我試試看！' },
     { speaker: 'wuming', text: '等——' },
-    { speaker: 'narrator', text: '小初親吻了無名。光芒閃過，兩人的位置交換了。' },
+    { speaker: 'xiaochu_kiss', text: '小初親吻了無名。光芒閃過，兩人的位置交換了。' },
     { speaker: 'xiaochu', text: '哇！是盾牌！還有劍！' },
     { speaker: 'xiaochu', text: '真的出現了！' },
     { speaker: 'narrator', text: '小初興奮地揮動手中的劍。' },
@@ -78,7 +77,7 @@ const DIALOGUE_DEFS = {
     { speaker: 'xiaochu', text: '這有什麼好害羞的？我們都結婚了。' },
     { speaker: 'wuming', text: '才沒有結婚……' },
     { speaker: 'xiaochu', text: '真是的，過來吧。' },
-    { speaker: 'narrator', text: '小初再次親吻無名。光芒散去後，兩人恢復了原本的狀態。' },
+    { speaker: 'xiaochu_kiss', text: '小初再次親吻無名。光芒散去後，兩人恢復了原本的狀態。' },
     { speaker: 'wuming', text: '哇，變回來了！' },
     { speaker: 'xiaochu', text: '是吧！' },
     { speaker: 'xiaochu', text: '說好了喔！之後一定要讓我去冒險！' },
@@ -94,7 +93,7 @@ const DIALOGUE_PRESENTATION = {
 
 const STORY_SPEAKERS = {
   xiaochu_orb: { name: '小初', art: 'assets/story/resonance_orb.png', orb: true },
-  hina_guide: { name: 'Hina', art: 'assets/characters/hina_guide.png' },
+  xiaochu_kiss: { name: '', art: 'assets/story/xiaochu_kiss.png', scene: true },
   narrator: { name: '', narration: true },
 };
 
@@ -177,7 +176,7 @@ function renderDialogueLine() {
   document.getElementById('dialogueText').textContent = line.text;
   const frame = document.getElementById('dialoguePortraitFrame');
   const img = document.getElementById('dialoguePortraitImg');
-  frame.classList.remove('missing', 'orbSpeaker', 'narration');
+  frame.classList.remove('missing', 'orbSpeaker', 'sceneArt', 'narration');
   if (def) {
     img.src = characterFullArtPath(line.speaker);
     img.alt = `${def.name} 立繪`;
@@ -187,6 +186,7 @@ function renderDialogueLine() {
     img.alt = special.name;
     img.onerror = () => frame.classList.add('missing');
     frame.classList.toggle('orbSpeaker', !!special.orb);
+    frame.classList.toggle('sceneArt', !!special.scene);
   } else if (special && special.narration) {
     img.removeAttribute('src');
     img.alt = '';
@@ -247,16 +247,20 @@ function advanceTravelJournal() {
 }
 
 function openContractPanel() {
-  if (resonanceState.xiaochu !== 'oathReady') return;
+  const hasPendingSoul = resonanceState.xiaochu === 'oathReady';
+  if (!hasPendingSoul && resonanceState.xiaochu !== 'contracted') return;
   closeOtherOverlays('contract');
   activeOverlay = 'contract';
   document.getElementById('contractConfirm').hidden = true;
+  document.getElementById('xiaochuSoulBtn').hidden = !hasPendingSoul;
+  document.getElementById('contractEmpty').hidden = hasPendingSoul;
   const overlay = document.getElementById('contractOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
 }
 
 function beginContractPreparation() {
+  if (resonanceState.xiaochu === 'contracted') return openContractPanel();
   if (resonanceState.xiaochu !== 'oathReady') return;
   queueDialogue('xiaochu_contract_prepare', openContractPanel);
 }

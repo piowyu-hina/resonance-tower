@@ -139,18 +139,13 @@ function startPendingVillageContracts() {
   if (resonanceState.xiaochu !== 'following') return;
   resonanceState.xiaochu = 'villageReturn';
   queueDialogue('xiaochu_village', () => {
-    prepLocation = 'home';
-    homeMode = 'menu';
+    resonanceState.xiaochu = 'goHome';
     render();
-    queueDialogue('xiaochu_home_search', () => {
-      resonanceState.xiaochu = 'bookPending';
-      render();
-    });
   });
 }
 
 function contractStoryLocked() {
-  return ['villageReturn', 'bookPending', 'bookReading', 'oathReady', 'contracting'].includes(resonanceState.xiaochu);
+  return ['villageReturn', 'goHome', 'bookPending', 'bookReading', 'oathReady', 'contracting'].includes(resonanceState.xiaochu);
 }
 
 let charEls = {};    // id -> battle-card DOM refs, only for CURRENT active party, rebuilt on entering combat
