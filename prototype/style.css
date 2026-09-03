@@ -51,7 +51,9 @@ body {
   margin-bottom: 8px;
 }
 body.storyOperationLock::after { content: ''; position: fixed; z-index: 8990; inset: 0; background: rgba(4,6,8,.72); }
-.storyFocusTarget { position: relative !important; z-index: 9000 !important; overflow: visible !important; opacity: 1 !important; filter: none !important; box-shadow: 0 0 0 3px rgba(240,191,85,.5), 0 0 34px rgba(240,191,85,.48) !important; }
+.storyFocusTarget { position: relative !important; z-index: 9000 !important; overflow: visible !important; opacity: 1 !important; filter: none !important; box-shadow: 0 0 0 3px rgba(240,191,85,.5), 0 0 34px rgba(240,191,85,.48); }
+#homeLocationBtn.storyFocusTarget { animation: homeFocusRingPulse 2.2s ease-in-out infinite; }
+@keyframes homeFocusRingPulse { 0%, 100% { box-shadow: 0 0 0 2px rgba(240,191,85,.2), 0 0 14px rgba(240,191,85,.16); } 50% { box-shadow: 0 0 0 4px rgba(255,214,119,.88), 0 0 42px rgba(240,191,85,.7); } }
 
 /* The game surface behaves like an application, not a selectable document. */
 html, body, #app, button, [role="button"] {
@@ -1601,9 +1603,8 @@ button:focus-visible,
 .homeGuideHina[hidden] { display: none; }
 .homeGuideHina img { position: absolute; right: 0; bottom: 0; width: 158px; height: 190px; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 8px 10px rgba(0,0,0,.62)); }
 .homeGuideHina > span { position: absolute; z-index: 1; top: 18px; right: 28px; padding: 7px 11px; border: 1px solid #8a6576; border-radius: 9px; background: rgba(42,32,39,.96); color: #f4dce5; font-size: 14px; font-weight: 700; white-space: nowrap; box-shadow: 0 7px 14px rgba(0,0,0,.34); }
-#homeLocationBtn.storyFocusTarget .homeGuideHina > span { animation: guideBubblePulse 2.2s ease-in-out infinite; }
+#homeLocationBtn.storyFocusTarget .homeGuideHina > span { filter: none; opacity: 1; }
 #homeLocationBtn.storyFocusTarget .homeGuideHina > span::before { content: ''; position: absolute; z-index: 0; inset: -17px; border-radius: 17px; background: radial-gradient(circle at 2% 48%, #ffe4a0 0 2.5px, transparent 3.5px), radial-gradient(circle at 18% 0%, #f5ce70 0 2px, transparent 3px), radial-gradient(circle at 52% -8%, #fff5c8 0 2.5px, transparent 3.5px), radial-gradient(circle at 88% 4%, #d9ae51 0 2px, transparent 3px), radial-gradient(circle at 104% 52%, #ffe4a0 0 2.5px, transparent 3.5px), radial-gradient(circle at 76% 108%, #efc866 0 2px, transparent 3px), radial-gradient(circle at 28% 110%, #fff0ad 0 2.5px, transparent 3.5px), radial-gradient(circle at -5% 82%, #d9ae51 0 2px, transparent 3px); opacity: 0; pointer-events: none; animation: guideBubbleParticles 2.2s ease-out infinite; }
-@keyframes guideBubblePulse { 0%, 100% { opacity: .48; filter: brightness(.62); box-shadow: 0 7px 14px rgba(0,0,0,.34), 0 0 0 0 rgba(240,191,85,.08); } 48% { opacity: 1; filter: brightness(1.3); box-shadow: 0 7px 14px rgba(0,0,0,.34), 0 0 0 7px rgba(240,191,85,.34); } }
 @keyframes guideBubbleParticles { 0% { opacity: 0; transform: scale(.82); } 18% { opacity: .9; } 72% { opacity: .35; transform: scale(1.08); } 100% { opacity: 0; transform: scale(1.22); } }
 .homeGuideHina > span::after { content: ''; position: absolute; right: 10px; bottom: -6px; width: 10px; height: 10px; border-right: 1px solid #8a6576; border-bottom: 1px solid #8a6576; background: #2a2027; transform: rotate(45deg); }
 #townShopBtn.villageLocation {
