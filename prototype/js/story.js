@@ -111,6 +111,7 @@ let dialogueScriptId = null;
 let dialogueLineIndex = 0;
 let dialogueOnDone = null;
 let dialoguePhase = 'closed';
+let lastDialogueSpeaker = null;
 
 function queueDialogue(scriptId, onDone = null) {
   if (!DIALOGUE_DEFS[scriptId]) return;
@@ -132,6 +133,7 @@ function startDialogue(scriptId, onDone) {
   dialogueScriptId = scriptId;
   dialogueScript = script;
   dialogueLineIndex = 0;
+  lastDialogueSpeaker = null;
   dialogueOnDone = onDone || null;
   const overlay = document.getElementById('dialogueOverlay');
   overlay.classList.add('open');
@@ -171,6 +173,7 @@ function beginDialogueLines() {
 
 function renderDialogueLine() {
   const line = dialogueScript[dialogueLineIndex];
+  const speakerChanged = line.speaker !== lastDialogueSpeaker;
   const def = CHAR_DEFS[line.speaker];
   const special = STORY_SPEAKERS[line.speaker];
   document.getElementById('dialogueSpeakerName').textContent = def ? def.name : (special ? special.name : '');
@@ -199,8 +202,9 @@ function renderDialogueLine() {
   frame.classList.remove('lineEntering');
   box.classList.remove('lineEntering');
   void frame.offsetWidth;
-  frame.classList.add('lineEntering');
+  if (speakerChanged) frame.classList.add('lineEntering');
   box.classList.add('lineEntering');
+  lastDialogueSpeaker = line.speaker;
 }
 
 function startCharacterEncounter(characterId, onDone) {
@@ -349,6 +353,7 @@ function closeDialogue() {
   dialoguePhase = 'closed';
   dialogueScript = null;
   dialogueScriptId = null;
+  lastDialogueSpeaker = null;
   const cb = dialogueOnDone;
   dialogueOnDone = null;
   if (cb) cb();
