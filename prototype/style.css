@@ -606,6 +606,33 @@ img {
 #tooltip .ttSkillsHead { margin-top: 4px; font-weight: bold; color: #e0a95a; }
 #tooltip .ttSkill { font-size: 10px; color: #999; }
 #tooltip .ttMissing { margin-top: 5px; color: #ff9b8e; font-size: 10px; }
+
+/* A short location reveal covers the prep-to-combat rebuild. It is separate
+   from the much longer boss entrance so ordinary runs never feel stalled. */
+#dungeonEntryOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1180;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #090c0e;
+  color: #eef3ec;
+  text-align: center;
+}
+#dungeonEntryOverlay.open { display: flex; animation: dungeonEntryCurtain 1.25s ease both; }
+#dungeonEntryArt { position: absolute; inset: -5%; width: 110%; height: 110%; object-fit: cover; opacity: .3; filter: brightness(.55) saturate(.78); animation: dungeonEntryDrift 1.25s ease-out both; }
+.dungeonEntryShade { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(31,55,48,.08), rgba(5,8,10,.9) 72%), linear-gradient(90deg, rgba(5,8,10,.74), transparent 30%, transparent 70%, rgba(5,8,10,.74)); }
+.dungeonEntryShade::after { content: ''; position: absolute; left: 12%; right: 12%; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(194,215,194,.48), transparent); transform: scaleX(0); animation: dungeonEntryLine .7s ease-out .14s both; }
+.dungeonEntryTitle { position: relative; z-index: 1; display: grid; justify-items: center; gap: 8px; padding: 24px 70px; opacity: 0; animation: dungeonEntryText .42s ease-out .13s both; }
+.dungeonEntryTitle small { color: #91a99c; font-family: Georgia, serif; font-size: 10px; font-weight: 700; letter-spacing: .34em; text-indent: .34em; }
+.dungeonEntryTitle strong { color: #f0dca6; font-size: clamp(30px, 4vw, 48px); letter-spacing: .16em; text-indent: .16em; text-shadow: 0 4px 18px rgba(0,0,0,.8); }
+.dungeonEntryTitle span { color: #b4beb8; font-size: 13px; letter-spacing: .08em; }
+@keyframes dungeonEntryCurtain { 0% { opacity: 0; } 14%, 72% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dungeonEntryDrift { from { transform: scale(1.08); } to { transform: scale(1); } }
+@keyframes dungeonEntryLine { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
+@keyframes dungeonEntryText { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
 /* --- backpack modal: UI shell only; opening it intentionally does not pause combat --- */
 #inventoryOverlay {
   display: flex;
@@ -2037,10 +2064,10 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 .runResultEmpty { grid-column: 1 / -1; padding: 16px; border: 1px dashed rgba(255,255,255,.1); border-radius: 8px; color: #858991; font-size: 12px; text-align: center; }
 .runResultFoot { margin: -7px 0 20px; color: #83868e; font-size: 11px; }
 @keyframes contentFadeIn { from { opacity: .45; } to { opacity: 1; } }
-.surfaceEntering { animation: surfaceFadeIn .2s ease-out both; }
+.surfaceEntering { animation: surfaceFadeIn .2s ease-out; }
 @keyframes surfaceFadeIn {
   from { opacity: .45; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: none; }
 }
 #bossIntroOverlay { display: none; position: fixed; inset: 0; z-index: 1250; overflow: hidden; background: radial-gradient(circle, rgba(82,84,88,.34), rgba(5,7,8,.97) 66%); align-items: center; justify-content: center; }
 #bossIntroOverlay::after { content: ''; position: absolute; left: 50%; top: 57%; width: 90px; height: 32px; border: 7px solid rgba(205,208,211,.9); border-radius: 50%; opacity: 0; transform: translate(-50%,-50%) scale(.15); box-shadow: 0 0 24px rgba(205,208,211,.45); pointer-events: none; }

@@ -108,6 +108,30 @@ function showBossIntro(onComplete) {
   }, 5400);
 }
 
+function showDungeonEntry(onCovered) {
+  const overlay = document.getElementById('dungeonEntryOverlay');
+  if (overlay.classList.contains('open')) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    onCovered();
+    return;
+  }
+
+  const region = regionDef(floor);
+  const art = document.getElementById('dungeonEntryArt');
+  art.src = `assets/ui/${region.image}.png`;
+  art.alt = region.name;
+  document.getElementById('dungeonEntryName').textContent = region.name;
+  document.getElementById('dungeonEntryDescription').textContent = region.description;
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+
+  setTimeout(onCovered, 900);
+  setTimeout(() => {
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+  }, 1250);
+}
+
 function popup(portraitEl, text, cls) {
   if (!portraitEl) return;
   const span = document.createElement('div');
@@ -1160,7 +1184,7 @@ function buildUI() {
         render();
         showBossIntro(beginCombat);
       } else {
-        beginCombat();
+        showDungeonEntry(beginCombat);
       }
     }
   });
