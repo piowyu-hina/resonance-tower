@@ -552,13 +552,12 @@ body {
 #tooltip .ttSkillsHead { margin-top: 4px; font-weight: bold; color: #e0a95a; }
 #tooltip .ttSkill { font-size: 10px; color: #999; }
 #tooltip .ttMissing { margin-top: 5px; color: #ff9b8e; font-size: 10px; }
-.coinTip { width: 220px; display: grid; grid-template-columns: 38px 1fr; align-items: center; gap: 3px 10px; padding: 3px; }
-.coinTip > img { grid-row: 1; width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,.45)); }
+.coinTip { width: 142px; display: grid; grid-template-columns: 32px 1fr; align-items: center; gap: 8px; padding: 2px; }
+.coinTip > img { width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,.45)); }
 .coinTip > div { display: grid; gap: 2px; }
-.coinTip small { color: #9b9078; font-size: 9px; letter-spacing: .08em; }
-.coinTip b { color: #f3cb69; font-size: 18px; line-height: 1; }
-.coinTip p { grid-column: 1 / -1; margin: 6px 0 0; padding-top: 7px; border-top: 1px solid #4c4435; color: #c3beb3; font-size: 10px; line-height: 1.55; }
-#tooltip:has(.coinTip) { max-width: 240px; padding: 9px; border-color: #78633b; border-radius: 9px; background: linear-gradient(145deg, #27231c, #15181b); box-shadow: 0 8px 24px rgba(0,0,0,.62), inset 0 0 16px rgba(209,164,78,.04); }
+.coinTip small { color: #9b9078; font-size: 9px; }
+.coinTip b { color: #f3cb69; font-size: 13px; line-height: 1; }
+#tooltip:has(.coinTip) { max-width: 160px; padding: 7px; border-color: #78633b; border-radius: 8px; background: linear-gradient(145deg, #27231c, #15181b); box-shadow: 0 6px 18px rgba(0,0,0,.58); }
 
 /* --- backpack modal: UI shell only; opening it intentionally does not pause combat --- */
 #inventoryOverlay {

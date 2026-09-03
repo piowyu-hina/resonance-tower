@@ -240,12 +240,8 @@ function attachItemTooltip(el, item, entry) {
 function coinTooltipHTML(context) {
   const inShop = context === 'shop';
   const inTown = inShop ? shopMode === 'town' : phase === 'prepFloor' && !partyLocked;
-  const amount = inShop ? shopGold() : (inTown ? bankedGold : runGold);
-  const heading = inTown ? '村莊金幣' : '遠征中的金幣';
-  const description = inTown
-    ? '已帶回村莊，可在城外商店使用。'
-    : '這趟遠征途中取得，可在地城商店使用；撤退或通關後才會帶回村莊。';
-  return `<div class="coinTip"><img src="assets/item/coin.png" alt=""><div><small>${heading}</small><b>${amount}</b></div><p>${description}</p></div>`;
+  const state = inTown ? '已帶回村莊' : '遠征中取得';
+  return `<div class="coinTip"><img src="assets/item/coin.png" alt=""><div><b>金幣</b><small>${state}</small></div></div>`;
 }
 
 function attachCoinTooltip(el, context) {
