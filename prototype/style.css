@@ -52,7 +52,9 @@ body {
 }
 .headerLead { min-width: 0; display: flex; align-items: center; gap: 18px; }
 .gameBrand { flex: 0 0 auto; display: flex; align-items: center; gap: 9px; }
-.brandSigil { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid #9d783c; border-radius: 50%; background: radial-gradient(circle, #574226, #29271f 68%); box-shadow: 0 0 14px rgba(225,170,75,.16), inset 0 0 8px rgba(255,205,103,.1); color: #ffd074; font-size: 22px; line-height: 1; }
+.brandSigil { position: relative; width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; }
+.brandSigil img { width: 100%; height: 100%; object-fit: contain; filter: brightness(.84) saturate(.88) drop-shadow(0 0 5px rgba(105,199,255,.28)); }
+.brandSigilFallback { display: none; width: 31px; height: 31px; place-items: center; border: 1px solid #9d783c; border-radius: 50%; background: radial-gradient(circle, #574226, #29271f 68%); color: #ffd074; font-size: 22px; line-height: 1; }
 .brandCopy { display: grid; gap: 1px; line-height: 1; }
 .brandCopy b { color: #f1d08b; font-size: 15px; letter-spacing: .14em; white-space: nowrap; }
 .brandCopy small { color: #777f80; font-family: Georgia, serif; font-size: 7px; letter-spacing: .2em; white-space: nowrap; }
@@ -1672,7 +1674,8 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   body { padding-top: 6px; }
   #app { width: calc(100vw - 10px); padding: 6px; border-radius: 11px; }
   #header { min-height: 46px; padding-inline: 3px; }
-  .brandSigil { width: 27px; height: 27px; font-size: 19px; }
+  .brandSigil { width: 29px; height: 29px; }
+  .brandSigilFallback { width: 27px; height: 27px; font-size: 19px; }
   .brandCopy b { font-size: 12px; }
   .headerLead { gap: 7px; }
   #goldLabel { font-size: 11px; }
