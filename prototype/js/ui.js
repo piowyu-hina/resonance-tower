@@ -191,6 +191,13 @@ function hideTooltip() {
   tooltipEl.style.display = 'none';
 }
 
+function attachTextTooltip(el, heading, detail) {
+  const html = `<div class="ttName">${heading}</div>${detail ? `<div class="ttStat">${detail}</div>` : ''}`;
+  el.addEventListener('mouseenter', event => showTooltipContent(html, event));
+  el.addEventListener('mousemove', positionTooltip);
+  el.addEventListener('mouseleave', hideTooltip);
+}
+
 function attachCharTooltip(el, id) {
   el.addEventListener('mouseenter', (e) => showTooltipContent(charTooltipHTML(id), e));
   el.addEventListener('mousemove', positionTooltip);
@@ -1004,6 +1011,8 @@ function setInventoryOpen(open, title = '背包') {
 
 function buildUI() {
   tooltipEl = document.getElementById('tooltip');
+  attachTextTooltip(document.getElementById('saveGameBtn'), '存檔', '下載目前的永久進度檔案');
+  attachTextTooltip(document.getElementById('loadGameBtn'), '讀檔', '從電腦選擇進度檔案');
   buildShopUI();
   bindDialogueUI();
 
@@ -1228,7 +1237,7 @@ function buildBattleRoster() {
           <span class="hpText"></span>
         </div>
         <div class="row">
-          <span class="atkLabel" title="下次行動倒數">⏱</span>
+          <span class="atkLabel" aria-label="下次行動倒數">⏱</span>
           <div class="barOuter"><div class="barInner atkBar"></div></div>
         </div>
         <div class="skills">
@@ -1245,6 +1254,7 @@ function buildBattleRoster() {
     partySideEl.appendChild(card);
 
     const portraitEl = card.querySelector('.portrait');
+    attachTextTooltip(card.querySelector('.atkLabel'), '行動倒數', '進度填滿後進行下一次行動');
     const skillIconEls = Array.from(card.querySelectorAll('.skillIcon'));
     skillIconEls.forEach((iconEl, i) => attachSkillTooltip(iconEl, def.skills[i]));
     charEls[id] = {
@@ -1404,7 +1414,7 @@ function buildMonsterCards() {
         <span class="hpText"></span>
       </div>
       <div class="row">
-        <span class="atkLabel" title="下次行動倒數">⏱</span>
+        <span class="atkLabel" aria-label="下次行動倒數">⏱</span>
         <div class="barOuter"><div class="barInner atkBar"></div></div>
       </div>
       <div class="skills"></div>
@@ -1412,6 +1422,7 @@ function buildMonsterCards() {
     monsterSideEl.appendChild(card);
 
     const portraitEl = card.querySelector('.portrait');
+    attachTextTooltip(card.querySelector('.atkLabel'), '行動倒數', '進度填滿後進行下一次行動');
     monsterEls[m.id] = {
       card,
       portraitEl,
