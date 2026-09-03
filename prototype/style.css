@@ -347,6 +347,8 @@ body {
   border-color: #46585a;
   box-shadow: 0 10px 22px rgba(0,0,0,.18);
 }
+#bagBtn { width: 36px; height: 34px; justify-content: center; padding: 4px; border-radius: 7px; }
+#bagBtn img { width: 23px; height: 23px; }
 .charCard.down { opacity: 0.4; }
 .charCard .body { width: 100%; display: flex; flex-direction: column; gap: 4px; }
 .charCard .topRow { display: flex; align-items: center; gap: 6px; font-size: 13px; }
@@ -1396,6 +1398,96 @@ button:focus-visible,
   .homeSoulPanel .prepCard { width: calc(50% - 4px); }
   #actionArea { flex-direction: column; }
   #actionArea button { flex-basis: auto; width: 100%; }
+}
+
+/* --- Navigation and merchant shop refresh --- */
+.navBackBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 7px 13px !important;
+  border: 1px solid #5f7891 !important;
+  border-radius: 8px !important;
+  background: linear-gradient(180deg, #3d5368, #2d4052) !important;
+  box-shadow: 0 3px 9px rgba(0,0,0,.2), inset 0 1px rgba(255,255,255,.05);
+  color: #e6f1fa !important;
+  font-weight: 700;
+  transition: border-color .16s, background .16s, transform .16s;
+}
+.navBackBtn:hover { border-color: #8ba9c3 !important; background: linear-gradient(180deg, #4a647d, #354b60) !important; transform: translateY(-1px); }
+.navBackBtn:active { transform: translateY(0); }
+
+#shopOverlay { backdrop-filter: blur(4px); }
+#shopModal { border-color: #776543; background: linear-gradient(145deg, #2c2b29, #24272b 44%, #202328); box-shadow: 0 24px 70px rgba(0,0,0,.72), 0 0 0 1px rgba(235,190,100,.04) inset; }
+.shopHeader { border-bottom-color: #554b39; background: linear-gradient(90deg, #302b23, #292a2d 46%, #292a2d); }
+.shopHeading { min-width: 0; display: flex; flex: 1; align-items: center; gap: 10px; }
+.shopHeading > img { width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 4px 5px rgba(0,0,0,.4)); }
+.shopHeading > div { min-width: 0; display: grid; gap: 2px; }
+#shopTitle { font-size: 19px; letter-spacing: .06em; }
+.shopHeading small { color: #8f8779; font-size: 9px; font-weight: normal; letter-spacing: .12em; }
+.shopHeaderMeta { display: flex; align-items: center; gap: 8px; margin-right: 10px; }
+#shopWallet { padding: 6px 10px; border: 1px solid #79663f; border-radius: 14px; background: #342d20; color: #efc76c; font-size: 11px; white-space: nowrap; }
+#shopCountdown { margin: 0; padding: 5px 8px; border-radius: 5px; background: rgba(0,0,0,.16); color: #aaa397; }
+.shopLayout { grid-template-columns: minmax(260px,.72fr) minmax(500px,1.55fr); gap: 14px; }
+.shopKeeperPanel { position: sticky; top: 59px; gap: 0; overflow: hidden; border: 1px solid #564c3c; border-radius: 12px; background: radial-gradient(circle at 50% 30%, rgba(126,83,51,.2), transparent 48%), #1e2023; box-shadow: 0 12px 26px rgba(0,0,0,.2); }
+.shopKeeperArt { aspect-ratio: auto; height: min(460px, calc(100vh - 230px)); min-height: 260px; border: 0; border-radius: 0; background: radial-gradient(circle at 50% 40%, #403229, #202225 64%); }
+.shopKeeperArt img { padding: 8px 8px 0; }
+#shopDialogue { min-height: 88px; border: 0; border-top: 1px solid #564c3c; border-radius: 0; background: linear-gradient(180deg, #29251f, #222326); }
+#shopDialogue:hover { border-color: #7b6747; background: linear-gradient(180deg, #332c22, #27282b); }
+#shopKeeperName { padding: 2px 7px; border-radius: 8px; background: #765b2e; color: #ffe4a0; }
+#shopDialogueText { color: #ded7ca; font-size: 13px; line-height: 1.6; }
+.shopGoodsPanel { display: grid; gap: 12px; }
+.shopSection { margin: 0; padding: 15px; border-color: #484b4f; border-radius: 11px; background: rgba(29,32,36,.84); box-shadow: inset 0 1px rgba(255,255,255,.025); }
+.shopSectionTitle { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; padding-bottom: 9px; border-bottom: 1px solid #3e4146; }
+.shopSectionTitle span { color: #e0bd72; font-size: 14px; }
+.shopSectionTitle small { color: #777f87; font-size: 9px; font-weight: normal; }
+.shopSellRow, .shopBuyRow { grid-template-columns: 58px minmax(150px,1fr) auto auto; min-height: 76px; padding: 9px; border: 1px solid #3f444a; border-radius: 9px; background: #25292e; }
+.shopBuyRow + .shopBuyRow { margin-top: 8px; padding-top: 9px; border-top: 1px solid #3f444a; }
+.shopSellRow img, .shopBuyRow img { width: 52px; height: 52px; }
+.shopItemCopy { min-width: 0; display: grid; gap: 4px; }
+.shopItemCopy b { color: #e6e8eb; font-size: 13px; }
+.shopItemCopy small { overflow: hidden; color: #858e98; font-size: 9px; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
+.shopOwned, #shopMonsterCrystalQty { padding: 4px 7px; border-radius: 9px; background: #1c2024; color: #9aa3ac; font-size: 10px !important; white-space: nowrap; }
+.shopSellActions button, .shopBuyRow button { min-height: 34px; border-color: #7a6846; background: linear-gradient(#59492e,#443822); color: #f4dfad; font-weight: 700; }
+.shopBuyRow button span { color: #ffd777; font-size: 13px; }
+.shopSellActions button:hover:not(:disabled), .shopBuyRow button:hover:not(:disabled) { border-color: #aa8c52; background: linear-gradient(#695738,#514226); }
+.shopFooter { justify-content: flex-end; }
+#shopAutoLeaveBtn { flex: 0 1 220px; background: #30363d; }
+
+@media (max-width: 850px) {
+  .shopLayout { grid-template-columns: minmax(220px,.68fr) minmax(390px,1.35fr); }
+  .shopSellRow, .shopBuyRow { grid-template-columns: 48px minmax(120px,1fr) auto; }
+  .shopSellActions { grid-column: 2 / -1; justify-content: flex-end; }
+  .shopBuyRow > button { grid-column: 3; }
+}
+
+@media (max-width: 650px) {
+  #shopOverlay { padding: 5px; }
+  #shopModal { width: calc(100vw - 10px); max-width: calc(100vw - 10px); min-width: 0; padding: 10px; }
+  .shopHeader { top: -10px; margin: -10px -10px 10px; padding: 10px; }
+  .shopHeading { flex: 0 1 auto; gap: 6px; }
+  .shopHeading > img { width: 30px; height: 30px; }
+  #shopTitle { font-size: 16px; white-space: nowrap; }
+  .shopHeaderMeta { display: none; }
+  .shopHeading small { display: none; }
+  #shopWallet { padding: 4px 7px; font-size: 9px; }
+  #shopCountdown { display: none; }
+  .shopLayout, .shopGoodsPanel, .shopSection, .shopSellRow, .shopBuyRow { min-width: 0; max-width: 100%; }
+  .shopLayout { grid-template-columns: minmax(0,1fr); }
+  .shopKeeperPanel { position: static; min-width: 0; max-width: 100%; display: grid; grid-template-columns: 112px minmax(0,1fr); }
+  .shopKeeperArt { grid-column: auto; width: 112px; height: 132px; min-height: 0; }
+  .shopKeeperArt img { padding: 2px; }
+  #shopDialogue { min-width: 0; max-width: 100%; min-height: 132px; border-top: 0; border-left: 1px solid #564c3c; }
+  #shopDialogueText { overflow-wrap: anywhere; }
+  .shopSection { padding: 10px; }
+  .shopSectionTitle { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .shopSellRow, .shopBuyRow { grid-template-columns: 46px minmax(0,1fr); padding: 8px; }
+  #shopMonsterCrystalQty, .shopOwned { grid-column: 2; justify-self: start; }
+  .shopSellActions { grid-column: 1 / -1; width: 100%; }
+  .shopSellActions button { flex: 1 1 0; min-width: 0; padding-inline: 4px; font-size: 9px; }
+  .shopBuyRow > button { grid-column: 1 / -1; width: 100%; }
+  .shopItemCopy small { white-space: normal; }
 }
 
 /* --- 村莊據點（取代把房屋當大背景的版本） --- */

@@ -25,7 +25,7 @@
       </div>
     </div>
     <div class="headerActions">
-      <button id="bagBtn" aria-label="開啟背包"><img src="assets/ui/bag.png" alt="">背包</button>
+      <button id="bagBtn" aria-label="開啟背包" title="背包"><img src="assets/ui/bag.png" alt=""></button>
       <button id="debugToggleBtn" type="button" hidden aria-expanded="false" aria-controls="debugPanel">開發工具</button>
     </div>
   </div>
@@ -70,7 +70,7 @@
     </div>
     <div id="homeView">
       <div class="homeTopbar">
-        <button id="homeBackBtn" type="button">← 村莊</button>
+        <button id="homeBackBtn" class="navBackBtn" type="button">← 村莊</button>
         <div>
           <div class="prepHeading">家</div>
           <div class="prepMsg">查看靈魂夥伴，分配能力與技能成長。</div>
@@ -83,7 +83,7 @@
     </div>
     <div id="regionView">
       <div class="homeTopbar">
-        <button id="regionBackBtn" type="button">← 村莊</button>
+        <button id="regionBackBtn" class="navBackBtn" type="button">← 村莊</button>
         <div>
           <div class="prepHeading">遠征入口</div>
           <div class="prepMsg">選擇這次遠征要前往的地區。</div>
@@ -104,7 +104,7 @@
     </div>
     <div id="expeditionView">
       <div class="homeTopbar">
-        <button id="expeditionBackBtn" type="button">← 遠征入口</button>
+        <button id="expeditionBackBtn" class="navBackBtn" type="button">← 遠征入口</button>
         <div>
           <div class="prepHeading" id="prepHeading"></div>
           <div class="prepMsg" id="prepMsg"></div>
@@ -169,8 +169,11 @@
 <div id="shopOverlay" aria-hidden="true">
   <div id="shopModal" role="dialog" aria-modal="true" aria-labelledby="shopTitle">
     <div class="shopHeader">
-      <span id="shopTitle">地城商店</span>
-      <span id="shopCountdown"></span>
+      <div class="shopHeading">
+        <img src="assets/ui/shop.png" alt="">
+        <div><span id="shopTitle">地城商店</span><small>露咪的旅行補給</small></div>
+      </div>
+      <div class="shopHeaderMeta"><span id="shopWallet"></span><span id="shopCountdown"></span></div>
       <button id="shopLeaveBtn" type="button" aria-label="關閉商店">×</button>
     </div>
     <div class="shopLayout">
@@ -185,10 +188,10 @@
       </aside>
       <main class="shopGoodsPanel">
         <div class="shopSection">
-          <div class="shopSectionTitle">出售素材</div>
+          <div class="shopSectionTitle"><span>出售素材</span><small>把遠征收穫換成金幣</small></div>
           <div class="shopSellRow">
             <img src="assets/item/monster_crystal.png" alt="魔物結晶">
-            <span>魔物結晶</span>
+            <span class="shopItemCopy"><b>魔物結晶</b><small>單價 5 金幣</small></span>
             <span id="shopMonsterCrystalQty"></span>
             <div class="shopSellActions">
               <button id="shopSellOneBtn" type="button">賣 1 顆</button>
@@ -197,7 +200,7 @@
           </div>
         </div>
         <div class="shopSection">
-          <div class="shopSectionTitle">購買藥水</div>
+          <div class="shopSectionTitle"><span>旅行補給</span><small>為下一次戰鬥做好準備</small></div>
           <div id="shopBuyList"></div>
         </div>
         <div class="shopFooter">

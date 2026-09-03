@@ -781,9 +781,9 @@ function buildShopUI() {
     row.dataset.itemId = offer.itemId;
     row.innerHTML = `
       <img src="assets/item/${item.img}.png" alt="${item.name}">
-      <span class="shopItemName">${item.name}</span>
+      <span class="shopItemCopy"><b class="shopItemName">${item.name}</b><small>${item.desc}</small></span>
       <span class="shopOwned"></span>
-      <button type="button">${offer.price} 金幣</button>
+      <button type="button"><span>${offer.price}</span> 金幣</button>
     `;
     row.querySelector('button').addEventListener('click', () => buyShopItem(offer.itemId));
     attachItemTooltip(row.querySelector('img'), item, { qty: inventoryItemCount(offer.itemId) });
@@ -806,6 +806,7 @@ function renderShopView() {
   overlay.setAttribute('aria-hidden', String(!shopOpen));
   if (!shopOpen) return;
   document.getElementById('shopTitle').textContent = shopMode === 'town' ? '城外商店' : '地城商店';
+  document.getElementById('shopWallet').textContent = `${shopMode === 'town' ? '安全金幣' : '本局金幣'} ${shopGold()}`;
   renderShopDialogue();
   document.getElementById('shopCountdown').textContent = shopMode === 'town'
     ? `安全金幣：${bankedGold}`
