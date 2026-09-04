@@ -174,6 +174,7 @@ export const GENERAL_STAT_LINES = [
   { key: 'speed', label: '攻速', bookId: 'statBook' }, // maxed: this character's atkInterval is halved
 ];
 export const SHOP_IDLE_MS = 10000;
+export const EVENT_IDLE_MS = 15000;
 export const SHOP_MONSTER_CRYSTAL_SELL_PRICE = 5;
 export const SHOP_ITEMS = [
   { itemId: 'potion', price: 12 },

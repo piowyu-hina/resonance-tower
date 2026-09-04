@@ -78,8 +78,10 @@ export const gameState = {
   // single source of truth for which modal/popover is currently open - opening
   // one always closes whatever else was open first (see closeOtherOverlays in
   // ui-overlays.js). null | 'shop' | 'inventory' | 'combatItemPicker' | 'characterDetail'
-  // | 'dialogue' | 'journal' | 'contract'
+  // | 'dialogue' | 'journal' | 'contract' | 'event'
   activeOverlay: null,
+  currentEventId: null,
+  eventCountdown: 0,
   shopCountdown: 0,
   shopMode: null, // 'town' spends secured gold; 'dungeon' spends run gold
   shopAutoLeave: true,
@@ -120,6 +122,8 @@ export function initGame() {
   gameState.partyDefense = { bonus: 0, until: 0 };
   gameState.logLines = [];
   gameState.seenCharacterIds = new Set(['wuming']);
+  gameState.currentEventId = null;
+  gameState.eventCountdown = 0;
 }
 
 // Shared character-card status catalogue. Each entry only declares how to

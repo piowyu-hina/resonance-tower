@@ -10,6 +10,16 @@ import { openTravelJournal, openContractPanel, queueDialogue, storyState } from 
 import { spawnWave, makeMob } from './combat.js';
 import { buildBattleRoster, buildMonsterCards, render } from './ui-main.js';
 import { flushCombat } from './ui-combat-effects.js';
+import { EVENT_DEFS, startEventById, startRandomEvent } from './events.js';
+
+// Multiplies how often main.js's tick loop fires. Every cooldown/countdown
+// in combat.js decrements by the fixed MASTER_TICK_MS per tick rather than
+// by measured elapsed time, so calling tick() more often is enough to speed
+// up the whole simulation - no combat.js logic needs to change. Real-time
+// setTimeout-driven animations (transitions.js, defeat restart countdown)
+// are unaffected on purpose, so cutscenes don't feel rushed while testing.
+export const debugState = { speedMultiplier: 1 };
+const SPEED_CYCLE = [1, 2, 4, 8];
 
 // Development helpers are opt-in through ?debug and never render in normal play.
 export function initDebugTools() {
@@ -23,6 +33,7 @@ export function initDebugTools() {
   window.__debugHooks = {
     gameState, PHASES, overlayUiState, MOBS_PER_FLOOR, storyState,
     makeMob, buildBattleRoster, buildMonsterCards, render, openContractPanel,
+    EVENT_DEFS, startEventById, startRandomEvent,
   };
 
   const toggle = document.getElementById('debugToggleBtn');
@@ -42,6 +53,8 @@ export function initDebugTools() {
   });
 
   const requestedView = new URLSearchParams(window.location.search).get('view');
+  const requestedEvent = new URLSearchParams(window.location.search).get('event');
+  if (requestedEvent) startEventById(requestedEvent, () => {});
   if (requestedView === 'home') {
     overlayUiState.prepLocation = 'home';
     overlayUiState.homeMode = 'menu';
@@ -156,6 +169,8 @@ export function runDebugAction(action) {
       character.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(character);
     });
     log('開發工具：下一波怪物清空後將觸發小初相遇', 'warn');
+  } else if (action === 'event') {
+    startRandomEvent(() => {});
   } else if (action === 'focus-particles') {
     closeOtherOverlays(null);
     gameState.activeOverlay = null;
@@ -164,6 +179,10 @@ export function runDebugAction(action) {
     overlayUiState.prepLocation = 'village';
     gameState.resonanceState.xiaochu = 'goHome';
     log('已啟用引導粒子測試：回家入口目前為聚焦目標。', 'warn');
+  } else if (action === 'speed') {
+    const next = SPEED_CYCLE[(SPEED_CYCLE.indexOf(debugState.speedMultiplier) + 1) % SPEED_CYCLE.length];
+    debugState.speedMultiplier = next;
+    log(`開發工具：戰鬥模擬速度切換為 ${next}x`, 'warn');
   } else if (action === 'reset') {
     window.location.reload();
     return;
@@ -199,4 +218,6 @@ export function renderDebugStatus() {
   const activeId = gameState.party[0] || 'wuming';
   const character = gameState.roster.find(member => member.id === activeId);
   status.textContent = `${gameState.phase}｜${CHAR_DEFS[activeId].name} Lv.${character.level}｜解鎖 ${gameState.unlockedChars.size}/${Object.keys(CHAR_DEFS).length}`;
+  const speedBtn = document.querySelector('[data-debug-action="speed"]');
+  if (speedBtn) speedBtn.textContent = `戰鬥模擬速度 ${debugState.speedMultiplier}x`;
 }

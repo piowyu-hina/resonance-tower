@@ -22,6 +22,11 @@ global.document = { getElementById: () => null, addEventListener: () => {}, disp
 const { DIALOGUE_DEFS, JOURNAL_PAGES } = await import('../prototype/js/story.js');
 const lineCount = scriptId => DIALOGUE_DEFS[scriptId].length;
 
+// Same idea as lineCount above: count index.html's own <link rel="stylesheet">
+// tags instead of hardcoding how many exist, so adding a new split stylesheet
+// doesn't silently leave this assertion checking a stale number.
+const expectedStylesheetCount = (fs.readFileSync(path.join(prototypeDir, 'index.html'), 'utf8').match(/<link[^>]*rel="stylesheet"/g) || []).length;
+
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css',
   '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
@@ -104,7 +109,7 @@ async function testMajorViewsRender(browser) {
     assert.notEqual(result.display, 'none', `${view} target must be displayed`);
     assert.notEqual(result.visibility, 'hidden', `${view} target must be visible`);
     assert.ok(result.opacity > 0, `${view} target must not be transparent`);
-    assert.equal(result.loadedStyles, 4, `${view} must load every split stylesheet`);
+    assert.equal(result.loadedStyles, expectedStylesheetCount, `${view} must load every split stylesheet`);
     assertNoRuntimeErrors(page, view);
     await page.close();
   }
@@ -316,6 +321,64 @@ async function testXiaochuEncounterFlow(browser) {
   await page.close();
 }
 
+async function openEvent(browser, eventId) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  page.runtimeErrors = [];
+  page.on('pageerror', error => page.runtimeErrors.push(error));
+  await page.goto(`${prototypeUrl}?debug&event=${eventId}`, { waitUntil: 'load' });
+  await page.waitForSelector('#eventOverlay.open');
+  return page;
+}
+
+async function waitForEventToFinish(page, label) {
+  await page.waitForFunction(() => document.getElementById('eventOverlay').getAttribute('aria-hidden') === 'true', null, { timeout: 3000 });
+  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), null, `${label} must release the active overlay`);
+  assertNoRuntimeErrors(page, label);
+  await page.close();
+}
+
+async function testEventInteractions(browser) {
+  let page = await openEvent(browser, 'abandoned-camp');
+  const goldBefore = await page.evaluate(() => window.__debugHooks.gameState.runGold);
+  await page.click('[data-event-action="choice"][data-option-index="2"]');
+  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.runGold), goldBefore + 12, 'camp choice must grant its stated gold');
+  await waitForEventToFinish(page, 'camp event');
+
+  page = await openEvent(browser, 'flattened-herbs');
+  await page.click('[data-event-action="herb"]:has(img[src$="herb_purple_round.png"])');
+  await waitForEventToFinish(page, 'herb puzzle');
+
+  page = await openEvent(browser, 'floating-bubbles');
+  await page.evaluate(() => {
+    const buttons = [...document.querySelectorAll('[data-event-action="bubble"]')];
+    const values = buttons.map(button => Number(button.textContent.trim()));
+    for (let first = 0; first < values.length; first++) {
+      for (let second = first + 1; second < values.length; second++) {
+        if (values[first] + values[second] === 7) {
+          buttons[first].click();
+          buttons[second].click();
+          return;
+        }
+      }
+    }
+    throw new Error('bubble puzzle did not contain a pair totaling seven');
+  });
+  await page.click('[data-event-action="bubble-confirm"]');
+  await waitForEventToFinish(page, 'bubble puzzle');
+
+  page = await openEvent(browser, 'two-color-spores');
+  for (const index of [0, 0, 4, 4, 8, 8]) {
+    await page.click(`[data-event-action="mushroom"][data-index="${index}"]`);
+  }
+  await waitForEventToFinish(page, 'mushroom puzzle');
+
+  page = await openEvent(browser, 'sealed-supply-crate');
+  await page.click('[data-event-action="crate-dial"][data-index="1"]');
+  await page.click('[data-event-action="crate-dial"][data-index="2"]', { clickCount: 2 });
+  await page.click('[data-event-action="crate-confirm"]');
+  await waitForEventToFinish(page, 'crate puzzle');
+}
+
 (async () => {
   const server = await startServer();
   const { port } = server.address();
@@ -328,6 +391,7 @@ async function testXiaochuEncounterFlow(browser) {
     await testSameSpeakerDialogue(browser);
     await testOverlayExclusivity(browser);
     await testXiaochuEncounterFlow(browser);
+    await testEventInteractions(browser);
     console.log('ui-regression.test.js: all browser assertions passed');
   } finally {
     await browser.close();

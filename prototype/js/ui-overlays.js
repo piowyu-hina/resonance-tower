@@ -10,6 +10,7 @@ import { closeDialogue, closeTravelJournal, closeContractPanel } from './story.j
 import { endRun, spawnWave } from './combat.js';
 import { render, buildBattleRoster } from './ui-main.js';
 import { flushCombat } from './ui-combat-effects.js';
+import { skipActiveEvent } from './events.js';
 
 // build the static DOM once; render() only ever mutates values afterwards
 // so popups/flash animations in flight never get wiped mid-way.
@@ -28,6 +29,7 @@ export const OVERLAY_CLOSERS = {
   dialogue: () => closeDialogue(),
   journal: () => closeTravelJournal(false),
   contract: () => closeContractPanel(),
+  event: () => skipActiveEvent('skip'),
 };
 
 // The preparation phase is a small location hub: village is the outer layer,

@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="styles/items.css?v=20260904-3">
 <link rel="stylesheet" href="styles/story.css?v=20260904-1">
 <link rel="stylesheet" href="styles/world.css?v=20260904-7">
+<link rel="stylesheet" href="styles/events.css?v=20260904-1">
 </head>
 <body>
 
@@ -52,6 +53,8 @@
       <button type="button" data-debug-action="boss">直接挑戰首領</button>
       <button type="button" data-debug-action="intro">播放首領演出</button>
       <button type="button" data-debug-action="xiaochu-story">準備小初相遇測試</button>
+      <button type="button" data-debug-action="event">顯示隨機事件</button>
+      <button type="button" data-debug-action="speed">戰鬥模擬速度 1x</button>
       <button type="button" class="danger" data-debug-action="reset">重載乾淨進度</button>
     </div>
   </section>
@@ -273,6 +276,35 @@
   </div>
 </div>
 
+<div id="eventOverlay" aria-hidden="true">
+  <section id="eventModal" role="dialog" aria-modal="true" aria-labelledby="eventTitle" aria-describedby="eventDescription">
+    <div class="eventScene">
+      <img id="eventSceneImage" alt="">
+      <div class="eventSceneShade" aria-hidden="true"></div>
+      <div class="eventSceneLabel">
+        <span id="eventKind">途中事件</span>
+        <small>RESONANCE ENCOUNTER</small>
+      </div>
+    </div>
+    <div class="eventBody">
+      <header class="eventHeader">
+        <div>
+          <div class="eventKicker">史萊姆叢林・途中</div>
+          <h2 id="eventTitle"></h2>
+        </div>
+        <button id="eventSkipBtn" type="button">略過</button>
+      </header>
+      <p id="eventDescription"></p>
+      <div id="eventChallenge"></div>
+      <div id="eventFeedback" role="status" aria-live="polite"></div>
+      <div class="eventIdle">
+        <div class="eventIdleCopy">未操作 <b id="eventCountdown">15</b> 秒後繼續前進</div>
+        <div class="eventIdleTrack"><i id="eventIdleBar"></i></div>
+      </div>
+    </div>
+  </section>
+</div>
+
 <div id="defeatOverlay" aria-hidden="true">
   <div id="defeatModal" role="dialog" aria-modal="true" aria-labelledby="defeatTitle">
     <div class="resultSeal defeatSeal" aria-hidden="true"><span>↺</span></div>
@@ -413,6 +445,6 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=20260904-esm2"></script>
+<script type="module" src="js/main.js?v=20260904-esm7"></script>
 </body>
 </html>

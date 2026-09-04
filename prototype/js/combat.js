@@ -16,6 +16,7 @@ import { emitCombatEvent } from './combat-events.js';
 import { clearGooArena, gooTick } from './goo.js';
 import { tickShopIdle, addInventoryItem } from './shop.js';
 import { startCharacterEncounter } from './story.js';
+import { startRandomEvent, tickEventIdle } from './events.js';
 
 // This file only mutates game state and queues one-shot effects via
 // emitCombatEvent() (combat-events.js) - it never touches the DOM, calls
@@ -356,11 +357,14 @@ export function onMonsterDefeated(m) {
     if (gameState.runId !== expectedRunId) return; // player retreated during the death animation - this run is gone
     gameState.mobsCleared++; // one full wave of mobs cleared
     const encounterId = checkResonanceTriggers();
+    const continueThroughEvent = () => startRandomEvent(continueAfterClearedWave);
     if (encounterId) {
-      startCharacterEncounter(encounterId, continueAfterClearedWave);
+      // Character resonance always stops unattended progress first. Ordinary
+      // events only begin after that non-skippable story encounter finishes.
+      startCharacterEncounter(encounterId, continueThroughEvent);
       return;
     }
-    continueAfterClearedWave();
+    continueThroughEvent();
   }, MONSTER_DEATH_ANIMATION_MS);
 }
 
@@ -381,6 +385,8 @@ export function endRun() {
   gameState.runGold = 0;
   gameState.floor = 1;
   gameState.mobsCleared = 0;
+  gameState.currentEventId = null;
+  gameState.eventCountdown = 0;
   gameState.partyLocked = false; // a fresh run - free to pick a new party again
   gameState.gooDebuffStacks = 0;
   clearGooArena();
@@ -467,7 +473,8 @@ export function doRetreat() {
 
 export function tick() {
   tickShopIdle(); // shop.js - the dungeon shop's auto-leave countdown runs independent of COMBAT phase
-  if (gameState.activeOverlay === 'dialogue') return;
+  tickEventIdle();
+  if (gameState.activeOverlay === 'dialogue' || gameState.activeOverlay === 'event') return;
   if (gameState.phase !== PHASES.COMBAT) return; // waiting on the player to confirm prepFloor/prepBoss
 
   Object.keys(gameState.combatItemCooldowns).forEach(itemId => {
