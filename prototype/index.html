@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
-<link rel="stylesheet" href="styles/base.css?v=20260904-1">
-<link rel="stylesheet" href="styles/items.css?v=20260904-2">
+<link rel="stylesheet" href="styles/base.css?v=20260904-4">
+<link rel="stylesheet" href="styles/items.css?v=20260904-3">
 <link rel="stylesheet" href="styles/story.css?v=20260904-1">
-<link rel="stylesheet" href="styles/world.css?v=20260904-2">
+<link rel="stylesheet" href="styles/world.css?v=20260904-7">
 </head>
 <body>
 
@@ -69,7 +69,7 @@
           <span class="villageLocationCopy"><b data-i18n="village.home">家</b><small data-i18n="village.homeDesc">查看角色與進行培養</small></span>
           <span id="homeGuideHina" class="homeGuideHina" hidden>
             <img src="assets/characters/hina_guide.png" alt="Hina">
-            <span data-i18n="village.goHome">回家看看吧</span>
+            <span id="storyGuideText" data-i18n="village.goHome">回家看看吧</span>
           </span>
         </button>
         <button id="townShopBtn" class="villageLocation" type="button">
@@ -275,9 +275,11 @@
 
 <div id="defeatOverlay" aria-hidden="true">
   <div id="defeatModal" role="dialog" aria-modal="true" aria-labelledby="defeatTitle">
+    <div class="resultSeal defeatSeal" aria-hidden="true"><span>↺</span></div>
     <div class="defeatMark" data-i18n="result.defeat">重新整備</div>
     <h2 id="defeatTitle" data-i18n="result.defeatTitle">稍作休息，再次出發</h2>
     <p data-i18n="result.lost">本次取得的金幣與物品全部保留。</p>
+    <div class="runResultHeading"><b data-i18n="result.recoveredLoot">帶回的物品</b><small data-i18n="result.allRetained">全部保留</small></div>
     <div id="defeatSummary" class="runResultSummary secured" aria-label="本次獲得的戰利品" data-i18n-aria-label="result.lostLabel"></div>
     <div class="runResultFoot" data-i18n="result.defeatFoot">整備完成後，將沿用目前的角色與配裝重新出發。</div>
     <div id="defeatRestartCountdown" aria-live="polite"></div>
@@ -290,9 +292,11 @@
 
 <div id="victoryOverlay" aria-hidden="true">
   <div id="victoryModal" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
+    <div class="resultSeal victorySeal" aria-hidden="true"><span>✦</span></div>
     <div class="victoryMark" data-i18n="result.victory">遠征完成</div>
     <h2 id="victoryTitle" data-i18n="result.victoryTitle">首領已被擊敗</h2>
     <p data-i18n="result.secured">本次遠征獲得以下戰利品。</p>
+    <div class="runResultHeading"><b data-i18n="result.expeditionLoot">遠征收穫</b><small data-i18n="result.storedSafely">已收入物品庫</small></div>
     <div id="victorySummary" class="runResultSummary secured" aria-label="本次獲得的戰利品" data-i18n-aria-label="result.securedLabel"></div>
     <button id="victoryConfirmBtn" type="button" data-i18n="result.returnVillage">返回村莊</button>
   </div>
@@ -327,9 +331,12 @@
         <div id="journalPageText" class="journalPageText"></div>
         <footer class="journalFooter"><span id="journalPageNumber"></span><button id="journalNextBtn" type="button">下一頁</button></footer>
         <div id="journalTurningLeaf" class="journalTurningLeaf" aria-hidden="true">
-          <div class="journalLeafOrnament" aria-hidden="true"><span></span></div>
-          <div id="journalTurningPageText" class="journalPageText"></div>
-          <div class="journalTurningFolio"><span id="journalTurningPageNumber"></span></div>
+          <div class="journalTurningFace journalTurningFront">
+            <div class="journalLeafOrnament" aria-hidden="true"><span></span></div>
+            <div id="journalTurningPageText" class="journalPageText"></div>
+            <div class="journalTurningFolio"><span id="journalTurningPageNumber"></span></div>
+          </div>
+          <div class="journalTurningFace journalTurningBack" aria-hidden="true"></div>
         </div>
       </article>
     </div>
@@ -406,6 +413,6 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=20260904-esm1"></script>
+<script type="module" src="js/main.js?v=20260904-esm2"></script>
 </body>
 </html>

@@ -184,6 +184,7 @@ export function buildUI() {
     card.className = 'homeGrowthCard';
     card.style.setProperty('--rarity-color', rarity.color);
     card.innerHTML = `
+      <span class="homeGrowthNew" hidden>NEW</span>
       <span class="homeGrowthPortrait">
         <img src="${characterPortraitPath(c.id)}" alt="${def.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <span class="fallback" style="display:none;">缺少圖片</span>
@@ -199,10 +200,12 @@ export function buildUI() {
     `;
     card.addEventListener('click', () => {
       if (!isCharUnlocked(c.id)) return;
+      gameState.seenCharacterIds.add(c.id);
+      render();
       setCharacterDetailOpen(true, c.id);
     });
     homeRosterEl.appendChild(card);
-    overlayUiState.homeEls[c.id] = { card, lvl: card.querySelector('.lvl'), portrait: card.querySelector('.homeGrowthPortrait img') };
+    overlayUiState.homeEls[c.id] = { card, lvl: card.querySelector('.lvl'), portrait: card.querySelector('.homeGrowthPortrait img'), newBadge: card.querySelector('.homeGrowthNew') };
   });
 }
 
@@ -534,6 +537,7 @@ export function renderPrepView() {
   const mustGoHome = gameState.resonanceState.xiaochu === 'goHome';
   const journalUnlocked = ['bookPending', 'bookReading', 'oathReady', 'contracting', 'contracted'].includes(gameState.resonanceState.xiaochu);
   const contractAvailable = ['oathReady', 'contracting', 'contracted'].includes(gameState.resonanceState.xiaochu);
+  const newCharacter = gameState.roster.find(character => isCharUnlocked(character.id) && !gameState.seenCharacterIds.has(character.id));
   document.getElementById('travelJournalBtn').hidden = !journalUnlocked;
   document.getElementById('contractFacilityBtn').hidden = !contractAvailable;
   const visibleHomeFacilities = [...document.querySelectorAll('#homeMenu .homeFacilityBtn')]
@@ -541,13 +545,38 @@ export function renderPrepView() {
   document.getElementById('homeMenu').classList.toggle('singleFacility', visibleHomeFacilities === 1);
   document.getElementById('travelJournalBtn').classList.toggle('storyRequired', waitingForBook);
   document.getElementById('contractFacilityBtn').classList.toggle('storyRequired', oathReady);
-  document.getElementById('homeLocationBtn').classList.toggle('storyRequired', mustGoHome);
-  document.getElementById('homeGuideHina').hidden = !mustGoHome;
-  document.body.classList.toggle('storyOperationLock', storyLocked && !['villageReturn', 'contracting'].includes(gameState.resonanceState.xiaochu));
-  document.querySelectorAll('.storyFocusTarget').forEach(element => element.classList.remove('storyFocusTarget'));
-  if (mustGoHome) document.getElementById('homeLocationBtn').classList.add('storyFocusTarget');
-  if (waitingForBook) document.getElementById('travelJournalBtn').classList.add('storyFocusTarget');
-  if (oathReady) document.getElementById('contractFacilityBtn').classList.add('storyFocusTarget');
+  document.getElementById('homeLocationBtn').classList.toggle('storyRequired', mustGoHome || Boolean(newCharacter && atVillage));
+  document.getElementById('homeGrowthBtn').classList.toggle('storyRequired', Boolean(newCharacter && atHome && overlayUiState.homeMode === 'menu'));
+  document.querySelectorAll('.storyFocusTarget,.storyGuideTarget').forEach(element => element.classList.remove('storyFocusTarget', 'storyGuideTarget'));
+  let storyFocusTarget = null;
+  let storyGuideTarget = null;
+  let storyGuideKey = '';
+  if (mustGoHome) {
+    storyFocusTarget = document.getElementById('homeLocationBtn');
+    storyGuideKey = 'village.goHome';
+  } else if (waitingForBook && gameState.activeOverlay !== 'journal') {
+    storyFocusTarget = document.getElementById('travelJournalBtn');
+    storyGuideKey = 'story.guideJournal';
+  } else if (oathReady && !gameState.activeOverlay) {
+    storyFocusTarget = document.getElementById('contractFacilityBtn');
+    storyGuideKey = 'story.guideContract';
+  }
+  if (!storyFocusTarget && newCharacter && !gameState.activeOverlay) {
+    if (atVillage) storyGuideTarget = document.getElementById('homeLocationBtn');
+    if (atHome && overlayUiState.homeMode === 'menu') storyGuideTarget = document.getElementById('homeGrowthBtn');
+    if (storyGuideTarget) storyGuideKey = 'story.guideNewPartner';
+  }
+  const storyGuide = document.getElementById('homeGuideHina');
+  const activeGuideTarget = storyFocusTarget || storyGuideTarget;
+  storyGuide.hidden = !activeGuideTarget;
+  if (activeGuideTarget) {
+    activeGuideTarget.classList.add(storyFocusTarget ? 'storyFocusTarget' : 'storyGuideTarget');
+    activeGuideTarget.appendChild(storyGuide);
+    const guideText = document.getElementById('storyGuideText');
+    guideText.dataset.i18n = storyGuideKey;
+    guideText.textContent = t(storyGuideKey);
+  }
+  document.body.classList.toggle('storyOperationLock', Boolean(storyFocusTarget));
   document.getElementById('homeLocationBtn').disabled = storyLocked && !mustGoHome;
   document.getElementById('townShopBtn').disabled = storyLocked;
   document.getElementById('expeditionLocationBtn').disabled = storyLocked;
@@ -561,7 +590,11 @@ export function renderPrepView() {
     const c = gameState.roster.find(entry => entry.id === id);
     refs.lvl.textContent = c.level;
     refs.portrait.src = characterPortraitPath(id);
-    refs.card.classList.toggle('charLocked', !isCharUnlocked(id));
+    const unlocked = isCharUnlocked(id);
+    const isNew = unlocked && !gameState.seenCharacterIds.has(id);
+    refs.card.classList.toggle('charLocked', !unlocked);
+    refs.card.classList.toggle('newCharacter', isNew);
+    refs.newBadge.hidden = !isNew;
   });
   if (atVillage || atHome || atRegions) return;
 

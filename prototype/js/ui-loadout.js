@@ -254,13 +254,13 @@ export function renderExpeditionSelectedSummary() {
     return;
   }
   const def = CHAR_DEFS[character.id];
-  const bossIdentity = gameState.phase === PHASES.PREP_BOSS ? `
-    <div class="expeditionSelectedIdentity bossSelectedIdentity">
+  const selectedIdentity = `
+    <div class="expeditionSelectedIdentity${gameState.phase === PHASES.PREP_BOSS ? ' bossSelectedIdentity' : ''}">
       <img src="${characterPortraitPath(character.id)}" alt="${def.name}">
       <div><small>${t(character.id === 'wuming' ? 'loadout.currentDeployment' : 'loadout.currentPossession')}</small><b>${def.name}</b><span>${t('format.level', { level: formatLocaleNumber(character.level) })}</span></div>
-    </div>` : '';
+    </div>`;
   summary.innerHTML = `
-    ${bossIdentity}
+    ${selectedIdentity}
     <div class="expeditionLoadoutBlock">
       <div class="expeditionStepLabel"><span>3</span>${t('loadout.equipment')}</div>
       <div class="expeditionLoadout">

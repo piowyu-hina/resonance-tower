@@ -71,6 +71,7 @@ export function createSaveData() {
       slimeKillCount: gameState.slimeKillCount,
       potionUseCount: gameState.potionUseCount,
       unlockedChars: [...gameState.unlockedChars],
+      seenCharacterIds: [...gameState.seenCharacterIds],
       resonanceState: { ...gameState.resonanceState },
       roster: gameState.roster.map(permanentCharacterData),
       party: [...gameState.party],
@@ -93,6 +94,8 @@ export function normalizeSaveData(raw) {
   const source = raw.progression;
   const unlocked = new Set((Array.isArray(source.unlockedChars) ? source.unlockedChars : []).filter(id => CHAR_DEFS[id]));
   unlocked.add('wuming');
+  const seenCharacterIds = new Set((Array.isArray(source.seenCharacterIds) ? source.seenCharacterIds : ['wuming']).filter(id => CHAR_DEFS[id]));
+  seenCharacterIds.add('wuming');
   const normalizedResonance = {};
   Object.entries(source.resonanceState || {}).forEach(([id, value]) => {
     if (CHAR_DEFS[id] && RESONANCE_SAVE_STATES.has(value)) normalizedResonance[id] = value;
@@ -130,6 +133,7 @@ export function normalizeSaveData(raw) {
     slimeKillCount: safeInteger(source.slimeKillCount, 0),
     potionUseCount: safeInteger(source.potionUseCount, 0),
     unlocked,
+    seenCharacterIds,
     resonanceState: normalizedResonance,
     characters,
     party: savedParty.slice(0, SOLO_PARTY_LIMIT),
@@ -179,6 +183,7 @@ export function applySaveData(data) {
   gameState.slimeKillCount = data.slimeKillCount;
   gameState.potionUseCount = data.potionUseCount;
   gameState.unlockedChars = data.unlocked;
+  gameState.seenCharacterIds = data.seenCharacterIds;
   gameState.resonanceState = data.resonanceState;
   gameState.inventory = data.inventory;
   gameState.ownedSkins = data.ownedSkins;

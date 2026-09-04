@@ -50,8 +50,19 @@ body {
   border-bottom: 1px solid #454a4d;
   margin-bottom: 8px;
 }
-body.storyOperationLock::after { content: ''; position: fixed; z-index: 8990; inset: 0; background: rgba(4,6,8,.72); pointer-events: none; }
-.storyFocusTarget { position: relative !important; z-index: 9000 !important; overflow: visible !important; opacity: 1 !important; filter: none !important; box-shadow: 0 0 0 3px rgba(240,191,85,.5), 0 0 34px rgba(240,191,85,.48); }
+/* A story lock reads like a stage spotlight: the focused control casts the
+   shade outward, so its own art and guide stay at full brightness. */
+.storyFocusTarget { position: relative !important; z-index: 9000 !important; isolation: isolate; overflow: visible !important; opacity: 1 !important; filter: none !important; box-shadow: 0 0 0 3px rgba(240,191,85,.5), 0 0 34px rgba(240,191,85,.48); }
+.storyGuideTarget { position: relative !important; z-index: 5; overflow: visible !important; }
+body.storyOperationLock .storyFocusTarget::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 100vmax rgba(4,6,8,.72);
+  pointer-events: none;
+}
 #homeLocationBtn.storyFocusTarget { animation: homeFocusRingPulse 2.2s ease-in-out infinite; }
 @keyframes homeFocusRingPulse { 0%, 100% { box-shadow: 0 0 0 2px rgba(240,191,85,.2), 0 0 14px rgba(240,191,85,.16); } 50% { box-shadow: 0 0 0 4px rgba(255,214,119,.88), 0 0 42px rgba(240,191,85,.7); } }
 

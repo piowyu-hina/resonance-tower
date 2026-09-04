@@ -1,4 +1,5 @@
 import { CHAR_DEFS, GENERAL_STAT_LINES, STAT_LINE_MAX, RARITY_DEFS, ITEM_DEFS } from './constants.js';
+import { t } from './i18n.js';
 import {
   gameState, lineLevel, lineBookId, isCharUnlocked, characterSkins, equippedSkin,
   characterFullArtPath, equipCharacterSkin, xpToNext, useExpBookOnLine, skillLineKey,
@@ -240,6 +241,7 @@ export function renderCharacterDetail(characterId) {
         </div>
         <div class="growthWallet"><span><img src="assets/item/${ITEM_DEFS.statBook.img}.png" alt="">能力書 <b>${inventoryItemCount('statBook')}</b></span><span><img src="assets/item/${ITEM_DEFS.skillBook.img}.png" alt="">技能書 <b>${inventoryItemCount('skillBook')}</b></span></div>
       </div>
+      <p class="detailCharacterDescription">${t(`character.description.${characterId}`)}</p>
       <div class="detailSectionTitle detailSectionHeading"><span>共鳴外觀</span><small>目前：${currentSkin.name} · 持有 ${skins.length}</small></div>
       <div class="skinPicker">
         ${skins.map(skin => `

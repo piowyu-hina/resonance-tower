@@ -67,6 +67,7 @@ export const gameState = {
   slimeKillCount: 0,       // lifetime count, feeds the killCount unlock type
   potionUseCount: 0,       // lifetime successful uses, feeds potionCount unlocks
   unlockedChars: new Set(['wuming']), // wuming starts unlocked for free
+  seenCharacterIds: new Set(['wuming']), // unlocked roster cards keep NEW until their detail is opened
   // Xiaochu progresses through encounter -> following -> bookPending -> oathReady
   // -> contracting -> contracted. Other future resonance characters can reuse
   // the same broad encounter/contract pipeline with their own scenes.
@@ -118,6 +119,7 @@ export function initGame() {
   gameState.partyBuff = { mult: 1, until: 0 };
   gameState.partyDefense = { bonus: 0, until: 0 };
   gameState.logLines = [];
+  gameState.seenCharacterIds = new Set(['wuming']);
 }
 
 // Shared character-card status catalogue. Each entry only declares how to
