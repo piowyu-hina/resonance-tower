@@ -23,9 +23,46 @@ body {
   padding: 18px 0 28px;
 }
 
-/* Desktop uses the available width for a two-column battle view. */
+/* Desktop viewport scaling: above the mobile breakpoint, #app stays pinned
+   to its full 1040px design width instead of shrinking with 100vw, so card
+   layout never reflows/wraps between that and full desktop width (a narrower
+   #app was cramming two-column home cards' text into single-character
+   lines). #viewportStage instead shrinks the WHOLE rendered stage evenly via
+   transform when the window is narrower than the design width, so the game
+   is always laid out identically and just gets visually smaller, with the
+   page background showing through as letterboxing on the sides.
+   Height works the same way as an internal panel (#log, journal pages)
+   instead of ever growing the real page: #viewportStage is capped to the
+   available viewport height and scrolls internally when a screen's natural
+   content is taller than that, so the browser's own page never needs a
+   scrollbar in either axis, and short/wide windows don't force the whole
+   game to shrink just to avoid one. Mobile (<=850px) is untouched - see
+   items.css/world.css's own 850px breakpoint. */
+@media (min-width: 851px) {
+  html, body { overflow: hidden; height: 100%; }
+  #viewportStage {
+    width: 1040px;
+    height: calc(100vh - 46px); /* matches body's 18px + 28px vertical padding */
+    overflow-y: auto;
+    overflow-x: hidden; /* explicit - overflow-y:auto alone computes overflow-x to auto too (CSS Overflow spec), and the vertical scrollbar's own width was enough to trigger a spurious horizontal one */
+    scrollbar-width: thin;
+    scrollbar-color: #4a4f58 transparent;
+    flex-shrink: 0;
+    transform: scale(min(1, calc(100vw / 1064px)));
+    transform-origin: top center;
+  }
+  #viewportStage::-webkit-scrollbar { width: 8px; }
+  #viewportStage::-webkit-scrollbar-track { background: transparent; }
+  #viewportStage::-webkit-scrollbar-thumb { background: #4a4f58; border-radius: 4px; }
+  #viewportStage::-webkit-scrollbar-thumb:hover { background: #5a5f68; }
+}
+
+/* Desktop uses the available width for a two-column battle view. Fixed at
+   1040px (not vw-based) above the mobile breakpoint - see the scaling block
+   above; items.css's own <=850px override still takes width down to 542px
+   on mobile exactly as before. */
 #app {
-  width: min(1040px, calc(100vw - 24px));
+  width: 1040px;
   background: #23262b;
   border: 1px solid #4a4f50;
   border-radius: 14px;
