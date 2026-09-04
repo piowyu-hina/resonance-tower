@@ -350,7 +350,14 @@
 - UI 回歸不再只靠靜態截圖：`npm test` 會以系統 Edge 實際跑過副本進場、小怪轉首領、同角色連續對話與 Overlay 互斥，並檢查階段、DOM class、卡片數量與關鍵元素尺寸。
 - 正式流程不得直接指定任意 `phase` 字串；所有階段集中在 `PHASES`，並由 `setPhase()` 驗證合法轉移。畫面分類統一使用 `isPrepPhase()`／`isCombatSurfacePhase()`，避免新增過場階段時漏改某個畫面判斷。開發工具若需跳關，必須明確使用 `{ force: true }`。
 - 有限動畫與計時演出共用 `transitions.js`：同一轉場重新開始時會取消舊 timer／listener，完成時一次清理，避免較舊的延遲 callback 在新畫面上生效。DOM 短動畫仍保留最終幀後清理與延遲 fallback。
-- 原本單一的 `ui.js` 已依責任拆為 `ui-overlays.js`、`ui-loadout.js`、`ui-character.js`、`ui-commerce.js`、`ui-main.js`；仍使用依序載入的 classic scripts，以保留直接開啟 `file://` 原型及既有全域函式的相容性。載入順序視為相依關係，不可任意交換。
+- 原本單一的 `ui.js` 已依責任拆為 `ui-overlays.js`、`ui-loadout.js`、`ui-character.js`、`ui-commerce.js`、`ui-main.js`。**此段落原描述已過時**：後續的 ESM 遷移（見下方「ESM 模組化」）已將全部 16 個 `prototype/js/` 檔案改為真正的 `import`／`export`，`index.html` 收斂成單一 `<script type="module" src="js/main.js">`，不再依序載入 classic scripts，也不再保留 `file://` 直接開啟的相容性——瀏覽器會擋 module script 的 CORS，必須透過本機 HTTP server 執行（見 README「本機執行」）。
+
+## ESM 模組化（2026-09-04）
+
+- `prototype/js/` 全面改為 ES modules：每個檔案用 `import`／`export` 明確宣告依賴，不再靠 classic script 的共享全域作用域傳遞函式與狀態。`index.html` 的 18 個 `<script src>` 收斂為一個 `<script type="module" src="js/main.js">`，由瀏覽器自行解析整棵依賴圖，不需再手動維護載入順序。
+- 可變狀態的模組（`story.js` → `storyState`、`ui-overlays.js` → `overlayUiState`、`ui-character.js` → `shopUiState`）改為匯出單一 plain object 並在內部修改其屬性；`state.js` 的 `gameState` 也是同樣模式——ESM 的 live binding 不允許重新綁定匯入的名稱，只能修改屬性。
+- 跨檔案存在循環 import（例如 `combat.js` ↔ `shop.js`、`state.js` ↔ `story.js` ↔ `ui-main.js`）；因為所有跨模組呼叫都發生在函式內部（執行期），不是模組頂層求值時，實測（瀏覽器 smoke test）沒有初始化順序問題。
+- **代價**：不能再用「雙擊 `index.html`」的方式打開遊戲，必須跑本機 server（`python -m http.server` 或等效工具）。這與稍早「程式碼安全化」段落記錄的 file:// 相容性決策直接衝突，team 已確認接受這個取捨，因為之後本來就會串接真正的伺服器。
 - 原本單一的 `style.css` 已依原始 cascade 順序拆為 `styles/base.css`、`items.css`、`story.css`、`world.css`；故事介面內互相覆寫的重複 selector 已合併，但視覺結果與載入優先序維持不變。
 - 真瀏覽器 smoke test 額外覆蓋首頁、角色培養、地區、遠征準備、商店、背包、重新整備、旅人手記、締結誓約及對話十個主要畫面；每個畫面都會檢查可見尺寸、四份樣式是否成功載入，以及是否發生未捕捉的頁面錯誤。
 - UI renderer 必須容許「狀態已恢復、對應 DOM 尚未掛載」的短暫情形，例如除錯直達、轉場中或未來伺服器狀態恢復；找不到角色卡 refs 時略過該次更新，等下一次建立／渲染補齊，不可讓整個畫面中斷。

@@ -4,7 +4,15 @@
 
 ## 本機執行
 
-直接以瀏覽器開啟 `prototype/index.html` 即可。開發與回歸測試需要 Node.js，瀏覽器流程測試目前使用 Windows 系統安裝的 Microsoft Edge：
+`prototype/js/` 已全面改為 ES modules，`index.html` 以單一 `<script type="module">` 載入整棵依賴樹。瀏覽器對 `type="module"` 的 script 會擋 `file://` 來源的 CORS，所以**不能再直接雙擊 `prototype/index.html` 開啟**，必須透過本機 HTTP server，例如：
+
+```powershell
+cd prototype
+python -m http.server 8000
+# 瀏覽器開 http://127.0.0.1:8000/index.html
+```
+
+開發與回歸測試需要 Node.js，瀏覽器流程測試目前使用 Windows 系統安裝的 Microsoft Edge：
 
 ```powershell
 npm install
