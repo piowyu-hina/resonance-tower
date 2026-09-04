@@ -2,7 +2,7 @@ import { CHAR_DEFS, RARITY_DEFS } from './constants.js';
 import { gameState, unlockChar, characterFullArtPath } from './state.js';
 import { closeOtherOverlays } from './ui-overlays.js';
 import { render } from './ui-main.js';
-import { playTransientAnimation } from './transitions.js';
+import { afterAnimationPaint, beginManagedTransition, playTransientAnimation } from './transitions.js';
 import { t, formatLocaleNumber } from './i18n.js';
 
 // --- 對話與契約演出 ---
@@ -13,12 +13,12 @@ export const DIALOGUE_DEFS = {
     { speaker: 'xiaochu_orb', text: '是我啦！' },
     { speaker: 'wuming', text: '靈魂球在說話！' },
     { speaker: 'xiaochu_orb', text: '什麼靈魂球？我是小初啦！' },
-    { speaker: 'wuming', text: '那麼……小初小姐？' },
+    { speaker: 'wuming', text: '那麼...小初小姐？' },
     { speaker: 'xiaochu_orb', text: '嗯！' },
     { speaker: 'wuming', text: '妳怎麼會出現在這裡？' },
     { speaker: 'xiaochu_orb', text: '不知道！' },
     { speaker: 'xiaochu_orb', text: '不過，看你打怪好有趣！我可以跟著你嗎？' },
-    { speaker: 'wuming', text: '嗯……好啊。' },
+    { speaker: 'wuming', text: '嗯...好啊。' },
     { speaker: 'xiaochu_orb', text: '太好了！那你繼續吧，我還想看！' },
   ],
   xiaochu_village: [
@@ -27,48 +27,56 @@ export const DIALOGUE_DEFS = {
     { speaker: 'xiaochu_orb', text: '哈囉！' },
     { speaker: 'xiaochu_orb', text: '我要這個！' },
     { speaker: 'narrator', text: '商人沒有任何反應。' },
-    { speaker: 'xiaochu_orb', text: '……' },
-    { speaker: 'wuming', text: '看來……他好像看不到妳。' },
+    { speaker: 'xiaochu_orb', text: '...他聽不見我嗎？' },
+    { speaker: 'wuming', text: '看來...他好像也看不到妳。' },
+    { speaker: 'xiaochu_orb', text: '原來...除了你，這裡沒有人聽得見我啊。' },
     { speaker: 'wuming', text: '對了，我們先回家吧。' },
     { speaker: 'wuming', text: '我記得有一本書，好像提過這種情況。' },
-    { speaker: 'xiaochu_orb', text: '嗯……' },
+    { speaker: 'xiaochu_orb', text: '嗯...' },
   ],
   xiaochu_home_search: [
-    { speaker: 'wuming', text: '我記得……應該放在這裡才對。' },
+    { speaker: 'wuming', text: '我記得...應該放在這裡才對。' },
     { speaker: 'wuming', text: '找到了！' },
   ],
   xiaochu_after_book: [
-    { speaker: 'wuming', text: '這和我們的情況……好像有點像。' },
-    { speaker: 'xiaochu_orb', text: '你是說，他一個人瘋瘋癲癲，像在跟空氣說話那樣嗎？' },
-    { speaker: 'wuming', text: '……我是說，書裡那個會變成不同模樣的人。' },
+    { speaker: 'wuming', text: '這和我們的情況...好像有點像。' },
+    { speaker: 'xiaochu_orb', text: '...' },
+    { speaker: 'xiaochu_orb', text: '我不喜歡這個故事的結局。' },
+    { speaker: 'wuming', text: '嗯...' },
+    { speaker: 'xiaochu_orb', text: '不過...你說的「像」，是指你也會一個人對著空氣說話嗎？' },
+    { speaker: 'wuming', text: '...我是說，書裡那個會變成不同模樣的人。' },
     { speaker: 'xiaochu_orb', text: '所以，只要念出書裡的話，我就可以使用你的身體嗎？' },
     { speaker: 'wuming', text: '我不知道。' },
     { speaker: 'wuming', text: '妳想試試看嗎？' },
     { speaker: 'xiaochu_orb', text: '嗯！想要！' },
-    { speaker: 'xiaochu_orb', text: '不過……如果害你也被追殺，怎麼辦？' },
-    { speaker: 'wuming', text: '那就到時候再想辦法吧。' },
-    { speaker: 'xiaochu_orb', text: '那……嗯……跟我求婚吧！' },
+    { speaker: 'xiaochu_orb', text: '不過...如果害你也被追殺，怎麼辦？' },
+    { speaker: 'wuming', text: '那就一起想辦法吧。' },
+    { speaker: 'wuming', text: '至少，我不想因為害怕，就假裝沒有聽見妳。' },
+    { speaker: 'xiaochu_orb', text: '那...嗯...跟我求婚吧！' },
     { speaker: 'wuming', text: '不是求婚吧！' },
   ],
   xiaochu_oath: [
     { speaker: 'wuming', text: '小初。' },
-    { speaker: 'xiaochu_orb', text: '嗯……' },
+    { speaker: 'xiaochu_orb', text: '嗯...' },
     { speaker: 'wuming', text: '我在此立誓。' },
     { speaker: 'wuming', text: '從今以後，無論生老病死，我都將與妳共同進退。' },
     { speaker: 'wuming', text: '妳若生存，我也生存；妳若死亡，我也將死亡。' },
+    { speaker: 'xiaochu_orb', text: '那我也立誓！' },
+    { speaker: 'xiaochu_orb', text: '從今以後，不管發生什麼事，我都會和你共同進退。' },
+    { speaker: 'xiaochu_orb', text: '你願意把身體借給我的時候，我一定會好好珍惜；你不願意的時候，我絕不勉強！' },
   ],
   xiaochu_contract_prepare: [
-    { speaker: 'wuming', text: '那……我要開始囉。' },
-    { speaker: 'xiaochu_orb', text: '嗯……我準備好了！' },
+    { speaker: 'wuming', text: '那...我要開始囉。' },
+    { speaker: 'xiaochu_orb', text: '嗯...我準備好了！' },
   ],
   xiaochu_first_possession: [
     { speaker: 'xiaochu', text: '哇！我有人類的模樣了！' },
-    { speaker: 'xiaochu', text: '而且……我好像變得跟你差不多大了！' },
+    { speaker: 'xiaochu', text: '而且...我好像變得跟你差不多大了！' },
     { speaker: 'xiaochu', text: '這就是我的模樣嗎？好可愛！' },
-    { speaker: 'wuming', text: '哈哈哈……成功了呢。' },
+    { speaker: 'wuming', text: '哈哈哈...成功了呢。' },
     { speaker: 'wuming', text: '不過，要怎麼把身體借給妳？' },
     { speaker: 'narrator', text: '締結誓約後，小初腦中忽然浮現出某種方法。' },
-    { speaker: 'xiaochu', text: '奇怪……我好像知道該怎麼做。' },
+    { speaker: 'xiaochu', text: '奇怪...我好像知道該怎麼做。' },
     { speaker: 'xiaochu', text: '我試試看！' },
     { speaker: 'wuming', text: '等——' },
     { speaker: 'xiaochu_kiss', text: '小初親吻了無名。光芒閃過，兩人的位置交換了。' },
@@ -78,16 +86,17 @@ export const DIALOGUE_DEFS = {
     { speaker: 'xiaochu', text: '我現在就想出去冒險！' },
     { speaker: 'wuming', text: '等一下！我變成靈魂了！' },
     { speaker: 'wuming', text: '要怎麼變回去？' },
-    { speaker: 'xiaochu', text: '嗯……跟我剛才一樣，不就好了嗎？' },
-    { speaker: 'wuming', text: '還、還要再親一次嗎……' },
-    { speaker: 'wuming', text: '我覺得好害羞……' },
+    { speaker: 'xiaochu', text: '嗯...跟我剛才一樣，不就好了嗎？' },
+    { speaker: 'wuming', text: '還、還要再親一次嗎...' },
+    { speaker: 'wuming', text: '我覺得好害羞...' },
     { speaker: 'xiaochu', text: '這有什麼好害羞的？我們都結婚了。' },
-    { speaker: 'wuming', text: '才沒有結婚……' },
+    { speaker: 'wuming', text: '才沒有結婚...' },
     { speaker: 'xiaochu', text: '真是的，過來吧。' },
     { speaker: 'xiaochu_kiss', text: '小初再次親吻無名。光芒散去後，兩人恢復了原本的狀態。' },
     { speaker: 'wuming', text: '哇，變回來了！' },
     { speaker: 'xiaochu', text: '是吧！' },
     { speaker: 'xiaochu', text: '說好了喔！之後一定要讓我去冒險！' },
+    { speaker: 'wuming', text: '嗯。下一次，我們一起去吧。' },
   ],
 };
 
@@ -105,10 +114,10 @@ export const STORY_SPEAKERS = {
 };
 
 export const JOURNAL_PAGES = [
-  `很久以前，曾經有一位被稱為「靈魂使者」的人。\n\n戰鬥時，他會不斷變換身形。前一刻還握著劍，下一刻卻可能拿著法杖，甚至連說話的聲音和舉止都判若兩人。\n\n因為這副怪異的模樣，人們厭惡他、排斥他，甚至不願意靠近他。\n\n即便如此，當魔物侵襲城鎮時，他仍然選擇挺身而出。最後，他獨自封印了魔王。\n\n不過……他最後還是遭到王室殺害。`,
-  `有人曾經看見他的家中發出不同顏色的光。\n\n紅色、黃色、黑色、白色……每次出現的光芒都不相同。\n\n發光以前，好像還能聽見他念著某種誓言。聽起來，簡直就像結婚誓詞一樣。\n\n「我在此立誓，從今以後，無論生老病死，我都將與你共同進退。」\n\n「你若生存，我也生存；你若死亡，我也將死亡。」`,
-  `誓言結束後，整棟房子便會被光芒籠罩。\n\n光是把這些話寫下來，我都覺得渾身發麻……他到底是怎麼當面念出來的？\n\n城裡的人都討厭他。他偶爾會獨自發笑，也經常在沒有其他人的房間裡自言自語。\n\n有時，人們還會看見不同的人從他家中走出來。直到他封印魔王以後，大家才終於知道，那些看似不同的人，其實一直使用著同一具身體。`,
-  `我覺得他很厲害。\n\n明明一直被大家討厭，他最後還是使用自己的能力保護了所有人。\n\n我討厭王室。\n\n他救了所有人的性命，王室卻選擇殺死他。\n\n——緋雨`,
+  `我在這座城停留的第三天，第一次聽見「靈魂使者」這個稱呼。\n\n居民提到他時，總會刻意壓低聲音。\n\n他們說，那是一個能在戰鬥中變換身形的男人。前一刻還握著劍，下一刻卻可能拿起法杖；不只外貌，就連聲音和舉止也會完全改變。\n\n我問那究竟是什麼力量，沒有人能夠回答。\n\n他們只說，那個男人一定受到了某種詛咒。`,
+  `那天夜裡，我經過他的住處，看見窗內亮起了不同顏色的光。\n\n紅色、黃色、黑色、白色...光芒不斷交替，屋裡還傳出兩個人交談的聲音。\n\n可是透過窗戶，我明明只看見他一個人。\n\n不久後，他對著空無一人的房間念出了一段誓言。\n\n「我在此立誓。從今以後，無論生老病死，我都將與你共同進退。」\n\n「你若生存，我也生存；你若死亡，我也將死亡。」\n\n另一道聲音似乎也回應了他的誓言，可惜當時的風太大，我沒有聽清楚內容。`,
+  `回應結束的瞬間，整棟房子都被光芒籠罩。\n\n等到光芒散去，站在屋裡的人已經換成了截然不同的模樣。\n\n我一度以為有人趁著光芒進入了房間，但附近的居民告訴我，這種事情已經發生過很多次。\n\n有人說那只是幻術，也有人深信他已經被魔物附身。\n\n不過，想起那晚聽見的另一道聲音，我開始懷疑...\n\n那個男人或許從來都不是在自言自語。`,
+  `我在城裡停留了一段時間。就在我準備離開的前夕，魔物襲擊了這座城。\n\n我親眼看見靈魂使者在戰場上不斷變換身形。握劍的戰士、施展法術的術士，還有許多我從未見過的人，接連使用同一具身體戰鬥。\n\n最後，他成功封印了魔王，救下城裡的所有人。\n\n可是王室畏懼他的力量，認為他終有一天會成為更大的威脅，仍然下令將他處死。\n\n他被帶走的那一天，城裡沒有一個人替他說話。\n\n我也沒有。\n\n我始終不知道，那晚回應誓言的究竟是誰。\n\n如果那些看不見的同伴真的存在，我只希望在最後一段路上，他並不是獨自一人。`,
 ];
 
 export const storyState = {
@@ -121,6 +130,8 @@ export const storyState = {
   dialoguePhase: 'closed',
   lastDialogueSpeaker: null,
 };
+
+let journalPageTransition = null;
 
 export function queueDialogue(scriptId, onDone = null) {
   if (!DIALOGUE_DEFS[scriptId]) return;
@@ -226,7 +237,7 @@ export function startCharacterEncounter(characterId, onDone) {
 export function renderJournalPage() {
   const page = document.getElementById('journalPageText');
   page.textContent = JOURNAL_PAGES[storyState.journalPage];
-  playTransientAnimation(page, 'pageTurning');
+  page.scrollTop = 0;
   document.getElementById('journalPageNumber').textContent = t('format.page', {
     current: formatLocaleNumber(storyState.journalPage + 1),
     total: formatLocaleNumber(JOURNAL_PAGES.length),
@@ -249,6 +260,7 @@ export function openTravelJournal() {
 }
 
 export function closeTravelJournal(finished = false) {
+  resetJournalPageTurn();
   const overlay = document.getElementById('journalOverlay');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
@@ -263,11 +275,58 @@ export function closeTravelJournal(finished = false) {
 
 export function advanceTravelJournal() {
   if (storyState.journalPage < JOURNAL_PAGES.length - 1) {
+    const page = document.getElementById('journalPageText');
+    const turningLeaf = document.getElementById('journalTurningLeaf');
+    const nextButton = document.getElementById('journalNextBtn');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (turningLeaf.classList.contains('turning')) return;
+    if (reducedMotion) {
+      storyState.journalPage++;
+      renderJournalPage();
+      return;
+    }
+
+    document.getElementById('journalTurningPageText').textContent = page.textContent;
+    document.getElementById('journalTurningPageText').scrollTop = page.scrollTop;
+    document.getElementById('journalTurningPageNumber').textContent = t('format.page', {
+      current: formatLocaleNumber(storyState.journalPage + 1),
+      total: formatLocaleNumber(JOURNAL_PAGES.length),
+    });
+    nextButton.disabled = true;
     storyState.journalPage++;
     renderJournalPage();
+    journalPageTransition?.cancel();
+    const transition = beginManagedTransition('journalPageTurn');
+    journalPageTransition = transition;
+    const finishTurn = () => transition.finish(() => {
+      turningLeaf.classList.remove('turning');
+      turningLeaf.setAttribute('aria-hidden', 'true');
+      document.getElementById('journalTurningPageText').textContent = '';
+      nextButton.disabled = false;
+      if (gameState.activeOverlay === 'journal') nextButton.focus();
+      if (journalPageTransition === transition) journalPageTransition = null;
+    });
+    transition.listen(turningLeaf, 'animationend', event => {
+      if (event.target === turningLeaf) afterAnimationPaint(finishTurn);
+    });
+    turningLeaf.classList.remove('turning');
+    void turningLeaf.offsetWidth;
+    turningLeaf.classList.add('turning');
+    transition.after(1100, finishTurn);
   } else {
     closeTravelJournal(true);
   }
+}
+
+function resetJournalPageTurn() {
+  journalPageTransition?.cancel();
+  journalPageTransition = null;
+  const turningLeaf = document.getElementById('journalTurningLeaf');
+  if (!turningLeaf) return;
+  turningLeaf.classList.remove('turning');
+  turningLeaf.setAttribute('aria-hidden', 'true');
+  document.getElementById('journalTurningPageText').textContent = '';
+  document.getElementById('journalNextBtn').disabled = false;
 }
 
 export function openContractPanel() {

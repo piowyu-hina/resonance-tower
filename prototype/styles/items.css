@@ -325,9 +325,20 @@
 .enemyColumn .columnHeading { border-bottom-color: #594347; }
 
 /* Combat hierarchy: opposing fields read separately and controls stay anchored. */
-.battleColumn { display: flex; flex-direction: column; border-width: 1px; }
-.partyColumn { border-color: #455c60; background: radial-gradient(circle at 50% 34%, rgba(62,126,126,.18), transparent 42%), linear-gradient(145deg, #293235, #262a31); }
-.enemyColumn { border-color: #61484d; background: radial-gradient(circle at 50% 34%, rgba(151,69,78,.16), transparent 43%), linear-gradient(145deg, #332a2e, #292a31); }
+#combatView {
+  overflow: hidden;
+  padding: 8px;
+  border: 1px solid #425653;
+  border-radius: 11px;
+  background:
+    linear-gradient(90deg, rgba(15,28,28,.55), rgba(17,25,25,.26) 50%, rgba(29,19,22,.56)),
+    linear-gradient(180deg, rgba(9,14,15,.08), rgba(9,13,14,.58)),
+    url('../assets/backgrounds/slime_forest_battle.png') center / cover no-repeat;
+  box-shadow: inset 0 0 64px rgba(2,8,9,.46);
+}
+.battleColumn { display: flex; flex-direction: column; border-width: 1px; box-shadow: 0 10px 24px rgba(0,0,0,.2); }
+.partyColumn { border-color: #527174; background: radial-gradient(circle at 50% 34%, rgba(66,151,148,.17), transparent 43%), linear-gradient(145deg, rgba(31,48,50,.79), rgba(24,31,35,.76)); }
+.enemyColumn { border-color: #725258; background: radial-gradient(circle at 50% 34%, rgba(170,77,86,.14), transparent 44%), linear-gradient(145deg, rgba(54,36,40,.79), rgba(30,31,36,.76)); }
 .columnHeading { align-items: center; min-height: 32px; margin-bottom: 14px; padding: 0 3px 9px; }
 .columnHeading span { font-size: 15px; }
 .columnHeading small { font-size: 10px; }
@@ -431,9 +442,10 @@ button:focus-visible,
 @media (max-width: 850px) {
   body { padding-top: 10px; }
   #app { width: min(542px, calc(100vw - 12px)); }
+  #combatView { background: rgba(12,17,18,.9); }
   .combatColumns { grid-template-columns: 1fr; gap: 0; }
   .battleColumn { min-height: 0; }
-  .enemyColumn { order: 1; margin-bottom: 8px; }
-  .partyColumn { order: 2; }
+  .enemyColumn { order: 1; margin-bottom: 8px; background: linear-gradient(rgba(35,24,28,.66), rgba(25,25,30,.84)), url('../assets/backgrounds/slime_forest_battle.png') right center / cover no-repeat; }
+  .partyColumn { order: 2; background: linear-gradient(rgba(22,38,39,.65), rgba(21,28,32,.84)), url('../assets/backgrounds/slime_forest_battle.png') left center / cover no-repeat; }
   .partyColumn #combatActionBar { position: sticky; z-index: 20; bottom: max(6px, env(safe-area-inset-bottom)); }
 }

@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#1b1e20">
 <title>共鳴之塔｜Resonance Tower</title>
 <link rel="stylesheet" href="styles/base.css?v=20260904-1">
-<link rel="stylesheet" href="styles/items.css?v=20260904-1">
+<link rel="stylesheet" href="styles/items.css?v=20260904-2">
 <link rel="stylesheet" href="styles/story.css?v=20260904-1">
-<link rel="stylesheet" href="styles/world.css?v=20260904-1">
+<link rel="stylesheet" href="styles/world.css?v=20260904-2">
 </head>
 <body>
 
@@ -311,7 +311,7 @@
     <header class="journalHeader">
       <div class="journalIdentity">
         <span class="journalEmblem" aria-hidden="true">✦</span>
-        <div><small data-i18n="journal.author">緋雨 著</small><h2 id="journalTitle" data-i18n="journal.title">旅人手記</h2></div>
+        <div><h2 id="journalTitle" data-i18n="journal.title">旅人手記</h2></div>
       </div>
       <button id="journalCloseBtn" type="button" aria-label="關閉旅人手記" data-i18n-aria-label="journal.close">×</button>
     </header>
@@ -326,6 +326,11 @@
         <div class="journalLeafOrnament" aria-hidden="true"><span></span></div>
         <div id="journalPageText" class="journalPageText"></div>
         <footer class="journalFooter"><span id="journalPageNumber"></span><button id="journalNextBtn" type="button">下一頁</button></footer>
+        <div id="journalTurningLeaf" class="journalTurningLeaf" aria-hidden="true">
+          <div class="journalLeafOrnament" aria-hidden="true"><span></span></div>
+          <div id="journalTurningPageText" class="journalPageText"></div>
+          <div class="journalTurningFolio"><span id="journalTurningPageNumber"></span></div>
+        </div>
       </article>
     </div>
   </section>

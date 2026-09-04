@@ -140,7 +140,6 @@ export default {
   'result.securedLabel': '本次獲得的戰利品',
   'result.returnVillage': '返回村莊',
   'result.empty': '本次沒有取得戰利品',
-  'journal.author': '緋雨 著',
   'journal.title': '旅人手記',
   'journal.chapter.shapeshifter': '擁有百種身形的男人',
   'journal.close': '關閉旅人手記',

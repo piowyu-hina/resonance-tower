@@ -146,7 +146,6 @@ export default {
   'result.securedLabel': 'Secured spoils',
   'result.returnVillage': 'Return to Village',
   'result.empty': 'No spoils gained this time',
-  'journal.author': 'By Hiu',
   'journal.title': 'Traveler’s Journal',
   'journal.chapter.shapeshifter': 'The Man of a Hundred Forms',
   'journal.close': 'Close Traveler’s Journal',
