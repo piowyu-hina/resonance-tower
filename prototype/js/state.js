@@ -1,7 +1,7 @@
 import {
   INVENTORY_SLOT_COUNT, DEFAULT_SKIN_BY_CHARACTER, SKIN_DEFS, CHAR_DEFS, DEBUG_MODE,
   GOO_DEBUFF_CAP, GOO_DEBUFF_PER_STACK, STAT_LINE_MAX, GENERAL_STAT_LINES, DAMAGE_VARIANCE,
-  ITEM_DEFS,
+  ITEM_DEFS, ROSTER_CHAR_IDS,
 } from './constants.js';
 import { queueDialogue } from './story.js';
 import { render } from './ui-main.js';
@@ -106,7 +106,7 @@ export const gameState = {
 // main.js) so save.js's applySaveData() can call it without importing the
 // bootstrap entry file - gameState is what it resets, so it belongs here.
 export function initGame() {
-  gameState.roster = Object.keys(CHAR_DEFS).map(id => {
+  gameState.roster = ROSTER_CHAR_IDS.map(id => {
     const c = { id, level: 1, xp: 0, alive: true, skillCds: [0, 0, 0], manualActionCd: 0, actionCountdown: 0, hasteMult: 1, hasteUntil: 0, dodgeUntil: 0, slowMult: 1, slowUntil: 0, sleepUntilAction: false, charmedUntilAction: false, loadout: { activeItemId: null }, lineLevels: { atk: 0, def: 0, speed: 0, skill0: 0, skill1: 0, skill2: 0, action: 0 } };
     recomputeStats(c);
     c.curHp = c.maxHp;
@@ -194,7 +194,7 @@ export function unlockChar(id) {
 
 // call after any progress that could satisfy a threshold-style unlock.
 export function checkThresholdUnlocks() {
-  Object.keys(CHAR_DEFS).forEach(id => {
+  ROSTER_CHAR_IDS.forEach(id => {
     if (gameState.unlockedChars.has(id)) return;
     const u = CHAR_DEFS[id].unlock;
     if (u.type === 'killCount' && u.monster === 'slime' && gameState.slimeKillCount >= u.count) {
@@ -235,7 +235,7 @@ export function conditionProgressText(cond) {
 // Reaching a hidden condition only establishes resonance during an expedition.
 // The actual meeting and contract are deferred until the player returns home.
 export function checkResonanceTriggers() {
-  return Object.keys(CHAR_DEFS).find(id => {
+  return ROSTER_CHAR_IDS.find(id => {
     if (gameState.unlockedChars.has(id)) return false;
     const u = CHAR_DEFS[id].unlock;
     if (u.type !== 'resonanceContract' || gameState.resonanceState[id] || !conditionMet(u.trigger)) return false;

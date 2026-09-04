@@ -1,4 +1,4 @@
-import { DEBUG_MODE, CHAR_DEFS, MOBS_PER_FLOOR } from './constants.js';
+import { DEBUG_MODE, CHAR_DEFS, MOBS_PER_FLOOR, ROSTER_CHAR_IDS } from './constants.js';
 import { gameState, PHASES, setPhase, recomputeStats, speedLineIntervalMult, log } from './state.js';
 import { openTownShop, addInventoryItem } from './shop.js';
 import { setInventoryOpen } from './ui-commerce.js';
@@ -132,8 +132,8 @@ export function runDebugAction(action) {
     addInventoryItem('windCharm', 1);
     log('開發工具：已補充測試資源', 'good');
   } else if (action === 'unlock') {
-    gameState.unlockedChars = new Set(Object.keys(CHAR_DEFS));
-    Object.keys(CHAR_DEFS).forEach(id => {
+    gameState.unlockedChars = new Set(ROSTER_CHAR_IDS);
+    ROSTER_CHAR_IDS.forEach(id => {
       if (CHAR_DEFS[id].unlock.type === 'resonanceContract') gameState.resonanceState[id] = 'contracted';
     });
     log('開發工具：已解鎖全部角色', 'good');
@@ -217,7 +217,7 @@ export function renderDebugStatus() {
   if (!status) return;
   const activeId = gameState.party[0] || 'wuming';
   const character = gameState.roster.find(member => member.id === activeId);
-  status.textContent = `${gameState.phase}｜${CHAR_DEFS[activeId].name} Lv.${character.level}｜解鎖 ${gameState.unlockedChars.size}/${Object.keys(CHAR_DEFS).length}`;
+  status.textContent = `${gameState.phase}｜${CHAR_DEFS[activeId].name} Lv.${character.level}｜解鎖 ${gameState.unlockedChars.size}/${ROSTER_CHAR_IDS.length}`;
   const speedBtn = document.querySelector('[data-debug-action="speed"]');
   if (speedBtn) speedBtn.textContent = `戰鬥模擬速度 ${debugState.speedMultiplier}x`;
 }

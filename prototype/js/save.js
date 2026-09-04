@@ -1,4 +1,4 @@
-import { ITEM_DEFS, INVENTORY_SLOT_COUNT, CHAR_DEFS, STAT_LINE_MAX, SKIN_DEFS, DEFAULT_SKIN_BY_CHARACTER, SOLO_PARTY_LIMIT } from './constants.js';
+import { ITEM_DEFS, INVENTORY_SLOT_COUNT, CHAR_DEFS, STAT_LINE_MAX, SKIN_DEFS, DEFAULT_SKIN_BY_CHARACTER, SOLO_PARTY_LIMIT, ROSTER_CHAR_IDS } from './constants.js';
 import { gameState, xpToNext, PHASES, contractStoryLocked, recomputeStats, initGame } from './state.js';
 import { syncCoinItem } from './ui-commerce.js';
 import { render } from './ui-main.js';
@@ -92,9 +92,9 @@ export function normalizeSaveData(raw) {
     throw new Error('不支援的存檔格式');
   }
   const source = raw.progression;
-  const unlocked = new Set((Array.isArray(source.unlockedChars) ? source.unlockedChars : []).filter(id => CHAR_DEFS[id]));
+  const unlocked = new Set((Array.isArray(source.unlockedChars) ? source.unlockedChars : []).filter(id => ROSTER_CHAR_IDS.includes(id)));
   unlocked.add('wuming');
-  const seenCharacterIds = new Set((Array.isArray(source.seenCharacterIds) ? source.seenCharacterIds : ['wuming']).filter(id => CHAR_DEFS[id]));
+  const seenCharacterIds = new Set((Array.isArray(source.seenCharacterIds) ? source.seenCharacterIds : ['wuming']).filter(id => ROSTER_CHAR_IDS.includes(id)));
   seenCharacterIds.add('wuming');
   const normalizedResonance = {};
   Object.entries(source.resonanceState || {}).forEach(([id, value]) => {
@@ -126,7 +126,7 @@ export function normalizeSaveData(raw) {
     const skin = SKIN_DEFS[skinId];
     if (skin && skin.characterId === characterId && owned.has(skinId)) equipped[characterId] = skinId;
   });
-  const savedParty = (Array.isArray(source.party) ? source.party : []).filter(id => unlocked.has(id) && CHAR_DEFS[id]);
+  const savedParty = (Array.isArray(source.party) ? source.party : []).filter(id => unlocked.has(id) && ROSTER_CHAR_IDS.includes(id));
 
   return {
     bankedGold: safeInteger(source.bankedGold, 0),

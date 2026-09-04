@@ -229,6 +229,13 @@ export const CHAR_DEFS = {
   },
   fengzi: {
     name: '豐子', icon: '🔮', img: 'fengzi', rarity: 'rare',
+    // Excluded from the playable roster for the demo build - stats/skills/
+    // unlock condition below are all going to be reworked into a different
+    // character, so there's nothing here worth exposing yet. Data kept
+    // in place rather than deleted; see state.js's ROSTER_CHAR_IDS filter
+    // and debug.js's unlock-all/status-count call sites, which all key off
+    // this flag too.
+    hidden: true,
     unlock: { type: 'potionCount', count: 10 },
     baseHp: 26, baseAtk: 8, baseDef: 0,
     atkInterval: 1600, // faster pace than xiaochu - matches its already-lower skill CDs
@@ -239,6 +246,12 @@ export const CHAR_DEFS = {
     ],
   },
 };
+
+// Every place that builds a roster, checks unlocks, or counts "how many
+// characters exist" should use this instead of raw Object.keys(CHAR_DEFS),
+// so a CHAR_DEFS entry marked `hidden` (e.g. fengzi, pending rework) never
+// shows up, gets auto-unlocked, or inflates an "unlocked X/Y" count.
+export const ROSTER_CHAR_IDS = Object.keys(CHAR_DEFS).filter(id => !CHAR_DEFS[id].hidden);
 
 // Character appearance is deliberately separate from character stats.  New
 // skins only need an entry here and matching image files; combat balance and
