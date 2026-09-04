@@ -9,6 +9,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const prototypeDir = path.resolve(__dirname, '..', 'prototype');
 let prototypeUrl; // set once the local static server (started in the IIFE below) is listening
 
+// Read dialogue line counts from the actual source of truth instead of
+// hardcoding them in testXiaochuEncounterFlow below - the script text (and
+// therefore each array's length) changes as the story gets rewritten, and a
+// hardcoded count silently goes stale (advanceDialogue() either stalls one
+// line short, or spills into the next queued script). This import runs in
+// this file's own Node process, never the browser pages Playwright drives,
+// so the dummy document/window below only needs to satisfy module-load-time
+// references (e.g. constants.js's `new URLSearchParams(window.location...)`).
+global.window = { location: { search: '' } };
+global.document = { getElementById: () => null, addEventListener: () => {}, dispatchEvent: () => {}, documentElement: {} };
+const { DIALOGUE_DEFS, JOURNAL_PAGES } = await import('../prototype/js/story.js');
+const lineCount = scriptId => DIALOGUE_DEFS[scriptId].length;
+
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css',
   '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
@@ -219,6 +232,90 @@ async function testOverlayExclusivity(browser) {
   await page.close();
 }
 
+// The only test that drives gameState.resonanceState.xiaochu's full 9-value
+// state machine (design.md「角色解鎖系統」) through its real production seam
+// end to end, instead of a ?view= snapshot of a single state. Stage 1 uses the
+// same setup as debug.js's "xiaochu-story" button (one kill short of the
+// threshold), but the killing blow itself comes from a real auto-battle tick
+// via the ordinary setInterval loop in main.js, not a debug shortcut - so this
+// also covers combat.js's checkResonanceTriggers() call site for real. Every
+// other stage clicks the exact DOM elements a player would (retreatBtn,
+// homeLocationBtn, travelJournalBtn, contractFacilityBtn, ...), calling
+// .click()/dispatchEvent() directly via page.evaluate rather than Playwright's
+// visibility-checked page.click(), since several of these elements sit under
+// a currently-hidden sibling view at the moment they're clicked.
+async function testXiaochuEncounterFlow(browser) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  page.runtimeErrors = [];
+  page.on('pageerror', error => page.runtimeErrors.push(error));
+  await page.goto(`${prototypeUrl}?debug`, { waitUntil: 'load' });
+
+  const xiaochuState = () => page.evaluate(() => window.__debugHooks.gameState.resonanceState.xiaochu);
+  const isUnlocked = () => page.evaluate(() => window.__debugHooks.gameState.unlockedChars.has('xiaochu'));
+  const click = id => page.evaluate(elId => document.getElementById(elId).click(), id);
+  const waitForOverlay = overlay => page.waitForFunction(
+    wanted => window.__debugHooks.gameState.activeOverlay === wanted, overlay, { timeout: 20000 },
+  );
+  const advanceDialogue = async times => {
+    for (let i = 0; i < times; i++) {
+      await page.evaluate(() =>
+        document.getElementById('dialogueOverlay').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    }
+  };
+
+  // Stage 1: jungle encounter (killCount trigger -> 'encountering' -> 'following').
+  await page.evaluate(() => document.querySelector('[data-debug-action="xiaochu-story"]').click());
+  await waitForOverlay('dialogue');
+  assert.equal(await xiaochuState(), 'encountering');
+  await advanceDialogue(lineCount('xiaochu_encounter'));
+  assert.equal(await xiaochuState(), 'following');
+
+  // Stage 2: retreat -> village-return dialogue -> 'goHome'.
+  await click('retreatBtn');
+  await waitForOverlay('dialogue');
+  assert.equal(await xiaochuState(), 'villageReturn');
+  await advanceDialogue(lineCount('xiaochu_village'));
+  assert.equal(await xiaochuState(), 'goHome');
+
+  // Stage 3: clicking home while 'goHome' plays the book-searching beat -> 'bookPending'.
+  await click('homeLocationBtn');
+  await waitForOverlay('dialogue');
+  await advanceDialogue(lineCount('xiaochu_home_search'));
+  assert.equal(await xiaochuState(), 'bookPending');
+
+  // Stage 4: read the journal cover to cover -> 'bookReading' -> 'oathReady'.
+  // Each page turn disables #journalNextBtn for the ~1.1s leaf-turn animation
+  // (see story.js's advanceTravelJournal) before re-enabling it, so clicks
+  // must wait for that instead of firing back to back.
+  await click('travelJournalBtn');
+  assert.equal(await xiaochuState(), 'bookReading');
+  for (let i = 0; i < JOURNAL_PAGES.length; i++) {
+    await page.waitForFunction(() => !document.getElementById('journalNextBtn').disabled, null, { timeout: 3000 });
+    await click('journalNextBtn'); // last iteration lands on the final page and closes (finished)
+  }
+  await waitForOverlay('dialogue');
+  await advanceDialogue(lineCount('xiaochu_after_book'));
+  assert.equal(await xiaochuState(), 'oathReady');
+
+  // Stage 5: covenant ritual -> oath -> first possession -> 'contracted'.
+  await click('contractFacilityBtn');
+  await waitForOverlay('dialogue');
+  await advanceDialogue(lineCount('xiaochu_contract_prepare'));
+  await waitForOverlay('contract');
+  await click('xiaochuSoulBtn');
+  await click('contractConfirmBtn');
+  await waitForOverlay('dialogue');
+  assert.equal(await xiaochuState(), 'contracting');
+  await advanceDialogue(lineCount('xiaochu_oath')); // last line hands off to the contractFormed outro
+  await click('contractFormed'); // finishes the outro, chaining into xiaochu_first_possession
+  await advanceDialogue(lineCount('xiaochu_first_possession')); // includes both xiaochu_kiss lines
+
+  assert.equal(await xiaochuState(), 'contracted');
+  assert.equal(await isUnlocked(), true);
+  assertNoRuntimeErrors(page, 'xiaochu encounter flow');
+  await page.close();
+}
+
 (async () => {
   const server = await startServer();
   const { port } = server.address();
@@ -230,6 +327,7 @@ async function testOverlayExclusivity(browser) {
     await testBossTransition(browser);
     await testSameSpeakerDialogue(browser);
     await testOverlayExclusivity(browser);
+    await testXiaochuEncounterFlow(browser);
     console.log('ui-regression.test.js: all browser assertions passed');
   } finally {
     await browser.close();

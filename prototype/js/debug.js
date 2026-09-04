@@ -6,7 +6,7 @@ import {
   showDefeatOverlay, closeOtherOverlays, showDungeonEntry, prepareDungeonCombat, activatePreparedCombat,
   showBossIntro, prepareBossCombat, overlayUiState,
 } from './ui-overlays.js';
-import { openTravelJournal, openContractPanel, queueDialogue } from './story.js';
+import { openTravelJournal, openContractPanel, queueDialogue, storyState } from './story.js';
 import { spawnWave, makeMob } from './combat.js';
 import { buildBattleRoster, buildMonsterCards, render } from './ui-main.js';
 import { flushCombat } from './ui-combat-effects.js';
@@ -21,7 +21,7 @@ export function initDebugTools() {
   // (gameState, PHASES, etc.) for setup/assertions. Gated behind the same
   // DEBUG_MODE/?debug flag as the rest of this file, never present in normal play.
   window.__debugHooks = {
-    gameState, PHASES, overlayUiState, MOBS_PER_FLOOR,
+    gameState, PHASES, overlayUiState, MOBS_PER_FLOOR, storyState,
     makeMob, buildBattleRoster, buildMonsterCards, render, openContractPanel,
   };
 
