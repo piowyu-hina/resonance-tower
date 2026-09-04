@@ -377,6 +377,20 @@ async function testEventInteractions(browser) {
   await page.click('[data-event-action="crate-dial"][data-index="2"]', { clickCount: 2 });
   await page.click('[data-event-action="crate-confirm"]');
   await waitForEventToFinish(page, 'crate puzzle');
+
+  page = await openEvent(browser, 'broken-ancient-aqueduct');
+  await page.evaluate(() => {
+    const source = document.querySelector('[data-event-action="pipe"][data-pipe-role="source"]');
+    const route = [...document.querySelectorAll('[data-event-action="pipe"][data-path-tile="true"]')];
+    for (const tile of route) {
+      if (tile === source) continue;
+      const targetRotation = Number(tile.dataset.solutionRotation);
+      for (let turns = 0; turns < 4 && Number(tile.dataset.rotation) !== targetRotation; turns++) tile.click();
+    }
+    for (let turns = 0; turns < 4 && !source.disabled; turns++) source.click();
+    if (!source.disabled) throw new Error('aqueduct route did not resolve after a full source rotation');
+  });
+  await waitForEventToFinish(page, 'aqueduct puzzle');
 }
 
 (async () => {

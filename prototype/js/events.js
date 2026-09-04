@@ -12,6 +12,26 @@ const MUSHROOM_TARGET = Object.freeze([
 const MUSHROOM_LABELS = ['沉睡', '青色', '金色'];
 const CRATE_SYMBOLS = ['❧', '●', '◆', '☼'];
 const CRATE_TARGET = Object.freeze([0, 1, 2]);
+const PIPE_DIRECTIONS = Object.freeze(['up', 'right', 'down', 'left']);
+const PIPE_DIRECTION_LABELS = Object.freeze({ up: '上', right: '右', down: '下', left: '左' });
+const PIPE_CONNECTIONS = Object.freeze({
+  straight: Object.freeze(['left', 'right']),
+  corner: Object.freeze(['right', 'down']),
+  tee: Object.freeze(['left', 'right', 'down']),
+  cross: Object.freeze(['up', 'right', 'down', 'left']),
+});
+const PIPE_DECOY_TYPES = Object.freeze(['straight', 'corner', 'corner', 'tee', 'cross']);
+// Each route begins on the left edge and ends on the right edge. Keeping a
+// small authored route set makes every board provably solvable while still
+// changing the actual path, endpoints, decoys, and rotations between plays.
+const PIPE_TEMPLATES = Object.freeze([
+  Object.freeze([4, 5, 9, 13, 14, 15, 11]),
+  Object.freeze([0, 4, 8, 9, 10, 6, 7, 11, 15]),
+  Object.freeze([12, 13, 9, 5, 6, 10, 11, 7, 3]),
+  Object.freeze([8, 12, 13, 14, 10, 9, 5, 6, 7]),
+  Object.freeze([4, 0, 1, 5, 9, 10, 6, 2, 3]),
+  Object.freeze([12, 8, 9, 13, 14, 10, 6, 7, 11]),
+]);
 
 export const EVENT_DEFS = Object.freeze([
   {
@@ -90,6 +110,14 @@ export const EVENT_DEFS = Object.freeze([
       { title: '撬下發亮石片', desc: '取下一枚被雨水沖亮的魔物結晶。', apply: () => itemOutcome('monsterCrystal', 1, '石縫裡卡著一枚完整結晶') },
     ],
   },
+  {
+    id: 'broken-ancient-aqueduct',
+    kind: 'puzzle',
+    puzzle: 'pipe',
+    image: 'broken_ancient_aqueduct.png',
+    title: '斷流的古老水渠',
+    description: '泉水在崩裂的石盤前停了下來，另一端的藥草正逐漸枯萎。轉動水渠，重新接起水流。',
+  },
 ]);
 
 const eventById = new Map(EVENT_DEFS.map(event => [event.id, event]));
@@ -103,6 +131,7 @@ const runtime = {
   timers: new Set(),
   finishTimer: null,
   lastEventId: null,
+  lastPipeTemplateIndex: null,
   deck: [],
 };
 
@@ -251,6 +280,7 @@ function renderChallenge(def) {
   if (def.puzzle === 'mushroom') renderMushroomPuzzle();
   if (def.puzzle === 'crate') renderCratePuzzle();
   if (def.puzzle === 'herb') renderHerbPuzzle();
+  if (def.puzzle === 'pipe') renderPipePuzzle();
 }
 
 function renderChoiceEvent(def) {
@@ -451,6 +481,187 @@ function renderHerbPuzzle() {
   `;
 }
 
+function rotatedPipeConnections(tile) {
+  return PIPE_CONNECTIONS[tile.type].map(direction => {
+    const directionIndex = PIPE_DIRECTIONS.indexOf(direction);
+    return PIPE_DIRECTIONS[(directionIndex + tile.rotation) % PIPE_DIRECTIONS.length];
+  });
+}
+
+function pipeNeighbor(index, direction) {
+  const row = Math.floor(index / 4);
+  const col = index % 4;
+  if (direction === 'up' && row > 0) return index - 4;
+  if (direction === 'right' && col < 3) return index + 1;
+  if (direction === 'down' && row < 3) return index + 4;
+  if (direction === 'left' && col > 0) return index - 1;
+  return null;
+}
+
+function pipeFlowIndices(tiles, sourceIndex) {
+  const flowed = new Set();
+  if (!rotatedPipeConnections(tiles[sourceIndex]).includes('left')) return flowed;
+  const queue = [sourceIndex];
+  flowed.add(sourceIndex);
+
+  while (queue.length) {
+    const index = queue.shift();
+    rotatedPipeConnections(tiles[index]).forEach(direction => {
+      const neighbor = pipeNeighbor(index, direction);
+      if (neighbor === null || flowed.has(neighbor)) return;
+      const opposite = PIPE_DIRECTIONS[(PIPE_DIRECTIONS.indexOf(direction) + 2) % 4];
+      if (!rotatedPipeConnections(tiles[neighbor]).includes(opposite)) return;
+      flowed.add(neighbor);
+      queue.push(neighbor);
+    });
+  }
+  return flowed;
+}
+
+function isPipeSolved(tiles, sourceIndex, targetIndex, flowed = pipeFlowIndices(tiles, sourceIndex)) {
+  return flowed.has(targetIndex) && rotatedPipeConnections(tiles[targetIndex]).includes('right');
+}
+
+function pipeDirectionBetween(fromIndex, toIndex) {
+  const difference = toIndex - fromIndex;
+  if (difference === -4) return 'up';
+  if (difference === 1) return 'right';
+  if (difference === 4) return 'down';
+  if (difference === -1) return 'left';
+  throw new Error(`Pipe route contains non-adjacent cells: ${fromIndex} → ${toIndex}`);
+}
+
+function pipeDefinitionForConnections(connections) {
+  for (const type of ['straight', 'corner', 'tee', 'cross']) {
+    for (let rotation = 0; rotation < 4; rotation++) {
+      const rotated = rotatedPipeConnections({ type, rotation });
+      if (rotated.length === connections.length && connections.every(direction => rotated.includes(direction))) {
+        return { type, solutionRotation: rotation };
+      }
+    }
+  }
+  throw new Error(`No pipe shape supports: ${connections.join(', ')}`);
+}
+
+function drawPipeTemplate() {
+  const candidates = PIPE_TEMPLATES
+    .map((path, index) => ({ path, index }))
+    .filter(template => template.index !== runtime.lastPipeTemplateIndex);
+  const selected = candidates[Math.floor(Math.random() * candidates.length)];
+  runtime.lastPipeTemplateIndex = selected.index;
+  return selected.path;
+}
+
+function buildPipeTiles(path) {
+  const routeTiles = new Map();
+  path.forEach((index, step) => {
+    const connections = [
+      step === 0 ? 'left' : pipeDirectionBetween(index, path[step - 1]),
+      step === path.length - 1 ? 'right' : pipeDirectionBetween(index, path[step + 1]),
+    ];
+    routeTiles.set(index, pipeDefinitionForConnections(connections));
+  });
+
+  const tiles = Array.from({ length: 16 }, (_, index) => {
+    const routeTile = routeTiles.get(index);
+    const type = routeTile?.type || PIPE_DECOY_TYPES[Math.floor(Math.random() * PIPE_DECOY_TYPES.length)];
+    const rotation = Math.floor(Math.random() * 4);
+    return {
+      type,
+      rotation,
+      visualTurns: rotation,
+      pathTile: Boolean(routeTile),
+      solutionRotation: routeTile?.solutionRotation ?? null,
+    };
+  });
+
+  // Begin with the spring disconnected. Besides preventing an already-solved
+  // board, this makes the first successful connection visibly teach water flow.
+  const sourceTile = tiles[path[0]];
+  const disconnectedRotations = [0, 1, 2, 3]
+    .filter(rotation => !rotatedPipeConnections({ ...sourceTile, rotation }).includes('left'));
+  sourceTile.rotation = disconnectedRotations[Math.floor(Math.random() * disconnectedRotations.length)];
+  sourceTile.visualTurns = sourceTile.rotation;
+  return tiles;
+}
+
+function pipeSvg(type) {
+  const paths = {
+    straight: 'M 0 50 H 100',
+    corner: 'M 50 100 V 50 H 100',
+    tee: 'M 0 50 H 100 M 50 50 V 100',
+    cross: 'M 0 50 H 100 M 50 0 V 100',
+  };
+  const path = paths[type];
+  return `
+    <svg class="pipePiece" viewBox="0 0 100 100" aria-hidden="true">
+      <path class="pipeBed" d="${path}"></path>
+      <path class="pipeStone" d="${path}"></path>
+      <path class="pipeWater" d="${path}"></path>
+      <circle class="pipeHub" cx="50" cy="50" r="12"></circle>
+    </svg>
+  `;
+}
+
+function renderPipePuzzle() {
+  const path = drawPipeTemplate();
+  const sourceIndex = path[0];
+  const targetIndex = path[path.length - 1];
+  const tiles = buildPipeTiles(path);
+  runtime.challenge = { type: 'pipe', tiles, sourceIndex, targetIndex, locked: false };
+  const sourceTop = ((Math.floor(sourceIndex / 4) + 0.5) / 4) * 100;
+  const targetTop = ((Math.floor(targetIndex / 4) + 0.5) / 4) * 100;
+  document.getElementById('eventChallenge').innerHTML = `
+    <div class="pipeInstructions">點擊石板旋轉水渠，讓泉水流到枯萎的藥草圃。</div>
+    <div class="pipeBoard" aria-label="古老水渠謎題">
+      <span class="pipeEndpoint pipeSource" aria-label="泉眼" style="top: ${sourceTop}%"><b>泉</b></span>
+      <div class="pipeGrid">
+        ${tiles.map((tile, index) => `
+          <button type="button" data-event-action="pipe" data-index="${index}" data-rotation="${tile.rotation}"
+            data-pipe-role="${index === sourceIndex ? 'source' : index === targetIndex ? 'target' : ''}"
+            data-path-tile="${tile.pathTile}" data-solution-rotation="${tile.solutionRotation ?? ''}">
+            ${pipeSvg(tile.type)}
+          </button>
+        `).join('')}
+      </div>
+      <span class="pipeEndpoint pipeTarget" aria-label="藥草圃" style="top: ${targetTop}%"><b>藥</b></span>
+    </div>
+    <div class="pipeLegend"><i></i><span>發亮的水渠代表泉水目前能抵達的位置</span></div>
+  `;
+  updatePipePuzzle();
+}
+
+function updatePipePuzzle() {
+  const state = runtime.challenge;
+  if (!state || state.type !== 'pipe') return;
+  const flowed = pipeFlowIndices(state.tiles, state.sourceIndex);
+  const solved = isPipeSolved(state.tiles, state.sourceIndex, state.targetIndex, flowed);
+  document.querySelectorAll('.pipeGrid button').forEach((button, index) => {
+    const tile = state.tiles[index];
+    const connections = rotatedPipeConnections(tile);
+    button.dataset.rotation = String(tile.rotation);
+    button.classList.toggle('flowing', flowed.has(index));
+    button.disabled = state.locked;
+    button.setAttribute('aria-label', `第 ${index + 1} 塊水渠，連向${connections.map(direction => PIPE_DIRECTION_LABELS[direction]).join('、')}，點擊旋轉`);
+    const piece = button.querySelector('.pipePiece');
+    if (piece) piece.style.transform = `rotate(${tile.visualTurns * 90}deg)`;
+  });
+  document.querySelector('.pipeSource')?.classList.toggle('flowing', flowed.size > 0);
+  document.querySelector('.pipeTarget')?.classList.toggle('flowing', solved);
+
+  if (solved && !state.locked) {
+    state.locked = true;
+    document.querySelector('.pipeBoard')?.classList.add('solved');
+    document.querySelectorAll('.pipeGrid button').forEach(button => { button.disabled = true; });
+    schedule(() => {
+      if (runtime.challenge !== state || runtime.resolved) return;
+      const recovery = healPartyOutcome(0.2, '重新流動的泉水洗去了旅途的疲憊');
+      addInventoryItem('potion', 1, true);
+      resolveEvent(result(`${recovery.message.replace(/。$/, '')}，並裝得治療藥水 ×1。`));
+    }, 650);
+  }
+}
+
 function handleChallengeClick(event) {
   if (runtime.resolved || gameState.activeOverlay !== 'event') return;
   const button = event.target.closest('[data-event-action]');
@@ -530,6 +741,16 @@ function handleChallengeClick(event) {
     resolveEvent(herb?.correct
       ? itemOutcome('statBook', 1, '你依照手記找到了真正的藥草，葉下還壓著一本能力書')
       : consolationOutcome('摘下的植株與手記描述並不相符'));
+    return;
+  }
+
+  if (action === 'pipe') {
+    const state = runtime.challenge;
+    const tile = state?.tiles[Number(button.dataset.index)];
+    if (!tile || state.locked) return;
+    tile.rotation = (tile.rotation + 1) % 4;
+    tile.visualTurns++;
+    updatePipePuzzle();
   }
 }
 

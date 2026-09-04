@@ -261,6 +261,78 @@
 .herbChoices img { width: 100%; height: 174px; display: block; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .44)); }
 .herbChoices span { display: block; margin-top: 4px; font-size: 10px; }
 
+.pipeInstructions { margin-bottom: 10px; color: #afbbb5; font-size: 12px; line-height: 1.6; text-align: center; }
+.pipeBoard { position: relative; width: min(400px, 100%); margin: 0 auto; }
+.pipeGrid {
+  width: calc(100% - 52px);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin: 0 auto;
+  padding: 6px;
+  border: 1px solid #3e4b46;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #131a1a, #0d1213);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, .55), 0 9px 22px rgba(0, 0, 0, .25);
+}
+.pipeGrid button {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid #4c5148;
+  border-radius: 7px;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(130, 144, 117, .1), transparent 34%),
+    linear-gradient(145deg, #42483d, #252b27 63%, #1b211f);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px rgba(13, 17, 16, .3), inset 0 8px 12px rgba(255, 255, 255, .025);
+  transition: border-color .16s, filter .16s, box-shadow .16s;
+}
+.pipeGrid button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(118deg, transparent 0 14px, rgba(174, 191, 152, .025) 15px 16px);
+}
+.pipeGrid button:hover:not(:disabled) { border-color: #78887a; filter: brightness(1.1); }
+.pipeGrid button.flowing { border-color: #4d8c91; box-shadow: inset 0 0 13px rgba(61, 203, 216, .17), 0 0 8px rgba(52, 184, 201, .12); }
+.pipeGrid button:disabled { cursor: default; }
+.pipePiece { width: 100%; height: 100%; display: block; transform-origin: 50% 50%; transition: transform .22s cubic-bezier(.22, .82, .3, 1); }
+.pipePiece path { fill: none; stroke-linejoin: round; }
+.pipeBed { stroke: #111817; stroke-width: 34; }
+.pipeStone { stroke: #697064; stroke-width: 23; }
+.pipeWater { stroke: #58d9e5; stroke-width: 8; stroke-linecap: round; opacity: 0; filter: drop-shadow(0 0 5px rgba(65, 218, 232, .85)); transition: opacity .2s; }
+.pipeHub { fill: #697064; stroke: #222a27; stroke-width: 6; }
+.pipeGrid button.flowing .pipeWater { opacity: .92; stroke-dasharray: 8 7; animation: pipeWaterFlow .7s linear infinite; }
+.pipeGrid button.flowing .pipeHub { fill: #55cbd2; stroke: #28646a; filter: drop-shadow(0 0 5px rgba(77, 221, 230, .72)); }
+.pipeEndpoint {
+  position: absolute;
+  z-index: 2;
+  width: 37px;
+  height: 37px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #58655f;
+  border-radius: 50%;
+  background: #202825;
+  color: #9eaaa4;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, .36);
+  transition: border-color .2s, color .2s, box-shadow .2s, background .2s;
+}
+.pipeEndpoint b { font-family: Georgia, "Noto Serif TC", serif; font-size: 14px; }
+.pipeEndpoint::after { content: ''; position: absolute; top: 50%; width: 9px; height: 4px; background: #414b47; transform: translateY(-50%); }
+.pipeSource { left: 0; top: 37.5%; transform: translateY(-50%); }
+.pipeSource::after { left: 100%; }
+.pipeTarget { right: 0; top: 62.5%; transform: translateY(-50%); }
+.pipeTarget::after { right: 100%; }
+.pipeEndpoint.flowing { border-color: #75dce1; background: #21494b; color: #dcffff; box-shadow: 0 0 15px rgba(76, 218, 228, .45); }
+.pipeEndpoint.flowing::after { background: #62dce4; box-shadow: 0 0 6px rgba(83, 223, 232, .8); }
+.pipeBoard.solved .pipeTarget { animation: pipeTargetPulse .7s ease-in-out infinite alternate; }
+.pipeLegend { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 9px; color: #71807a; font-size: 10px; }
+.pipeLegend i { width: 18px; height: 3px; border-radius: 3px; background: #5bd5df; box-shadow: 0 0 6px rgba(83, 218, 228, .62); }
+
 #eventFeedback {
   min-height: 0;
   max-height: 0;
@@ -295,6 +367,14 @@
   75% { transform: translateX(-2px); }
 }
 
+@keyframes pipeWaterFlow {
+  to { stroke-dashoffset: -15; }
+}
+
+@keyframes pipeTargetPulse {
+  to { transform: translateY(-50%) scale(1.08); }
+}
+
 @media (max-width: 800px) {
   #eventOverlay { align-items: flex-start; padding: 8px; overflow-y: auto; }
   #eventModal { width: 100%; height: auto; min-height: calc(100dvh - 16px); grid-template-columns: 1fr; grid-template-rows: 190px minmax(0, 1fr); border-radius: 13px; }
@@ -309,6 +389,7 @@
   .crystalButton img { height: 82px; }
   .herbChoices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .herbChoices img { height: 145px; }
+  .pipeBoard { width: min(370px, 100%); }
 }
 
 @media (max-width: 430px) {
@@ -321,5 +402,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #eventSceneImage, #eventModal, .eventChoice, .herbChoices button, .bubbleButton { transition: none; }
+  #eventSceneImage, #eventModal, .eventChoice, .herbChoices button, .bubbleButton, .pipePiece { transition: none; }
+  .pipeGrid button.flowing .pipeWater, .pipeBoard.solved .pipeTarget { animation: none; }
 }
