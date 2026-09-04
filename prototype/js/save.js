@@ -1,5 +1,5 @@
-import { ITEM_DEFS, INVENTORY_SLOT_COUNT, CHAR_DEFS, STAT_LINE_MAX, SKIN_DEFS, DEFAULT_SKIN_BY_CHARACTER, SOLO_PARTY_LIMIT, ROSTER_CHAR_IDS } from './constants.js';
-import { gameState, xpToNext, PHASES, contractStoryLocked, recomputeStats, initGame } from './state.js';
+import { ITEM_DEFS, INVENTORY_SLOT_COUNT, CHAR_DEFS, STAT_LINE_MAX, SKIN_DEFS, DEFAULT_SKIN_BY_CHARACTER, SOLO_PARTY_LIMIT, ROSTER_CHAR_IDS, PRE_AGENT_LEVEL_CAP } from './constants.js';
+import { gameState, xpToNext, PHASES, contractStoryLocked, recomputeStats, initGame, RESONANCE_STATES, CHAPTER1_STATES } from './state.js';
 import { syncCoinItem } from './ui-commerce.js';
 import { render } from './ui-main.js';
 import { overlayUiState } from './ui-overlays.js';
@@ -8,10 +8,14 @@ import { overlayUiState } from './ui-overlays.js';
 // Only permanent progression is serialized. An expedition in progress must be
 // resolved first, so combat timers and transient DOM state never enter a save.
 const SAVE_FORMAT_VERSION = 1;
-const RESONANCE_SAVE_STATES = new Set([
-  'encountering', 'following', 'villageReturn', 'goHome', 'bookPending',
-  'bookReading', 'oathReady', 'contracting', 'contracted',
-]);
+// Built lazily (not at module top level) since state.js/story.js/save.js
+// form an import cycle - see design.md「ESM 模組化」on evaluating cross-module
+// bindings only inside function bodies, never at module scope.
+let resonanceSaveStates = null;
+function isValidResonanceSaveState(value) {
+  if (!resonanceSaveStates) resonanceSaveStates = new Set(Object.values(RESONANCE_STATES));
+  return resonanceSaveStates.has(value);
+}
 let saveStatusTimer = null;
 
 export function saveSlot(entry) {
@@ -78,6 +82,7 @@ export function createSaveData() {
       inventory: gameState.inventory.map(saveSlot),
       ownedSkins: [...gameState.ownedSkins],
       equippedSkinByCharacter: { ...gameState.equippedSkinByCharacter },
+      chapter1State: gameState.chapter1State,
     },
   };
 }
@@ -98,9 +103,9 @@ export function normalizeSaveData(raw) {
   seenCharacterIds.add('wuming');
   const normalizedResonance = {};
   Object.entries(source.resonanceState || {}).forEach(([id, value]) => {
-    if (CHAR_DEFS[id] && RESONANCE_SAVE_STATES.has(value)) normalizedResonance[id] = value;
+    if (CHAR_DEFS[id] && isValidResonanceSaveState(value)) normalizedResonance[id] = value;
   });
-  if (normalizedResonance.xiaochu === 'contracted') unlocked.add('xiaochu');
+  if (normalizedResonance.xiaochu === RESONANCE_STATES.CONTRACTED) unlocked.add('xiaochu');
 
   const characters = new Map();
   (Array.isArray(source.roster) ? source.roster : []).forEach(saved => {
@@ -127,6 +132,15 @@ export function normalizeSaveData(raw) {
     if (skin && skin.characterId === characterId && owned.has(skinId)) equipped[characterId] = skinId;
   });
   const savedParty = (Array.isArray(source.party) ? source.party : []).filter(id => unlocked.has(id) && ROSTER_CHAR_IDS.includes(id));
+  const chapter1State = [CHAPTER1_STATES.FOREST, CHAPTER1_STATES.COMPLETE].includes(source.chapter1State)
+    ? source.chapter1State
+    : (unlocked.has('xiaochu') || normalizedResonance.xiaochu ? CHAPTER1_STATES.COMPLETE : CHAPTER1_STATES.FOREST);
+  if (chapter1State === CHAPTER1_STATES.FOREST) {
+    characters.forEach(character => {
+      character.level = Math.min(character.level, PRE_AGENT_LEVEL_CAP);
+      if (character.level === PRE_AGENT_LEVEL_CAP) character.xp = 0;
+    });
+  }
 
   return {
     bankedGold: safeInteger(source.bankedGold, 0),
@@ -140,6 +154,7 @@ export function normalizeSaveData(raw) {
     inventory: normalizedInventory(source),
     ownedSkins: owned,
     equippedSkinByCharacter: equipped,
+    chapter1State,
   };
 }
 
@@ -188,6 +203,7 @@ export function applySaveData(data) {
   gameState.inventory = data.inventory;
   gameState.ownedSkins = data.ownedSkins;
   gameState.equippedSkinByCharacter = data.equippedSkinByCharacter;
+  gameState.chapter1State = data.chapter1State;
   gameState.roster.forEach(character => {
     const saved = data.characters.get(character.id);
     if (!saved) return;

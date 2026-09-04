@@ -1,4 +1,4 @@
-import { localizedItemDef, DEFEAT_RESTART_DELAY_MS, CHAR_DEFS, localizedRegionDef } from './constants.js';
+import { localizedItemDef, DEFEAT_RESTART_DELAY_MS, BOSS_INTRO_DURATION_MS, CHAR_DEFS, localizedRegionDef } from './constants.js';
 import { gameState, PHASES, log, contractStoryLocked, setPhase, speedLineIntervalMult } from './state.js';
 import { t, formatLocaleNumber } from './i18n.js';
 import { playTransientAnimation, beginManagedTransition, afterAnimationPaint, removeAfterAnimation } from './transitions.js';
@@ -7,7 +7,7 @@ import { setCombatItemPickerOpen, setCharmPickerOpen } from './ui-loadout.js';
 import { setInventoryOpen } from './ui-commerce.js';
 import { setCharacterDetailOpen } from './ui-character.js';
 import { closeDialogue, closeTravelJournal, closeContractPanel } from './story.js';
-import { endRun, spawnWave } from './combat.js';
+import { endRun, spawnWave, spawnRuinsLord, activateRuinsLordEncounter } from './combat.js';
 import { render, buildBattleRoster } from './ui-main.js';
 import { flushCombat } from './ui-combat-effects.js';
 import { skipActiveEvent } from './events.js';
@@ -150,9 +150,24 @@ export function confirmVictory() {
   render();
 }
 
-export function showBossIntro(onComplete) {
+export function showBossIntro(onComplete, presentation = {}) {
   const overlay = document.getElementById('bossIntroOverlay');
   if (overlay.classList.contains('open')) return;
+  const imagePath = presentation.image === undefined
+    ? 'assets/monsters/floor1/slime_boss.png'
+    : presentation.image;
+  const image = overlay.querySelector('.bossIntroPortrait');
+  const name = presentation.name || t('monster.slimeBoss');
+  overlay.classList.toggle('mystery', !imagePath);
+  overlay.classList.toggle('ruinsMasterIntro', presentation.variant === 'ruinsMaster');
+  if (imagePath) {
+    image.src = imagePath;
+    image.alt = name;
+  } else {
+    image.removeAttribute('src');
+    image.alt = '';
+  }
+  overlay.querySelector('.bossIntroName').textContent = name;
   const transition = beginManagedTransition('bossIntro');
   const finish = () => {
     transition.finish(() => {
@@ -169,7 +184,7 @@ export function showBossIntro(onComplete) {
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
   transition.after(4800, () => overlay.classList.add('leaving'));
-  transition.after(5600, finish);
+  transition.after(BOSS_INTRO_DURATION_MS, finish);
 }
 
 export function showDungeonEntry(onCovered, onComplete = null) {
@@ -214,11 +229,11 @@ export function showDungeonEntry(onCovered, onComplete = null) {
   transition.after(2850, finish);
 }
 
-export function prepareCombat(entryPhase) {
+export function prepareCombat(entryPhase, spawnEncounter = spawnWave) {
   gameState.partyLocked = true;
   setPhase(entryPhase);
   buildBattleRoster();
-  spawnWave();
+  spawnEncounter();
   gameState.party.forEach(id => {
     const c = gameState.roster.find(r => r.id === id);
     c.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(c);
@@ -234,8 +249,17 @@ export function prepareBossCombat() {
   prepareCombat(PHASES.BOSS_INTRO);
 }
 
+export function prepareRuinsLordCombat() {
+  prepareCombat(PHASES.BOSS_INTRO, spawnRuinsLord);
+}
+
 export function activatePreparedCombat() {
   setPhase(PHASES.COMBAT);
+  render();
+}
+
+export function activatePreparedRuinsLord() {
+  activateRuinsLordEncounter();
   render();
 }
 

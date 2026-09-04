@@ -1,5 +1,9 @@
-import { DEBUG_MODE, CHAR_DEFS, MOBS_PER_FLOOR, ROSTER_CHAR_IDS } from './constants.js';
-import { gameState, PHASES, setPhase, recomputeStats, speedLineIntervalMult, log } from './state.js';
+import { DEBUG_MODE, CHAR_DEFS, MOBS_PER_FLOOR, ROSTER_CHAR_IDS, RUINS_KILL_TARGET } from './constants.js';
+import {
+  gameState, PHASES, setPhase, recomputeStats, speedLineIntervalMult, log,
+  RESONANCE_STATES, setResonanceState, clearResonanceState,
+  CHAPTER1_STATES, setChapter1State,
+} from './state.js';
 import { openTownShop, addInventoryItem } from './shop.js';
 import { setInventoryOpen } from './ui-commerce.js';
 import {
@@ -7,7 +11,7 @@ import {
   showBossIntro, prepareBossCombat, overlayUiState,
 } from './ui-overlays.js';
 import { openTravelJournal, openContractPanel, queueDialogue, storyState } from './story.js';
-import { spawnWave, makeMob } from './combat.js';
+import { spawnWave, makeMob, beginRuinsExpedition, enterPrepBoss } from './combat.js';
 import { buildBattleRoster, buildMonsterCards, render } from './ui-main.js';
 import { flushCombat } from './ui-combat-effects.js';
 import { EVENT_DEFS, startEventById, startRandomEvent } from './events.js';
@@ -31,9 +35,9 @@ export function initDebugTools() {
   // (gameState, PHASES, etc.) for setup/assertions. Gated behind the same
   // DEBUG_MODE/?debug flag as the rest of this file, never present in normal play.
   window.__debugHooks = {
-    gameState, PHASES, overlayUiState, MOBS_PER_FLOOR, storyState,
+    gameState, PHASES, setPhase, overlayUiState, MOBS_PER_FLOOR, storyState,
     makeMob, buildBattleRoster, buildMonsterCards, render, openContractPanel,
-    EVENT_DEFS, startEventById, startRandomEvent,
+    EVENT_DEFS, startEventById, startRandomEvent, beginRuinsExpedition,
   };
 
   const toggle = document.getElementById('debugToggleBtn');
@@ -54,7 +58,17 @@ export function initDebugTools() {
 
   const requestedView = new URLSearchParams(window.location.search).get('view');
   const requestedEvent = new URLSearchParams(window.location.search).get('event');
-  if (requestedEvent) startEventById(requestedEvent, () => {});
+  if (requestedEvent) {
+    // Event preview URLs represent an event encountered during an active
+    // expedition. Prepare that real combat state first; otherwise entering
+    // the ruins from a preview leaves the player on the village surface.
+    overlayUiState.prepLocation = 'expedition';
+    prepareDungeonCombat();
+    activatePreparedCombat();
+    startEventById(requestedEvent, action => {
+      if (action === 'enterRuins') beginRuinsExpedition();
+    });
+  }
   if (requestedView === 'home') {
     overlayUiState.prepLocation = 'home';
     overlayUiState.homeMode = 'menu';
@@ -79,12 +93,12 @@ export function initDebugTools() {
   }
   if (requestedView === 'journal') {
     overlayUiState.prepLocation = 'home';
-    gameState.resonanceState.xiaochu = 'bookPending';
+    setResonanceState('xiaochu', RESONANCE_STATES.BOOK_PENDING, { force: true });
     openTravelJournal();
   }
   if (requestedView === 'contract') {
     overlayUiState.prepLocation = 'home';
-    gameState.resonanceState.xiaochu = 'oathReady';
+    setResonanceState('xiaochu', RESONANCE_STATES.OATH_READY, { force: true });
     openContractPanel();
   }
   if (requestedView === 'dialogue' || requestedView === 'dialogue-next') {
@@ -104,7 +118,7 @@ export function initDebugTools() {
     setPhase(PHASES.PREP_FLOOR, { force: true });
     gameState.partyLocked = false;
     overlayUiState.prepLocation = 'village';
-    gameState.resonanceState.xiaochu = 'goHome';
+    setResonanceState('xiaochu', RESONANCE_STATES.GO_HOME, { force: true });
     setTimeout(() => {
       const button = document.getElementById('homeLocationBtn');
       const rect = button.getBoundingClientRect();
@@ -134,7 +148,7 @@ export function runDebugAction(action) {
   } else if (action === 'unlock') {
     gameState.unlockedChars = new Set(ROSTER_CHAR_IDS);
     ROSTER_CHAR_IDS.forEach(id => {
-      if (CHAR_DEFS[id].unlock.type === 'resonanceContract') gameState.resonanceState[id] = 'contracted';
+      if (CHAR_DEFS[id].unlock.type === 'resonanceContract') setResonanceState(id, RESONANCE_STATES.CONTRACTED, { force: true });
     });
     log('開發工具：已解鎖全部角色', 'good');
   } else if (action === 'level') {
@@ -149,10 +163,11 @@ export function runDebugAction(action) {
   } else if (action === 'intro') {
     showBossIntro(() => {});
   } else if (action === 'xiaochu-story') {
+    setChapter1State(CHAPTER1_STATES.COMPLETE);
     closeOtherOverlays(null);
     gameState.activeOverlay = null;
     gameState.unlockedChars.delete('xiaochu');
-    delete gameState.resonanceState.xiaochu;
+    clearResonanceState('xiaochu');
     gameState.slimeKillCount = 49;
     overlayUiState.prepLocation = 'expedition';
     setPhase(PHASES.COMBAT, { force: true });
@@ -169,15 +184,21 @@ export function runDebugAction(action) {
       character.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(character);
     });
     log('開發工具：下一波怪物清空後將觸發小初相遇', 'warn');
+  } else if (action === 'ruins-event') {
+    debugOpenRuinsEvent();
+  } else if (action === 'ruins-boss') {
+    debugPrepareRuinsBoss();
   } else if (action === 'event') {
-    startRandomEvent(() => {});
+    startRandomEvent(resultAction => {
+      if (resultAction === 'enterRuins') beginRuinsExpedition();
+    });
   } else if (action === 'focus-particles') {
     closeOtherOverlays(null);
     gameState.activeOverlay = null;
     setPhase(PHASES.PREP_FLOOR, { force: true });
     gameState.partyLocked = false;
     overlayUiState.prepLocation = 'village';
-    gameState.resonanceState.xiaochu = 'goHome';
+    setResonanceState('xiaochu', RESONANCE_STATES.GO_HOME, { force: true });
     log('已啟用引導粒子測試：回家入口目前為聚焦目標。', 'warn');
   } else if (action === 'speed') {
     const next = SPEED_CYCLE[(SPEED_CYCLE.indexOf(debugState.speedMultiplier) + 1) % SPEED_CYCLE.length];
@@ -190,6 +211,52 @@ export function runDebugAction(action) {
 
   flushCombat();
   renderDebugStatus();
+}
+
+export function debugOpenRuinsEvent() {
+  closeOtherOverlays(null);
+  gameState.activeOverlay = null;
+  setChapter1State(CHAPTER1_STATES.FOREST);
+  gameState.expeditionMode = 'forest';
+  gameState.ruinsKillCount = 0;
+  overlayUiState.prepLocation = 'expedition';
+  setPhase(PHASES.COMBAT, { force: true });
+  gameState.partyLocked = true;
+  gameState.mobsCleared = 0;
+  gameState.roster.forEach(character => {
+    character.alive = true;
+    character.curHp = character.maxHp;
+  });
+  buildBattleRoster();
+  spawnWave();
+  gameState.party.forEach(id => {
+    const character = gameState.roster.find(member => member.id === id);
+    character.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(character);
+  });
+  flushCombat();
+  startEventById('ruins-entrance', resultAction => {
+    if (resultAction === 'enterRuins') beginRuinsExpedition();
+  });
+  log('開發工具：已開啟遺跡入口事件', 'warn');
+}
+
+export function debugPrepareRuinsBoss() {
+  closeOtherOverlays(null);
+  gameState.activeOverlay = null;
+  setChapter1State(CHAPTER1_STATES.RUINS);
+  gameState.expeditionMode = 'ruins';
+  gameState.ruinsKillCount = RUINS_KILL_TARGET;
+  gameState.monsters = [];
+  overlayUiState.prepLocation = 'expedition';
+  setPhase(PHASES.COMBAT, { force: true });
+  gameState.partyLocked = true;
+  gameState.roster.forEach(character => {
+    character.alive = true;
+    character.curHp = character.maxHp;
+  });
+  enterPrepBoss();
+  render();
+  log('開發工具：已開啟遺跡之主戰前準備', 'warn');
 }
 
 export function debugStartBossFight() {

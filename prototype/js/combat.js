@@ -4,18 +4,21 @@ import {
   BOSS_SUMMON_MAX, GOO_SKILL_CD_MS, GOO_BATCH_SIZE, MOBS_PER_FLOOR, CHAR_DEFS, MAX_IMPLEMENTED_FLOOR,
   BOSS_XP_SHARE, MOB_XP_SHARE, SLIME_MONSTER_CRYSTAL_DROP_CHANCE, SLIME_STAT_BOOK_DROP_CHANCE,
   SLIME_SKILL_BOOK_DROP_CHANCE, MASTER_TICK_MS, SHOP_IDLE_MS, regionName, MONSTER_DEATH_ANIMATION_MS,
+  RUINS_MONSTER_DEFS, RUINS_MOB_POOL, RUINS_KILL_TARGET, RUINS_LORD_LEVEL,
+  RUINS_LORD_SPIKE_COUNT, RUINS_LORD_SPIKE_TRAVEL_MS,
 } from './constants.js';
 import {
   gameState, PHASES, STATUS_DEFS, setPhase, log, aliveMonsters, activeAliveMembers, calcDef, calcAtk,
   rollDamage, skillLineScale, lineScale, speedLineIntervalMult, actionLineCooldownMult, addXp,
   goldForKill, xpPoolForFloor, checkThresholdUnlocks, checkResonanceTriggers, isCharUnlocked,
   startPendingVillageContracts,
+  CHAPTER1_STATES, setChapter1State,
 } from './state.js';
 import { OVERLAY_CLOSERS, closeOtherOverlays, overlayUiState } from './ui-overlays.js';
 import { emitCombatEvent } from './combat-events.js';
 import { clearGooArena, gooTick } from './goo.js';
 import { tickShopIdle, addInventoryItem } from './shop.js';
-import { startCharacterEncounter } from './story.js';
+import { startCharacterEncounter, startChapter1DefeatSequence } from './story.js';
 import { startRandomEvent, tickEventIdle } from './events.js';
 
 // This file only mutates game state and queues one-shot effects via
@@ -55,7 +58,7 @@ export function resetBossEntryCooldowns() {
 // because 2~3 of them now hit the party simultaneously - still a rough first
 // pass (see design.md "平衡尚待調整"), tune freely later.
 export function makeMob(defId = FLOOR1_MOB_POOL[Math.floor(Math.random() * FLOOR1_MOB_POOL.length)]) {
-  const def = MONSTER_DEFS[defId];
+  const def = MONSTER_DEFS[defId] || RUINS_MONSTER_DEFS[defId];
   const maxHp = 9 + Math.round(gameState.floor * 6);
   return {
     id: 'm' + (gameState.monsterIdCounter++),
@@ -66,7 +69,7 @@ export function makeMob(defId = FLOOR1_MOB_POOL[Math.floor(Math.random() * FLOOR
     img: def.img,
     maxHp,
     hp: maxHp,
-    atk: 1 + Math.floor(gameState.floor * 0.7),
+    atk: (def.atk ?? 1) + Math.floor(gameState.floor * 0.7),
     atkInterval: MOB_ATK_INTERVAL,
     actionCountdown: MOB_ATK_INTERVAL,
     alive: true,
@@ -115,7 +118,14 @@ export function spawnWave() {
   clearGooArena();
   gameState.gooDebuffStacks = 0;
   gameState.monsters = [];
-  if (gameState.mobsCleared < MOBS_PER_FLOOR) {
+  if (gameState.expeditionMode === 'ruins') {
+    const remaining = Math.max(0, RUINS_KILL_TARGET - gameState.ruinsKillCount);
+    const count = Math.min(remaining, 2 + Math.floor(Math.random() * 2));
+    for (let i = 0; i < count; i++) {
+      const defId = RUINS_MOB_POOL[Math.floor(Math.random() * RUINS_MOB_POOL.length)];
+      gameState.monsters.push(makeMob(defId));
+    }
+  } else if (gameState.mobsCleared < MOBS_PER_FLOOR) {
     const count = 2 + Math.floor(Math.random() * 2); // 2~3 mobs
     for (let i = 0; i < count; i++) gameState.monsters.push(makeMob());
   } else {
@@ -123,6 +133,199 @@ export function spawnWave() {
     gameState.gooSpawnCountdown = 800; // faster opening spawn than the steady-state cooldown, so the fight doesn't feel dead at the start
   }
   emitCombatEvent({ type: 'waveSpawned' });
+}
+
+export function beginRuinsExpedition() {
+  gameState.expeditionMode = 'ruins';
+  gameState.ruinsKillCount = 0;
+  gameState.mobsCleared = 0;
+  setChapter1State(CHAPTER1_STATES.RUINS);
+  log('進入遺跡之地。', 'warn');
+  emitCombatEvent({ type: 'combatActionsChanged' });
+  spawnWave();
+}
+
+function makeRuinsLord() {
+  return {
+    id: 'm' + (gameState.monsterIdCounter++), name: '遺跡之主', level: RUINS_LORD_LEVEL,
+    displayLevel: 'XXX', isBoss: true, storyBoss: true, img: 'floor1/relics_master',
+    maxHp: 12000, hp: 12000, atk: 300, atkInterval: 2400, actionCountdown: 700,
+    alive: true,
+    skillCd: 0,
+    skill: {
+      name: '重擊', icon: '✦', img: 'floor1/relics_master_skill1', cd: 4,
+      target: 'randomParty', effects: [{ type: 'damage', mult: 2.2 }],
+      desc: '以沉重的一擊攻擊單一目標，造成 2.2 倍攻擊力傷害',
+    },
+    skill2Cd: 0,
+    skill2: {
+      name: '反傷盾', icon: '◇', img: 'floor1/relics_master_skill2', cd: 8,
+      duration: 5, reflectPct: 0.5,
+      desc: '展開 5 秒反傷盾，將受到傷害的 50% 反射給攻擊者',
+    },
+    skill3Cd: 0,
+    skill3: {
+      name: '岩刺突襲', icon: '◆', img: 'floor1/relics_master_skill3', cd: 7,
+      count: RUINS_LORD_SPIKE_COUNT, mult: 1,
+      desc: `從戰場右側射出 ${RUINS_LORD_SPIKE_COUNT} 枚岩刺；每枚命中約造成 300 點傷害（受防禦與傷害浮動影響）`,
+    },
+    skillOrder: ['skill3', 'skill', 'skill2'],
+    skillCursor: 0,
+    reflectShieldMs: 0,
+    pendingSpikeMs: 0,
+    pendingSpikes: [],
+    spikeWaveCounter: 0,
+    defeatTriggered: false,
+  };
+}
+
+export function spawnRuinsLord() {
+  clearGooArena();
+  gameState.gooDebuffStacks = 0;
+  gameState.monsters = [makeRuinsLord()];
+  emitCombatEvent({ type: 'combatActionsChanged' });
+  emitCombatEvent({ type: 'waveSpawned' });
+}
+
+export function activateRuinsLordEncounter() {
+  setPhase(PHASES.COMBAT);
+}
+
+function triggerRuinsLordDefeat(boss) {
+  if (!boss.storyBoss || boss.defeatTriggered || activeAliveMembers().length > 0) return;
+  boss.defeatTriggered = true;
+  setChapter1State(CHAPTER1_STATES.GODDESS);
+  // Leave the combat surface visible just long enough for the actual damage
+  // number to finish playing before the mandatory dialogue covers it.
+  setTimeout(() => startChapter1DefeatSequence(), 950);
+}
+
+function applyRuinsLordReflection(boss, attacker, incomingDamage) {
+  if (!boss.storyBoss || boss.reflectShieldMs <= 0 || !attacker.alive) return;
+  const reflected = Math.max(1, Math.round(incomingDamage * boss.skill2.reflectPct));
+  attacker.curHp -= reflected;
+  log(`${boss.name} 的【${boss.skill2.name}】反射 ${reflected} 傷害給 ${CHAR_DEFS[attacker.id].name}`, 'enemy');
+  emitCombatEvent({ type: 'ruinsShieldPulse', bossId: boss.id });
+  emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: attacker.id, text: '-' + reflected, cls: 'dmg' });
+  emitCombatEvent({ type: 'flash', targetKind: 'char', targetId: attacker.id });
+  if (attacker.curHp <= 0) {
+    attacker.curHp = 0;
+    attacker.alive = false;
+    log(`${CHAR_DEFS[attacker.id].name} 倒下了！`, 'warn');
+    triggerRuinsLordDefeat(boss);
+  }
+}
+
+function damageCharacterFromRuinsLord(boss, target, damage, label) {
+  const dmg = rollDamage(Math.max(1, damage - calcDef(target)));
+  target.curHp -= dmg;
+  log(`${boss.name} 使用【${label}】攻擊 ${CHAR_DEFS[target.id].name}，造成 ${dmg} 傷害`, 'enemy');
+  emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
+  emitCombatEvent({ type: 'flash', targetKind: 'char', targetId: target.id });
+  if (target.curHp <= 0) {
+    target.curHp = 0;
+    target.alive = false;
+    log(`${CHAR_DEFS[target.id].name} 倒下了！`, 'warn');
+  }
+  return dmg;
+}
+
+function castRuinsLordShield(boss) {
+  boss.skill2Cd = boss.skill2.cd * 1000;
+  boss.reflectShieldMs = boss.skill2.duration * 1000;
+  log(`${boss.name} 使用【${boss.skill2.name}】`, 'enemy');
+  emitCombatEvent({ type: 'skillCast', targetKind: 'monster', targetId: boss.id, skill: boss.skill2 });
+  emitCombatEvent({ type: 'ruinsShieldChanged', bossId: boss.id, active: true });
+}
+
+function castRuinsLordSpikes(boss) {
+  boss.skill3Cd = boss.skill3.cd * 1000;
+  boss.pendingSpikeMs = RUINS_LORD_SPIKE_TRAVEL_MS;
+  boss.spikeWaveCounter++;
+  boss.pendingSpikes = Array.from({ length: boss.skill3.count }, (_, index) => ({
+    id: `${boss.id}-spike-${boss.spikeWaveCounter}-${index}`,
+    active: true,
+  }));
+  log(`${boss.name} 使用【${boss.skill3.name}】，岩刺從戰場右側襲來！`, 'enemy');
+  emitCombatEvent({ type: 'skillCast', targetKind: 'monster', targetId: boss.id, skill: boss.skill3 });
+  emitCombatEvent({
+    type: 'ruinsSpikeRush',
+    bossId: boss.id,
+    spikeIds: boss.pendingSpikes.map(spike => spike.id),
+    travelMs: RUINS_LORD_SPIKE_TRAVEL_MS,
+  });
+}
+
+function resolveRuinsLordSpikes(boss) {
+  boss.pendingSpikeMs = 0;
+  const remainingSpikes = boss.pendingSpikes.filter(spike => spike.active);
+  boss.pendingSpikes = [];
+  if (remainingSpikes.length === 0) {
+    log('所有岩刺都被擊碎了！', 'party');
+  } else {
+    log(`${remainingSpikes.length} 枚岩刺突破了防線！`, 'enemy');
+    let totalDamage = 0;
+    let hitCount = 0;
+    remainingSpikes.forEach(() => {
+      const targets = activeAliveMembers();
+      if (targets.length === 0) return;
+      const target = targets[Math.floor(Math.random() * targets.length)];
+      totalDamage += damageCharacterFromRuinsLord(boss, target, boss.atk * boss.skill3.mult, boss.skill3.name);
+      hitCount++;
+    });
+    if (hitCount > 0) emitCombatEvent({ type: 'ruinsSpikeImpact', hitCount, totalDamage });
+  }
+  triggerRuinsLordDefeat(boss);
+}
+
+export function tickRuinsLord(boss) {
+  if (boss.defeatTriggered) return;
+  boss.skillCd = Math.max(0, boss.skillCd - MASTER_TICK_MS);
+  boss.skill2Cd = Math.max(0, boss.skill2Cd - MASTER_TICK_MS);
+  boss.skill3Cd = Math.max(0, boss.skill3Cd - MASTER_TICK_MS);
+
+  if (boss.reflectShieldMs > 0) {
+    boss.reflectShieldMs = Math.max(0, boss.reflectShieldMs - MASTER_TICK_MS);
+    if (boss.reflectShieldMs === 0) {
+      log(`${boss.name} 的反傷盾消失了`);
+      emitCombatEvent({ type: 'ruinsShieldChanged', bossId: boss.id, active: false });
+    }
+  }
+  if (boss.pendingSpikeMs > 0) {
+    boss.pendingSpikeMs -= MASTER_TICK_MS;
+    if (boss.pendingSpikeMs <= 0) resolveRuinsLordSpikes(boss);
+    // The incoming-spike wave is the boss's current action. Do not let a
+    // heavy strike or shield overlap the player's click window.
+    return;
+  }
+
+  boss.actionCountdown -= MASTER_TICK_MS;
+  if (boss.actionCountdown > 0) return;
+  boss.actionCountdown += boss.atkInterval;
+
+  const ready = {
+    skill: boss.skillCd <= 0,
+    skill2: boss.skill2Cd <= 0 && boss.reflectShieldMs <= 0,
+    skill3: boss.skill3Cd <= 0 && boss.pendingSpikeMs <= 0,
+  };
+  let selected = null;
+  for (let offset = 0; offset < boss.skillOrder.length; offset++) {
+    const index = (boss.skillCursor + offset) % boss.skillOrder.length;
+    const candidate = boss.skillOrder[index];
+    if (!ready[candidate]) continue;
+    selected = candidate;
+    boss.skillCursor = (index + 1) % boss.skillOrder.length;
+    break;
+  }
+
+  if (selected === 'skill3') castRuinsLordSpikes(boss);
+  else if (selected === 'skill2') castRuinsLordShield(boss);
+  else if (selected === 'skill') performMonsterSkill(boss);
+  else {
+    const target = activeAliveMembers()[0];
+    if (target) damageCharacterFromRuinsLord(boss, target, boss.atk, '普通攻擊');
+  }
+  triggerRuinsLordDefeat(boss);
 }
 
 // (updateMonsterSkillIcons moved to ui-combat-effects.js - pure DOM
@@ -239,6 +442,7 @@ export function performSkill(c, skill, idx, target) {
     emitCombatEvent({ type: 'skillCast', targetKind: 'monster', targetId: target.id, skill });
     emitCombatEvent({ type: 'popup', targetKind: 'monster', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
     emitCombatEvent({ type: 'flash', targetKind: 'monster', targetId: target.id });
+    applyRuinsLordReflection(target, c, dmg);
   } else if (skill.type === 'healSelf') {
     const heal = Math.round(c.maxHp * skill.pct * lineScaleForThisSkill);
     c.curHp = Math.min(c.maxHp, c.curHp + heal);
@@ -303,6 +507,7 @@ export function onMonsterDefeated(m) {
 
   if (!m.isBoss && !m.isSummoned) {
     gameState.slimeKillCount++; // all floor-1 mobs are slimes for now - see design.md 角色解鎖系統
+    if (gameState.expeditionMode === 'ruins') gameState.ruinsKillCount++;
     checkThresholdUnlocks();
     if (Math.random() < SLIME_MONSTER_CRYSTAL_DROP_CHANCE) {
       addInventoryItem('monsterCrystal', 1, true);
@@ -356,8 +561,16 @@ export function onMonsterDefeated(m) {
   setTimeout(() => {
     if (gameState.runId !== expectedRunId) return; // player retreated during the death animation - this run is gone
     gameState.mobsCleared++; // one full wave of mobs cleared
+    if (gameState.expeditionMode === 'ruins') {
+      if (gameState.ruinsKillCount >= RUINS_KILL_TARGET) enterPrepBoss();
+      else spawnWave();
+      return;
+    }
     const encounterId = checkResonanceTriggers();
-    const continueThroughEvent = () => startRandomEvent(continueAfterClearedWave);
+    const continueThroughEvent = () => startRandomEvent(action => {
+      if (action === 'enterRuins') beginRuinsExpedition();
+      else continueAfterClearedWave();
+    });
     if (encounterId) {
       // Character resonance always stops unattended progress first. Ordinary
       // events only begin after that non-skippable story encounter finishes.
@@ -380,10 +593,16 @@ export function continueAfterClearedWave() {
 // floor progress, which keeps unattended play productive instead of punitive.
 export function endRun() {
   gameState.runId++; // invalidate any in-flight onMonsterDefeated() timeout from the run just ending
+  // Leaving or losing inside the ruins makes the entrance eligible to be
+  // drawn again. The goddess transition has already advanced past RUINS, so
+  // its story state is deliberately left untouched here.
+  if (gameState.chapter1State === CHAPTER1_STATES.RUINS) setChapter1State(CHAPTER1_STATES.FOREST);
   gameState.bankedGold += gameState.runGold;
   gameState.runItemGains = {};
   gameState.runGold = 0;
   gameState.floor = 1;
+  gameState.expeditionMode = 'forest';
+  gameState.ruinsKillCount = 0;
   gameState.mobsCleared = 0;
   gameState.currentEventId = null;
   gameState.eventCountdown = 0;
@@ -484,6 +703,8 @@ export function tick() {
   const alive = activeAliveMembers();
 
   if (alive.length === 0) {
+    const storyBoss = gameState.monsters.find(monster => monster.storyBoss && monster.defeatTriggered);
+    if (storyBoss) return;
     doWipeReset();
     return;
   }
@@ -555,6 +776,7 @@ export function tickCharacters(alive) {
       log(`${CHAR_DEFS[c.id].name} 普通攻擊 ${target.name}，造成 ${dmg} 傷害`, 'party');
       emitCombatEvent({ type: 'popup', targetKind: 'monster', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
       emitCombatEvent({ type: 'flash', targetKind: 'monster', targetId: target.id });
+      applyRuinsLordReflection(target, c, dmg);
     }
   });
 }
@@ -579,6 +801,10 @@ export function tickBuffs() {
 
 export function tickMonsters() {
   const boss = gameState.monsters.find(m => m.isBoss);
+  if (boss && boss.alive && boss.storyBoss) {
+    tickRuinsLord(boss);
+    return;
+  }
   if (boss && boss.alive) {
     gooTick(boss);
     bossSummonTick(boss);

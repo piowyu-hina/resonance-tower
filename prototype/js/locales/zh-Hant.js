@@ -47,6 +47,7 @@ export default {
   'region.slimeForest.drop.statBook': '能力書',
   'region.slimeForest.drop.skillBook': '技能書',
   'expedition.step.region': '確認區域',
+  'expedition.step.bossIntel': '戰前情報',
   'expedition.currentRegion': '本次遠征區域',
   'expedition.recommendedLevel': '推薦等級',
   'expedition.boss': '區域首領',

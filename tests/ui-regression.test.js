@@ -321,6 +321,265 @@ async function testXiaochuEncounterFlow(browser) {
   await page.close();
 }
 
+async function testChapter1RuinsFlow(browser) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  page.runtimeErrors = [];
+  page.on('pageerror', error => page.runtimeErrors.push(error));
+  await page.goto(`${prototypeUrl}?debug`, { waitUntil: 'load' });
+  await page.click('#debugToggleBtn');
+  await page.click('[data-debug-action="ruins-event"]');
+  await page.waitForSelector('#eventOverlay.open');
+  assert.equal(await page.getAttribute('#eventSceneImage', 'src'), 'assets/events/ruins_entrance.png');
+  const click = id => page.evaluate(elId => document.getElementById(elId).click(), id);
+  const advanceDialogue = async times => {
+    for (let i = 0; i < times; i++) {
+      await page.evaluate(() =>
+        document.getElementById('dialogueOverlay').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    }
+  };
+
+  await page.evaluate(() => {
+    const hooks = window.__debugHooks;
+    // Keep the combat surface visible while its tick is paused, so the
+    // freshly-reset 0/10 state cannot race the first automatic attack.
+    hooks.setPhase(hooks.PHASES.DUNGEON_INTRO, { force: true });
+    hooks.gameState.partyLocked = true;
+    hooks.buildBattleRoster();
+    hooks.render();
+  });
+
+  await page.click('[data-event-action="choice"][data-option-index="0"]');
+  await page.waitForFunction(() => window.__debugHooks.gameState.expeditionMode === 'ruins', null, { timeout: 3000 });
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('combatView')).backgroundImage.includes('ruins_battle.png'), null, { timeout: 2000 });
+  assert.deepEqual(await page.evaluate(() => ({
+    chapter: window.__debugHooks.gameState.chapter1State,
+    count: window.__debugHooks.gameState.ruinsKillCount,
+    ruinMobs: window.__debugHooks.gameState.monsters.every(monster => monster.defId.startsWith('ruins')),
+    ruinsBackground: getComputedStyle(document.getElementById('combatView')).backgroundImage.includes('ruins_battle.png'),
+  })), { chapter: 'ruins', count: 0, ruinMobs: true, ruinsBackground: true });
+  await page.waitForSelector('.ruinsLeaveButton');
+
+  // Leaving resets only the temporary ruins progress and makes the entrance
+  // eligible to appear again.
+  await page.evaluate(() => {
+    window.__debugHooks.gameState.ruinsKillCount = 6;
+    document.querySelector('.ruinsLeaveButton').click();
+  });
+  assert.deepEqual(await page.evaluate(() => ({
+    chapter: window.__debugHooks.gameState.chapter1State,
+    mode: window.__debugHooks.gameState.expeditionMode,
+    count: window.__debugHooks.gameState.ruinsKillCount,
+  })), { chapter: 'forest', mode: 'forest', count: 0 });
+
+  // Re-enter and resolve the tenth kill. The ordinary combat tick performs
+  // the real death sweep and delayed encounter transition.
+  await page.evaluate(() => window.__debugHooks.startEventById('ruins-entrance', action => {
+    if (action === 'enterRuins') window.__debugHooks.beginRuinsExpedition();
+  }));
+  await page.click('[data-event-action="choice"][data-option-index="0"]');
+  await page.waitForFunction(() => window.__debugHooks.gameState.expeditionMode === 'ruins', null, { timeout: 3000 });
+  await page.evaluate(() => {
+    const hooks = window.__debugHooks;
+    hooks.setPhase(hooks.PHASES.COMBAT, { force: true });
+    hooks.gameState.partyLocked = true;
+    hooks.buildBattleRoster();
+    hooks.render();
+    const state = hooks.gameState;
+    state.ruinsKillCount = 9;
+    state.monsters = [state.monsters[0]];
+    state.monsters[0].hp = 0;
+  });
+  await page.waitForFunction(() => {
+    const state = window.__debugHooks.gameState;
+    return state.phase === 'prepBoss' && state.activeOverlay === 'shop';
+  }, null, { timeout: 4000 });
+  await page.waitForSelector('#shopOverlay.open');
+  assert.deepEqual(await page.evaluate(() => ({
+    phase: window.__debugHooks.gameState.phase,
+    shopOpen: document.getElementById('shopOverlay').classList.contains('open'),
+    shopMode: window.__debugHooks.gameState.shopMode,
+    hasBoss: window.__debugHooks.gameState.monsters.some(monster => monster.storyBoss),
+  })), { phase: 'prepBoss', shopOpen: true, shopMode: 'dungeon', hasBoss: false });
+
+  await page.click('#shopLeaveBtn');
+  await page.waitForFunction(() => window.__debugHooks.gameState.activeOverlay === null);
+  assert.deepEqual(await page.evaluate(() => ({
+    prepVisible: getComputedStyle(document.getElementById('prepView')).display !== 'none',
+    heading: document.getElementById('prepHeading').textContent,
+    start: document.getElementById('startBtn').textContent,
+    step: document.getElementById('expeditionRegionStepText').textContent,
+    regionImageVisible: getComputedStyle(document.getElementById('expeditionRegionImage')).display !== 'none',
+    regionImage: document.getElementById('expeditionRegionImage').getAttribute('src'),
+    region: document.getElementById('expeditionRegionName').textContent,
+    description: document.getElementById('expeditionRegionDescription').textContent,
+    boss: document.getElementById('expeditionRegionBoss').textContent,
+    recommendedLevel: document.getElementById('expeditionRegionLevel').textContent,
+    threats: document.getElementById('expeditionRegionThreats').textContent,
+  })), {
+    prepVisible: true,
+    heading: '首領戰前確認',
+    start: '挑戰首領',
+    step: '戰前情報',
+    regionImageVisible: true,
+    regionImage: 'assets/events/ruins_entrance.png',
+    region: '???',
+    description: '???',
+    boss: '???',
+    recommendedLevel: '???',
+    threats: '???',
+  });
+  await page.evaluate(() => document.getElementById('startBtn').click());
+
+  await page.waitForSelector('#bossIntroOverlay.open');
+  assert.deepEqual(await page.evaluate(() => ({
+    phase: window.__debugHooks.gameState.phase,
+    name: document.querySelector('#bossIntroOverlay .bossIntroName').textContent,
+    mystery: document.getElementById('bossIntroOverlay').classList.contains('mystery'),
+    ruinsAnimation: document.getElementById('bossIntroOverlay').classList.contains('ruinsMasterIntro'),
+    portrait: document.querySelector('#bossIntroOverlay .bossIntroPortrait').getAttribute('src'),
+    seal: document.querySelector('#bossIntroOverlay .bossIntroSeal img').getAttribute('src'),
+  })), {
+    phase: 'bossIntro',
+    name: '遺跡之主',
+    mystery: false,
+    ruinsAnimation: true,
+    portrait: 'assets/monsters/floor1/relics_master.png',
+    seal: 'assets/effects/ruins_master_seal.png',
+  });
+  await page.waitForFunction(() => document.getElementById('floorLabel').textContent === '遺跡之主' && !document.querySelector('.ruinsLeaveButton'), null, { timeout: 2000 });
+  assert.deepEqual(await page.evaluate(() => {
+    const boss = window.__debugHooks.gameState.monsters[0];
+    return {
+      name: boss.name,
+      level: boss.level,
+      leaveHidden: !document.querySelector('.ruinsLeaveButton'),
+      label: document.getElementById('floorLabel').textContent,
+    };
+  }), { name: '遺跡之主', level: 100, leaveHidden: true, label: '遺跡之主' });
+
+  await page.waitForFunction(() => document.getElementById('bossIntroOverlay').getAttribute('aria-hidden') === 'true' && window.__debugHooks.gameState.phase === 'combat', null, { timeout: 6500 });
+  assert.equal(await page.locator('.monsterCard.storyBoss .lvlTag').textContent(), 'Lv.XXX');
+  assert.equal(await page.locator('.monsterCard.storyBoss .actionRow').evaluate(element => getComputedStyle(element).visibility), 'visible');
+  assert.equal(await page.locator('.monsterCard.storyBoss .hpRow').evaluate(element => getComputedStyle(element).visibility), 'hidden');
+  await page.waitForSelector('#bossArena .ruinsSpike', { timeout: 2500 });
+  assert.equal(await page.locator('#bossArena .ruinsSpike').count(), 4);
+  const hpBeforeSpikeImpact = await page.evaluate(() => window.__debugHooks.gameState.roster.find(character => character.id === 'wuming').curHp);
+  await page.waitForTimeout(1700);
+  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.roster.find(character => character.id === 'wuming').curHp), hpBeforeSpikeImpact, 'spikes should not deal damage before visibly reaching the left edge');
+  assert.equal(await page.locator('#bossArena .ruinsSpike').count(), 4, 'the five-second spike travel must remain visible after 1.7 seconds');
+  await page.locator('#bossArena .ruinsSpike').first().dispatchEvent('click');
+  await page.waitForFunction(() => document.querySelectorAll('#bossArena .ruinsSpike:not(.destroyed)').length === 3);
+  await page.waitForSelector('#bossArena .ruinsSpikeImpact', { timeout: 6000 });
+  assert.match(await page.locator('#bossArena .ruinsSpikeImpact').textContent(), /^1 枚岩刺命中　-\d+ HP$/);
+  await page.waitForFunction(() => window.__debugHooks.storyState.dialogueScriptId === 'chapter1_defeat', null, { timeout: 7000 });
+  assert.deepEqual(await page.evaluate(() => {
+    const wuming = window.__debugHooks.gameState.roster.find(character => character.id === 'wuming');
+    return { hp: wuming.curHp, alive: wuming.alive, chapter: window.__debugHooks.gameState.chapter1State };
+  }), { hp: 0, alive: false, chapter: 'goddess' });
+
+  await advanceDialogue(2);
+  assert.deepEqual(await page.evaluate(() => ({
+    playing: document.getElementById('teleportStoneBreak').classList.contains('playing'),
+    hidden: document.getElementById('teleportStoneBreak').getAttribute('aria-hidden'),
+    locked: window.__debugHooks.storyState.lineEffectLocked,
+    art: document.querySelector('.teleportBreakStone img').getAttribute('src'),
+  })), {
+    playing: true,
+    hidden: 'false',
+    locked: true,
+    art: 'assets/story/teleport_stone.png',
+  });
+  await page.waitForFunction(() => !window.__debugHooks.storyState.lineEffectLocked, null, { timeout: 3500 });
+  await advanceDialogue(lineCount('chapter1_defeat') - 2);
+  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialogueScriptId), 'chapter1_goddess');
+  assert.deepEqual(await page.evaluate(() => ({
+    phase: window.__debugHooks.storyState.dialoguePhase,
+    playing: document.getElementById('heavenTransition').classList.contains('playing'),
+    arrival: document.getElementById('heavenTransition').classList.contains('arrival'),
+    backdrop: getComputedStyle(document.getElementById('dialogueOverlay')).backgroundImage.includes('heaven_sanctuary.png'),
+    corridor: getComputedStyle(document.querySelector('.heavenTransitionCorridor')).backgroundImage.includes('teleport_corridor.png'),
+  })), {
+    phase: 'intro',
+    playing: true,
+    arrival: true,
+    backdrop: true,
+    corridor: true,
+  });
+  await click('heavenTransition');
+  assert.equal(await page.textContent('#dialogueText'), '無名在一片明亮、安靜，像天堂一樣的地方醒來。');
+  await advanceDialogue(2);
+  assert.deepEqual(await page.evaluate(() => ({
+    goddess: document.getElementById('dialoguePortraitFrame').classList.contains('goddessSpeaker'),
+    art: document.getElementById('dialoguePortraitImg').getAttribute('src'),
+    entering: document.getElementById('dialoguePortraitImg').classList.contains('lineEntering'),
+  })), { goddess: true, art: 'assets/story/goddess.png', entering: true });
+  await page.waitForTimeout(700);
+  await advanceDialogue(1);
+  await advanceDialogue(1);
+  assert.deepEqual(await page.evaluate(() => ({
+    goddess: document.getElementById('dialoguePortraitFrame').classList.contains('goddessSpeaker'),
+    returning: document.getElementById('dialoguePortraitFrame').classList.contains('goddessReturning'),
+    entering: document.getElementById('dialoguePortraitImg').classList.contains('lineEntering'),
+  })), { goddess: true, returning: true, entering: false });
+  assert.equal(DIALOGUE_DEFS.chapter1_goddess.some(line => line.text === '歡迎回到人間，無名。'), false);
+  await advanceDialogue(lineCount('chapter1_goddess') - 4);
+  assert.deepEqual(await page.evaluate(() => ({
+    phase: window.__debugHooks.storyState.dialoguePhase,
+    playing: document.getElementById('heavenTransition').classList.contains('playing'),
+    departure: document.getElementById('heavenTransition').classList.contains('departure'),
+  })), { phase: 'outro', playing: true, departure: true });
+  await click('heavenTransition');
+  assert.deepEqual(await page.evaluate(() => ({
+    script: window.__debugHooks.storyState.dialogueScriptId,
+    location: window.__debugHooks.overlayUiState.prepLocation,
+    mode: window.__debugHooks.gameState.expeditionMode,
+  })), { script: 'chapter1_home_return', location: 'home', mode: 'forest' });
+  await advanceDialogue(lineCount('chapter1_home_return'));
+  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.chapter1State), 'journalPending');
+  assert.deepEqual(await page.evaluate(() => ({
+    journalVisible: !document.getElementById('travelJournalBtn').hidden,
+    journalEnabled: !document.getElementById('travelJournalBtn').disabled,
+    journalFocused: document.getElementById('travelJournalBtn').classList.contains('storyFocusTarget'),
+    bodyLocked: document.body.classList.contains('storyOperationLock'),
+    growthDisabled: document.getElementById('homeGrowthBtn').disabled,
+    backDisabled: document.getElementById('homeBackBtn').disabled,
+    bagDisabled: document.getElementById('bagBtn').disabled,
+    guideVisible: !document.getElementById('homeGuideHina').hidden,
+    guideParent: document.getElementById('homeGuideHina').parentElement.id,
+    guideText: document.getElementById('storyGuideText').textContent,
+  })), {
+    journalVisible: true,
+    journalEnabled: true,
+    journalFocused: true,
+    bodyLocked: true,
+    growthDisabled: true,
+    backDisabled: true,
+    bagDisabled: true,
+    guideVisible: true,
+    guideParent: 'travelJournalBtn',
+    guideText: '翻翻那本手記吧',
+  });
+
+  await click('travelJournalBtn');
+  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.chapter1State), 'journalReading');
+  assert.equal(await page.getAttribute('#journalOverlay', 'aria-hidden'), 'false');
+  for (let i = 0; i < JOURNAL_PAGES.length; i++) {
+    await page.waitForFunction(() => !document.getElementById('journalNextBtn').disabled, null, { timeout: 3000 });
+    assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[i]);
+    await click('journalNextBtn');
+  }
+  await page.waitForFunction(() => window.__debugHooks.storyState.dialogueScriptId === 'chapter1_after_book');
+  await advanceDialogue(lineCount('chapter1_after_book'));
+  assert.deepEqual(await page.evaluate(() => ({
+    chapter: window.__debugHooks.gameState.chapter1State,
+    bodyLocked: document.body.classList.contains('storyOperationLock'),
+    guideHidden: document.getElementById('homeGuideHina').hidden,
+  })), { chapter: 'complete', bodyLocked: false, guideHidden: true });
+
+  assertNoRuntimeErrors(page, 'chapter 1 ruins flow');
+  await page.close();
+}
+
 async function openEvent(browser, eventId) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   page.runtimeErrors = [];
@@ -404,6 +663,7 @@ async function testEventInteractions(browser) {
     await testBossTransition(browser);
     await testSameSpeakerDialogue(browser);
     await testOverlayExclusivity(browser);
+    await testChapter1RuinsFlow(browser);
     await testXiaochuEncounterFlow(browser);
     await testEventInteractions(browser);
     console.log('ui-regression.test.js: all browser assertions passed');

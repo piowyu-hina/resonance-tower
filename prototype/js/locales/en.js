@@ -50,6 +50,7 @@ export default {
   'region.slimeForest.drop.statBook': 'Ability Book',
   'region.slimeForest.drop.skillBook': 'Skill Book',
   'expedition.step.region': 'Confirm Region',
+  'expedition.step.bossIntel': 'Battle Intel',
   'expedition.currentRegion': 'Current Expedition Region',
   'expedition.recommendedLevel': 'Recommended Level',
   'expedition.boss': 'Region Boss',

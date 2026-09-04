@@ -1,8 +1,9 @@
 import { gameState } from './state.js';
 import { drainCombatEvents } from './combat-events.js';
-import { popup, flash, showSkillCastEffect, showVictoryOverlay, showDefeatOverlay } from './ui-overlays.js';
-import { render, buildMonsterCards } from './ui-main.js';
+import { popup, flash, showSkillCastEffect, showVictoryOverlay, showDefeatOverlay, showBossIntro } from './ui-overlays.js';
+import { render, buildCombatActionBar, buildMonsterCards } from './ui-main.js';
 import { attachSkillTooltip } from './ui-loadout.js';
+import { destroyRuinsSpike } from './ruins.js';
 
 // Consumes the combat-event queue (combat-events.js) that combat.js populates
 // instead of calling popup/flash/DOM functions directly. flushCombat() is the
@@ -14,6 +15,62 @@ import { attachSkillTooltip } from './ui-loadout.js';
 function resolvePortraitEl(targetKind, targetId) {
   const refs = targetKind === 'char' ? gameState.charEls[targetId] : gameState.monsterEls[targetId];
   return refs && refs.portraitEl;
+}
+
+function showRuinsSpikeRush(event) {
+  const arena = document.getElementById('bossArena');
+  if (!arena) return;
+  arena.querySelectorAll('.ruinsSpike').forEach(element => element.remove());
+
+  const spikeIds = Array.isArray(event.spikeIds) ? event.spikeIds : [];
+  const count = spikeIds.length;
+  if (count === 0) return;
+  const duration = Math.max(1000, Number(event.travelMs) || 5000);
+  const spikeHeight = 54;
+  const availableHeight = Math.max(0, arena.clientHeight - spikeHeight);
+  const hint = document.createElement('div');
+  hint.className = 'ruinsSpikeHint';
+  hint.textContent = '點擊岩刺！';
+  arena.appendChild(hint);
+  for (let index = 0; index < count; index++) {
+    const spike = document.createElement('button');
+    spike.type = 'button';
+    spike.className = 'ruinsSpike';
+    spike.setAttribute('aria-label', `擊碎岩刺 ${index + 1}`);
+    const ratio = count === 1 ? 0.5 : index / (count - 1);
+    spike.style.setProperty('--ruins-spike-top', `${Math.round(availableHeight * ratio)}px`);
+    spike.style.setProperty('--ruins-spike-right', `${-88 + (count - index - 1) * 36}px`);
+    spike.style.setProperty('--ruins-spike-duration', `${duration}ms`);
+    spike.style.setProperty('--ruins-spike-scale', String(0.82 + (index % 3) * 0.09));
+    spike.innerHTML = '<img src="assets/skills/floor1/relics_master_skill3_effect.png" alt="" draggable="false">';
+    spike.addEventListener('click', () => {
+      if (!destroyRuinsSpike(event.bossId, spikeIds[index])) return;
+      // Replacing the travel animation with the break animation would snap
+      // `right` back to its starting value. Pin the spike at its current
+      // on-screen position first so it shatters exactly where it was clicked.
+      const currentLeft = spike.offsetLeft;
+      spike.style.left = `${currentLeft}px`;
+      spike.style.right = 'auto';
+      spike.classList.add('destroyed');
+      spike.disabled = true;
+      if (!arena.querySelector('.ruinsSpike:not(.destroyed)')) hint.remove();
+      render();
+    });
+    spike.addEventListener('animationend', () => spike.remove(), { once: true });
+    arena.appendChild(spike);
+  }
+  setTimeout(() => hint.remove(), duration + 100);
+}
+
+function showRuinsSpikeImpact(event) {
+  const arena = document.getElementById('bossArena');
+  if (!arena) return;
+  arena.querySelector('.ruinsSpikeImpact')?.remove();
+  const impact = document.createElement('div');
+  impact.className = 'ruinsSpikeImpact';
+  impact.textContent = `${event.hitCount} 枚岩刺命中　-${event.totalDamage} HP`;
+  arena.appendChild(impact);
+  setTimeout(() => impact.remove(), 900);
 }
 
 function playCombatEvent(event) {
@@ -52,6 +109,12 @@ function playCombatEvent(event) {
     case 'waveSpawned':
       buildMonsterCards();
       break;
+    case 'combatActionsChanged':
+      buildCombatActionBar();
+      break;
+    case 'bossIntro':
+      showBossIntro(() => {}, event.presentation);
+      break;
     case 'monsterSummoned': {
       buildMonsterCards();
       const bossPortrait = gameState.monsterEls[event.bossId] && gameState.monsterEls[event.bossId].portraitEl;
@@ -59,6 +122,26 @@ function playCombatEvent(event) {
       popup(bossPortrait, 'SUMMON', 'buff');
       break;
     }
+    case 'ruinsShieldChanged': {
+      const refs = gameState.monsterEls[event.bossId];
+      if (refs) refs.card.classList.toggle('reflectShield', event.active);
+      break;
+    }
+    case 'ruinsShieldPulse': {
+      const refs = gameState.monsterEls[event.bossId];
+      if (refs) {
+        refs.card.classList.remove('reflectShieldPulse');
+        void refs.card.offsetWidth;
+        refs.card.classList.add('reflectShieldPulse');
+      }
+      break;
+    }
+    case 'ruinsSpikeRush':
+      showRuinsSpikeRush(event);
+      break;
+    case 'ruinsSpikeImpact':
+      showRuinsSpikeImpact(event);
+      break;
     case 'victory':
       showVictoryOverlay(event.securedGold);
       break;
@@ -86,6 +169,13 @@ export function updateMonsterSkillIcons(m) {
   const refs = gameState.monsterEls[m.id];
   const container = refs.skillsEl;
   container.innerHTML = '';
+
+  if (!m.skill) {
+    refs.skillCdOverlayEl = null;
+    refs.skill2CdOverlayEl = null;
+    refs.skill3CdOverlayEl = null;
+    return;
+  }
 
   const el = document.createElement('div');
   el.className = 'skillIcon';

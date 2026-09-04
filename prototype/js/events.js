@@ -1,5 +1,5 @@
 import { EVENT_IDLE_MS, ITEM_DEFS } from './constants.js';
-import { activeAliveMembers, gameState, log } from './state.js';
+import { activeAliveMembers, gameState, log, CHAPTER1_STATES } from './state.js';
 import { addInventoryItem } from './shop.js';
 
 const EVENT_RESULT_DELAY_MS = 1100;
@@ -34,6 +34,17 @@ const PIPE_TEMPLATES = Object.freeze([
 ]);
 
 export const EVENT_DEFS = Object.freeze([
+  {
+    id: 'ruins-entrance',
+    kind: 'choice',
+    image: 'ruins_entrance.png',
+    title: '遺跡之地',
+    description: '森林中出現了一處以前沒有見過的遺跡入口。',
+    options: [
+      { title: '進入遺跡', desc: '踏入遺跡，探索深處。', apply: () => result('你踏入了遺跡。', 'success', '', 'enterRuins') },
+      { title: '暫時離開', desc: '繼續原本的森林遠征。', apply: () => result('你暫時離開了遺跡入口。', 'neutral', '') },
+    ],
+  },
   {
     id: 'abandoned-camp',
     kind: 'choice',
@@ -130,6 +141,7 @@ const runtime = {
   resolved: false,
   timers: new Set(),
   finishTimer: null,
+  resultAction: null,
   lastEventId: null,
   lastPipeTemplateIndex: null,
   deck: [],
@@ -145,8 +157,12 @@ function shuffle(values) {
 }
 
 function drawEventId() {
+  const availableIds = EVENT_DEFS
+    .filter(event => event.id !== 'ruins-entrance' || gameState.chapter1State === CHAPTER1_STATES.FOREST)
+    .map(event => event.id);
+  runtime.deck = runtime.deck.filter(id => availableIds.includes(id));
   if (!runtime.deck.length) {
-    runtime.deck = shuffle(EVENT_DEFS.map(event => event.id));
+    runtime.deck = shuffle(availableIds);
     if (runtime.deck.length > 1 && runtime.deck[0] === runtime.lastEventId) {
       [runtime.deck[0], runtime.deck[1]] = [runtime.deck[1], runtime.deck[0]];
     }
@@ -170,8 +186,8 @@ function clearChallengeTimers() {
   runtime.timers.clear();
 }
 
-function result(message, tone = 'success', logType = 'good') {
-  return { message, tone, logType };
+function result(message, tone = 'success', logType = 'good', action = null) {
+  return { message, tone, logType, action };
 }
 
 function goldOutcome(amount, flavor) {
@@ -248,6 +264,7 @@ export function startEventById(eventId, onComplete = null) {
   runtime.runId = gameState.runId;
   runtime.resolved = false;
   runtime.finishTimer = null;
+  runtime.resultAction = null;
 
   gameState.activeOverlay = 'event';
   gameState.currentEventId = def.id;
@@ -255,8 +272,14 @@ export function startEventById(eventId, onComplete = null) {
   document.getElementById('eventTitle').textContent = def.title;
   document.getElementById('eventDescription').textContent = def.description;
   const art = document.getElementById('eventSceneImage');
-  art.src = `assets/events/${def.image}`;
-  art.alt = def.title;
+  art.hidden = !def.image;
+  if (def.image) {
+    art.src = `assets/events/${def.image}`;
+    art.alt = def.title;
+  } else {
+    art.removeAttribute('src');
+    art.alt = '';
+  }
   const modal = document.getElementById('eventModal');
   modal.classList.remove('resolved', 'result-success', 'result-failure', 'result-neutral');
   const feedback = document.getElementById('eventFeedback');
@@ -789,6 +812,7 @@ export function skipActiveEvent(reason = 'skip') {
 function resolveEvent(outcome) {
   if (runtime.resolved || gameState.activeOverlay !== 'event') return;
   runtime.resolved = true;
+  runtime.resultAction = outcome.action || null;
   clearChallengeTimers();
   gameState.eventCountdown = 0;
   const modal = document.getElementById('eventModal');
@@ -811,6 +835,7 @@ function finishActiveEvent() {
     overlay.setAttribute('aria-hidden', 'true');
   }
   const onComplete = runtime.onComplete;
+  const resultAction = runtime.resultAction;
   const sameRun = runtime.runId === gameState.runId;
   runtime.def = null;
   runtime.challenge = null;
@@ -818,8 +843,9 @@ function finishActiveEvent() {
   runtime.onComplete = null;
   runtime.resolved = false;
   runtime.finishTimer = null;
+  runtime.resultAction = null;
   gameState.currentEventId = null;
   gameState.eventCountdown = 0;
   if (gameState.activeOverlay === 'event') gameState.activeOverlay = null;
-  if (sameRun && onComplete) onComplete();
+  if (sameRun && onComplete) onComplete(resultAction);
 }

@@ -1,7 +1,8 @@
-import { CHAR_DEFS, RARITY_DEFS, regionName, localizedRegionDef, MOBS_PER_FLOOR, SOLO_PARTY_LIMIT, GOO_SKILL_CD_MS, ITEM_DEFS } from './constants.js';
+import { CHAR_DEFS, RARITY_DEFS, regionName, localizedRegionDef, MOBS_PER_FLOOR, SOLO_PARTY_LIMIT, GOO_SKILL_CD_MS, ITEM_DEFS, RUINS_KILL_TARGET } from './constants.js';
 import {
   gameState, PHASES, STATUS_DEFS, isPrepPhase, isCombatSurfacePhase, contractStoryLocked, isCharUnlocked,
   characterPortraitPath, characterSkins, equippedSkin, unlockReqText, aliveMonsters,
+  RESONANCE_STATES, setResonanceState, CHAPTER1_STATES,
 } from './state.js';
 import { t, formatLocaleNumber } from './i18n.js';
 import {
@@ -14,7 +15,8 @@ import { buildShopUI, setInventoryOpen, renderShopView } from './ui-commerce.js'
 import { bindDialogueUI, queueDialogue } from './story.js';
 import {
   OVERLAY_CLOSERS, overlayUiState, restartAfterDefeat, returnToVillageAfterDefeat, confirmVictory, showBossIntro,
-  showDungeonEntry, prepareBossCombat, prepareDungeonCombat, activatePreparedCombat, animateSurfaceChange,
+  showDungeonEntry, prepareBossCombat, prepareRuinsLordCombat, prepareDungeonCombat,
+  activatePreparedCombat, activatePreparedRuinsLord, animateSurfaceChange,
 } from './ui-overlays.js';
 import { setCharacterDetailOpen } from './ui-character.js';
 import { resetBossEntryCooldowns, doRetreat, toggleParty, canUseCharacterAction, isCharacterActionLocked, useCharacterAction } from './combat.js';
@@ -31,12 +33,12 @@ export function buildUI() {
 
   document.getElementById('townShopBtn').addEventListener('click', openTownShop);
   document.getElementById('homeLocationBtn').addEventListener('click', () => {
-    if (gameState.resonanceState.xiaochu === 'goHome') {
+    if (gameState.resonanceState.xiaochu === RESONANCE_STATES.GO_HOME) {
       overlayUiState.prepLocation = 'home';
       overlayUiState.homeMode = 'menu';
       render();
       queueDialogue('xiaochu_home_search', () => {
-        gameState.resonanceState.xiaochu = 'bookPending';
+        setResonanceState('xiaochu', RESONANCE_STATES.BOOK_PENDING);
         render();
       });
       return;
@@ -119,8 +121,17 @@ export function buildUI() {
         // Replace the finished mob wave before the combat view becomes visible.
         // Otherwise display:none -> block restarts every retained death animation
         // behind the translucent boss entrance.
-        prepareBossCombat();
-        showBossIntro(activatePreparedCombat);
+        if (gameState.expeditionMode === 'ruins') {
+          prepareRuinsLordCombat();
+          showBossIntro(activatePreparedRuinsLord, {
+            name: '遺跡之主',
+            image: 'assets/monsters/floor1/relics_master.png',
+            variant: 'ruinsMaster',
+          });
+        } else {
+          prepareBossCombat();
+          showBossIntro(activatePreparedCombat);
+        }
       } else {
         showDungeonEntry(prepareDungeonCombat, activatePreparedCombat);
       }
@@ -287,12 +298,17 @@ export function buildCombatActionBar() {
       <span class="itemCdText"></span>
     </button>
     <div class="relicActions"></div>
+    ${gameState.expeditionMode === 'ruins' && !gameState.monsters.some(monster => monster.storyBoss) ? '<button class="ruinsLeaveButton" type="button">離開遺跡</button>' : ''}
   `;
   const relicActions = barEl.querySelector('.relicActions');
   const combatItemAction = barEl.querySelector('.combatItemAction');
   attachCombatActionTooltip(combatItemAction, () => gameState.equippedCombatItemId);
   combatItemAction.addEventListener('click', () => {
     if (gameState.equippedCombatItemId) useCombatItem(gameState.equippedCombatItemId);
+  });
+  barEl.querySelector('.ruinsLeaveButton')?.addEventListener('click', () => {
+    doRetreat();
+    flushCombat();
   });
   gameState.party.forEach(id => {
     const action = CHAR_DEFS[id].action;
@@ -398,22 +414,22 @@ export function buildMonsterCards() {
   monsterSideEl.innerHTML = '';
   gameState.monsters.forEach(m => {
     const card = document.createElement('div');
-    card.className = `monsterCard${m.isBoss ? ' boss' : ''}`;
+    card.className = `monsterCard${m.isBoss ? ' boss' : ''}${m.storyBoss ? ' storyBoss' : ''}`;
     card.innerHTML = `
       <div class="portrait big">
-        <img src="assets/monsters/${m.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-        <div class="fallback" style="display:none;">👾</div>
+        ${m.img ? `<img src="assets/monsters/${m.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` : ''}
+        <div class="fallback" style="display:${m.img ? 'none' : 'flex'};">${m.storyBoss ? '???' : '👾'}</div>
       </div>
       <div class="monsterTopRow">
         <div class="name"></div>
         <span class="lvlTag">Lv.<span class="lvl"></span></span>
       </div>
-      <div class="row">
+      <div class="row hpRow">
         <span class="hpLabel">HP</span>
         <div class="barOuter"><div class="barInner hpBar"></div></div>
         <span class="hpText"></span>
       </div>
-      <div class="row">
+      <div class="row actionRow">
         <span class="atkLabel" aria-label="下次行動倒數">⏱</span>
         <div class="barOuter"><div class="barInner atkBar"></div></div>
       </div>
@@ -442,6 +458,10 @@ export function buildMonsterCards() {
 }
 
 export function floorLabelText() {
+  if (gameState.expeditionMode === 'ruins') {
+    if (gameState.monsters.some(monster => monster.storyBoss)) return '遺跡之主';
+    return `遺跡之地　${Math.min(gameState.ruinsKillCount, RUINS_KILL_TARGET)}/${RUINS_KILL_TARGET}`;
+  }
   const region = regionName(gameState.floor);
     if (gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked) {
     if (overlayUiState.prepLocation === 'village') return t('village.title');
@@ -464,7 +484,9 @@ export function floorLabelText() {
 
 export function render() {
   const inPrep = isPrepPhase();
-  document.getElementById('app').classList.toggle('combatActive', !inPrep);
+  const app = document.getElementById('app');
+  app.classList.toggle('combatActive', !inPrep);
+  app.classList.toggle('ruinsActive', !inPrep && gameState.expeditionMode === 'ruins');
   const inFreeVillage = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked;
   const floorLabelEl = document.getElementById('floorLabel');
   floorLabelEl.textContent = floorLabelText();
@@ -532,18 +554,20 @@ export function renderPrepView() {
   document.getElementById('homeMenu').hidden = !atHome || overlayUiState.homeMode !== 'menu';
   document.getElementById('homeGrowthView').hidden = !atHome || overlayUiState.homeMode !== 'growth';
   const storyLocked = contractStoryLocked();
-  const waitingForBook = ['bookPending', 'bookReading'].includes(gameState.resonanceState.xiaochu);
-  const oathReady = gameState.resonanceState.xiaochu === 'oathReady';
-  const mustGoHome = gameState.resonanceState.xiaochu === 'goHome';
-  const journalUnlocked = ['bookPending', 'bookReading', 'oathReady', 'contracting', 'contracted'].includes(gameState.resonanceState.xiaochu);
-  const contractAvailable = ['oathReady', 'contracting', 'contracted'].includes(gameState.resonanceState.xiaochu);
+  const waitingForBook = [RESONANCE_STATES.BOOK_PENDING, RESONANCE_STATES.BOOK_READING].includes(gameState.resonanceState.xiaochu);
+  const chapterJournal = [CHAPTER1_STATES.JOURNAL_PENDING, CHAPTER1_STATES.JOURNAL_READING].includes(gameState.chapter1State);
+  const mustReadJournal = waitingForBook || chapterJournal;
+  const oathReady = gameState.resonanceState.xiaochu === RESONANCE_STATES.OATH_READY;
+  const mustGoHome = gameState.resonanceState.xiaochu === RESONANCE_STATES.GO_HOME;
+  const journalUnlocked = [RESONANCE_STATES.BOOK_PENDING, RESONANCE_STATES.BOOK_READING, RESONANCE_STATES.OATH_READY, RESONANCE_STATES.CONTRACTING, RESONANCE_STATES.CONTRACTED].includes(gameState.resonanceState.xiaochu);
+  const contractAvailable = [RESONANCE_STATES.OATH_READY, RESONANCE_STATES.CONTRACTING, RESONANCE_STATES.CONTRACTED].includes(gameState.resonanceState.xiaochu);
   const newCharacter = gameState.roster.find(character => isCharUnlocked(character.id) && !gameState.seenCharacterIds.has(character.id));
-  document.getElementById('travelJournalBtn').hidden = !journalUnlocked;
+  document.getElementById('travelJournalBtn').hidden = !(journalUnlocked || chapterJournal);
   document.getElementById('contractFacilityBtn').hidden = !contractAvailable;
   const visibleHomeFacilities = [...document.querySelectorAll('#homeMenu .homeFacilityBtn')]
     .filter(element => !element.hidden).length;
   document.getElementById('homeMenu').classList.toggle('singleFacility', visibleHomeFacilities === 1);
-  document.getElementById('travelJournalBtn').classList.toggle('storyRequired', waitingForBook);
+  document.getElementById('travelJournalBtn').classList.toggle('storyRequired', mustReadJournal);
   document.getElementById('contractFacilityBtn').classList.toggle('storyRequired', oathReady);
   document.getElementById('homeLocationBtn').classList.toggle('storyRequired', mustGoHome || Boolean(newCharacter && atVillage));
   document.getElementById('homeGrowthBtn').classList.toggle('storyRequired', Boolean(newCharacter && atHome && overlayUiState.homeMode === 'menu'));
@@ -554,7 +578,7 @@ export function renderPrepView() {
   if (mustGoHome) {
     storyFocusTarget = document.getElementById('homeLocationBtn');
     storyGuideKey = 'village.goHome';
-  } else if (waitingForBook && gameState.activeOverlay !== 'journal') {
+  } else if (mustReadJournal && gameState.activeOverlay !== 'journal') {
     storyFocusTarget = document.getElementById('travelJournalBtn');
     storyGuideKey = 'story.guideJournal';
   } else if (oathReady && !gameState.activeOverlay) {
@@ -582,7 +606,7 @@ export function renderPrepView() {
   document.getElementById('expeditionLocationBtn').disabled = storyLocked;
   document.getElementById('homeBackBtn').disabled = storyLocked;
   document.getElementById('homeGrowthBtn').disabled = storyLocked;
-  document.getElementById('travelJournalBtn').disabled = storyLocked && !waitingForBook;
+  document.getElementById('travelJournalBtn').disabled = storyLocked && !mustReadJournal;
   document.getElementById('bagBtn').disabled = storyLocked;
   document.getElementById('regionView').style.display = atRegions ? '' : 'none';
   document.getElementById('expeditionView').style.display = (atVillage || atHome || atRegions) ? 'none' : '';
@@ -642,6 +666,8 @@ export function renderPrepView() {
 
 export function renderRegionContext() {
   const region = localizedRegionDef(gameState.floor);
+  const inBossPrep = gameState.phase === PHASES.PREP_BOSS;
+  const isRuinsBoss = inBossPrep && gameState.expeditionMode === 'ruins';
   const tagHTML = values => values.map(value => `<span>${value}</span>`).join('');
   document.getElementById('forestRegionName').textContent = region.name;
   document.getElementById('forestRegionLevel').textContent = t('format.recommendedLevel', {
@@ -652,15 +678,18 @@ export function renderRegionContext() {
   document.getElementById('forestRegionDrops').textContent = region.drops.join('・');
 
   const image = document.getElementById('expeditionRegionImage');
-  image.src = `assets/ui/${region.image}.png`;
-  image.alt = region.name;
-  document.getElementById('expeditionRegionName').textContent = region.name;
-  document.getElementById('expeditionRegionDescription').textContent = region.description;
-  document.getElementById('expeditionRegionLevel').textContent = t('format.level', {
-    level: formatLocaleNumber(region.recommendedLevel),
-  });
-  document.getElementById('expeditionRegionBoss').textContent = region.boss;
-  document.getElementById('expeditionRegionThreats').textContent = region.threats.join('・');
+  const brief = document.getElementById('expeditionRegionBrief');
+  brief.setAttribute('aria-label', inBossPrep ? t('expedition.step.bossIntel') : t('expedition.currentRegion'));
+  document.getElementById('expeditionRegionStepText').textContent = t(inBossPrep ? 'expedition.step.bossIntel' : 'expedition.step.region');
+  image.src = isRuinsBoss ? 'assets/events/ruins_entrance.png' : `assets/ui/${region.image}.png`;
+  image.alt = isRuinsBoss ? '???' : region.name;
+  document.getElementById('expeditionRegionName').textContent = isRuinsBoss ? '???' : region.name;
+  document.getElementById('expeditionRegionDescription').textContent = isRuinsBoss ? '???' : region.description;
+  document.getElementById('expeditionRegionLevel').textContent = isRuinsBoss
+    ? '???'
+    : t('format.level', { level: formatLocaleNumber(region.recommendedLevel) });
+  document.getElementById('expeditionRegionBoss').textContent = isRuinsBoss ? '???' : region.boss;
+  document.getElementById('expeditionRegionThreats').textContent = isRuinsBoss ? '???' : region.threats.join('・');
 }
 
 export function renderCombatView() {
@@ -671,7 +700,8 @@ export function renderCombatView() {
     const refs = gameState.monsterEls[m.id];
     if (!refs) return;
     refs.nameEl.textContent = m.name;
-    refs.lvlEl.textContent = m.level;
+    refs.lvlEl.textContent = m.displayLevel ?? m.level;
+    refs.card.classList.toggle('reflectShield', (m.reflectShieldMs || 0) > 0);
     refs.hpBar.style.width = clampPct(m.hp, m.maxHp) + '%';
     refs.hpText.textContent = `${Math.max(0, m.hp)}/${m.maxHp}`;
     const atkPct = Math.round((1 - m.actionCountdown / m.atkInterval) * 100);
@@ -685,7 +715,9 @@ export function renderCombatView() {
       refs.skill2CdOverlayEl.style.height = Math.max(0, Math.min(100, skill2CdPct)) + '%';
     }
     if (refs.skill3CdOverlayEl) {
-      const skill3CdPct = Math.round((gameState.gooSpawnCountdown / GOO_SKILL_CD_MS) * 100);
+      const skill3Remaining = m.storyBoss ? m.skill3Cd : gameState.gooSpawnCountdown;
+      const skill3Max = m.storyBoss ? m.skill3.cd * 1000 : GOO_SKILL_CD_MS;
+      const skill3CdPct = Math.round((skill3Remaining / skill3Max) * 100);
       refs.skill3CdOverlayEl.style.height = Math.max(0, Math.min(100, skill3CdPct)) + '%';
     }
   });
@@ -735,6 +767,8 @@ export function renderCombatView() {
     combatItemAction.classList.toggle('disabled', !usable);
     combatItemAction.setAttribute('aria-disabled', String(!usable));
   }
+  const ruinsLeaveButton = document.querySelector('#combatActionBar .ruinsLeaveButton');
+  if (ruinsLeaveButton) ruinsLeaveButton.textContent = `離開遺跡 ${Math.min(gameState.ruinsKillCount, RUINS_KILL_TARGET)}/${RUINS_KILL_TARGET}`;
 }
 
 export function clampPct(v, max) {

@@ -7,8 +7,8 @@
 <title>共鳴之塔｜Resonance Tower</title>
 <link rel="stylesheet" href="styles/base.css?v=20260904-4">
 <link rel="stylesheet" href="styles/items.css?v=20260904-3">
-<link rel="stylesheet" href="styles/story.css?v=20260904-1">
-<link rel="stylesheet" href="styles/world.css?v=20260904-7">
+<link rel="stylesheet" href="styles/story.css?v=20260905-3">
+<link rel="stylesheet" href="styles/world.css?v=20260905-8">
 <link rel="stylesheet" href="styles/events.css?v=20260904-1">
 </head>
 <body>
@@ -53,6 +53,8 @@
       <button type="button" data-debug-action="boss">直接挑戰首領</button>
       <button type="button" data-debug-action="intro">播放首領演出</button>
       <button type="button" data-debug-action="xiaochu-story">準備小初相遇測試</button>
+      <button type="button" data-debug-action="ruins-event">測試遺跡入口</button>
+      <button type="button" data-debug-action="ruins-boss">測試遺跡王戰前</button>
       <button type="button" data-debug-action="event">顯示隨機事件</button>
       <button type="button" data-debug-action="speed">戰鬥模擬速度 1x</button>
       <button type="button" class="danger" data-debug-action="reset">重載乾淨進度</button>
@@ -144,7 +146,7 @@
           <div class="prepMsg" id="prepMsg"></div>
         </div>
       </div>
-      <div class="expeditionStepLabel"><span>1</span><b data-i18n="expedition.step.region">確認區域</b></div>
+      <div class="expeditionStepLabel"><span>1</span><b id="expeditionRegionStepText" data-i18n="expedition.step.region">確認區域</b></div>
       <section id="expeditionRegionBrief" aria-label="目前選擇的遠征區域">
         <img id="expeditionRegionImage" src="assets/ui/slime_forest.png" alt="">
         <div class="expeditionRegionMain">
@@ -336,7 +338,10 @@
 
 <div id="bossIntroOverlay" aria-hidden="true">
   <div class="bossIntroStage">
-    <img src="assets/monsters/floor1/slime_boss.png" alt="史萊姆王" data-i18n-alt="monster.slimeBoss">
+    <div class="bossIntroSeal" aria-hidden="true"><img src="assets/effects/ruins_master_seal.png" alt=""></div>
+    <div class="bossIntroAwakeningGlow" aria-hidden="true"></div>
+    <img class="bossIntroPortrait" src="assets/monsters/floor1/slime_boss.png" alt="史萊姆王" data-i18n-alt="monster.slimeBoss">
+    <div class="bossIntroSilhouette" aria-hidden="true">???</div>
     <div class="bossIntroName" data-i18n="monster.slimeBoss">史萊姆王</div>
   </div>
 </div>
@@ -415,6 +420,33 @@
 
 <!-- 對話系統：靈魂契約等劇情橋段用，見 design.md「契約角色與解鎖」 -->
 <div id="dialogueOverlay" aria-hidden="true">
+  <div id="teleportStoneBreak" aria-hidden="true">
+    <div class="teleportBreakBackdrop"></div>
+    <div class="teleportBreakAura"></div>
+    <div class="teleportBreakShockwave"></div>
+    <div class="teleportBreakStone teleportBreakWhole"><img src="assets/story/teleport_stone.png" alt=""></div>
+    <div class="teleportBreakStone teleportBreakFragment fragment1"><img src="assets/story/teleport_stone.png" alt=""></div>
+    <div class="teleportBreakStone teleportBreakFragment fragment2"><img src="assets/story/teleport_stone.png" alt=""></div>
+    <div class="teleportBreakStone teleportBreakFragment fragment3"><img src="assets/story/teleport_stone.png" alt=""></div>
+    <div class="teleportBreakStone teleportBreakFragment fragment4"><img src="assets/story/teleport_stone.png" alt=""></div>
+    <div class="teleportBreakStone teleportBreakFragment fragment5"><img src="assets/story/teleport_stone.png" alt=""></div>
+    <div class="teleportBreakStone teleportBreakFragment fragment6"><img src="assets/story/teleport_stone.png" alt=""></div>
+    <div class="teleportBreakCrack crack1"></div><div class="teleportBreakCrack crack2"></div><div class="teleportBreakCrack crack3"></div>
+    <div class="teleportBreakFlash"></div>
+    <div class="teleportBreakSparks" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <div id="heavenTransition" role="button" tabindex="-1" aria-label="跳過傳送演出" aria-hidden="true">
+    <div class="heavenTransitionSanctuary"></div>
+    <div class="heavenTransitionCorridor"></div>
+    <div class="heavenTransitionParticles" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="heavenTransitionSigil" aria-hidden="true"><img src="assets/story/goddess_back.png" alt=""></div>
+    <div class="heavenTransitionVeil" aria-hidden="true"></div>
+  </div>
   <div id="soulResonance" role="button" tabindex="-1" aria-label="繼續靈魂共鳴演出" aria-hidden="true" data-i18n-aria-label="aria.continueResonance">
     <div class="soulResonanceGlow"></div>
     <img id="soulResonanceOrb" src="assets/story/xiaochu_resonance_orb.png" alt="靈魂共鳴">
@@ -445,6 +477,6 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=20260904-esm8"></script>
+<script type="module" src="js/main.js?v=20260905-esm11"></script>
 </body>
 </html>

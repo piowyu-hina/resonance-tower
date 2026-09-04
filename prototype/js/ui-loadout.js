@@ -52,7 +52,7 @@ export function statusTooltipHTML(status, missingImage = false, remainingMs = 0)
 export function monsterTooltipHTML(m) {
   if (!m) return '';
   return `
-    <div class="ttName">${m.name}　Lv.${m.level}</div>
+    <div class="ttName">${m.name}　Lv.${m.displayLevel ?? m.level}</div>
     <div class="ttStat">HP ${Math.max(0, m.hp)}/${m.maxHp}</div>
     <div class="ttStat">攻擊 ${m.atk}</div>
   `;

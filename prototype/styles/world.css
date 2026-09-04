@@ -318,6 +318,8 @@
 .homeGuideHina[hidden] { display: none; }
 .homeGuideHina img { position: absolute; right: 0; bottom: 0; width: 158px; height: 190px; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 8px 10px rgba(0,0,0,.62)); }
 .homeGuideHina > span { position: absolute; z-index: 1; top: 18px; right: 28px; padding: 7px 11px; border: 1px solid #8a6576; border-radius: 9px; background: rgba(42,32,39,.96); color: #f4dce5; font-size: 14px; font-weight: 700; white-space: nowrap; box-shadow: 0 7px 14px rgba(0,0,0,.34); }
+.storyFocusTarget > .homeGuideHina img { animation: hinaGuideEnter .48s cubic-bezier(.18,.82,.22,1) both; }
+.storyFocusTarget > .homeGuideHina > span { animation: hinaGuideBubbleEnter .35s cubic-bezier(.18,.82,.22,1) .26s both; }
 #homeLocationBtn.storyFocusTarget .homeGuideHina > span { filter: none; opacity: 1; }
 .homeGuideHina > span::after { content: ''; position: absolute; right: 10px; bottom: -6px; width: 10px; height: 10px; border-right: 1px solid #8a6576; border-bottom: 1px solid #8a6576; background: #2a2027; transform: rotate(45deg); }
 #townShopBtn.villageLocation {
@@ -567,6 +569,8 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 @keyframes contractOrbHover { 0%,100% { transform: translateY(-3px) scale(.975); } 50% { transform: translateY(5px) scale(1.025); } }
 @keyframes contractConfirmIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
 @keyframes storyRequiredPulse { 0%,100% { box-shadow:0 0 0 1px rgba(225,184,85,.12),0 0 12px rgba(225,184,85,.15); } 50% { box-shadow:0 0 0 2px rgba(225,184,85,.25),0 0 28px rgba(225,184,85,.38); } }
+@keyframes hinaGuideEnter { from { opacity:0; transform:translateX(32px); } to { opacity:1; transform:none; } }
+@keyframes hinaGuideBubbleEnter { from { opacity:0; transform:translateY(7px) scale(.92); } to { opacity:1; transform:none; } }
 @keyframes journalLeafTurn {
   0% { transform: rotateY(0); box-shadow: 0 0 0 rgba(44,27,15,0); }
   48% { transform: rotateY(-86deg); box-shadow: 18px 5px 26px rgba(44,27,15,.34); }
@@ -809,9 +813,25 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
 #bossIntroOverlay.open { display: flex; animation: bossIntroBackdrop .35s ease both; }
 #bossIntroOverlay.open::after { animation: bossShockwave .78s cubic-bezier(.1,.7,.2,1) .65s forwards; }
 #bossIntroOverlay.leaving { animation: bossIntroLeave .6s ease both; }
-.bossIntroStage { display: grid; justify-items: center; animation: bossScreenShake .62s linear .62s both; }
-.bossIntroStage img { width: min(560px, 76vw); max-height: 65vh; object-fit: contain; transform: translateY(-120vh) rotate(-7deg) scale(.62); filter: drop-shadow(0 22px 30px rgba(0,0,0,.72)); animation: bossSkyDrop 1.55s linear .03s forwards, bossIdleFloat 1.64s ease-in-out 1.62s infinite; }
+.bossIntroStage { position: relative; display: grid; justify-items: center; animation: bossScreenShake .62s linear .62s both; }
+.bossIntroPortrait, .bossIntroSilhouette { width: min(560px, 76vw); max-height: 65vh; object-fit: contain; transform: translateY(-120vh) rotate(-7deg) scale(.62); filter: drop-shadow(0 22px 30px rgba(0,0,0,.72)); animation: bossSkyDrop 1.55s linear .03s forwards, bossIdleFloat 1.64s ease-in-out 1.62s infinite; }
+.bossIntroSeal, .bossIntroAwakeningGlow { display: none; }
+.bossIntroSilhouette { display: none; aspect-ratio: 1; align-items: center; justify-content: center; border: 1px solid rgba(151,137,122,.26); border-radius: 47% 53% 44% 56% / 55% 45% 58% 42%; background: radial-gradient(circle at 48% 38%,#292521,#0b0b0c 66%,#020203); box-shadow: inset 0 0 70px #000,0 0 80px rgba(10,8,7,.86); color: #8e8378; font-size: clamp(42px,8vw,82px); font-weight: 900; letter-spacing: .14em; text-indent: .14em; }
+#bossIntroOverlay.mystery .bossIntroPortrait { display: none; }
+#bossIntroOverlay.mystery .bossIntroSilhouette { display: flex; }
 .bossIntroName { margin-top: -8px; color: #f1f0df; font-size: clamp(32px, 6vw, 62px); font-weight: 900; letter-spacing: .12em; text-shadow: 0 4px 18px rgba(0,0,0,.85); opacity: 0; animation: bossTitleReveal .38s cubic-bezier(.2,.9,.3,1.2) 1.69s forwards; }
+#bossIntroOverlay.ruinsMasterIntro { background: radial-gradient(circle at 50% 48%, #000 0 34%, rgba(29,20,10,.96) 58%, #040404 82%); }
+#bossIntroOverlay.ruinsMasterIntro.open::after { top: 53%; border-color: rgba(255,198,83,.96); box-shadow: 0 0 36px rgba(255,178,42,.8), inset 0 0 26px rgba(255,210,112,.46); animation: ruinsMasterShockwave .92s cubic-bezier(.08,.72,.16,1) 2.08s forwards; }
+#bossIntroOverlay.ruinsMasterIntro .bossIntroStage { width: min(860px, 94vw); min-height: min(780px, 82vh); place-content: center; animation: ruinsMasterScreenShake .58s linear 2.08s both; }
+#bossIntroOverlay.ruinsMasterIntro .bossIntroSeal { position: absolute; z-index: 0; top: 50%; left: 50%; display: block; width: min(790px, 91vw); aspect-ratio: 1; overflow: hidden; border-radius: 50%; opacity: 0; transform: translate(-50%,-50%) scale(1.85) rotate(-52deg); clip-path: circle(49%); animation: ruinsMasterSealAwaken 3s cubic-bezier(.15,.72,.18,1) .08s forwards, ruinsMasterSealIdle 6s linear 3.08s infinite; }
+#bossIntroOverlay.ruinsMasterIntro .bossIntroSeal img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; }
+#bossIntroOverlay.ruinsMasterIntro .bossIntroAwakeningGlow { position: absolute; z-index: 1; top: 49%; left: 50%; display: block; width: min(520px, 66vw); aspect-ratio: 1; border-radius: 50%; opacity: 0; transform: translate(-50%,-50%) scale(.2); background: radial-gradient(circle, rgba(255,239,181,.98) 0 3%, rgba(255,189,63,.72) 9%, rgba(255,154,25,.22) 35%, transparent 70%); filter: blur(5px); animation: ruinsMasterCoreFlare 1.35s ease-out 1.7s both; }
+#bossIntroOverlay.ruinsMasterIntro .bossIntroPortrait { z-index: 2; width: min(650px, 77vw); max-height: 72vh; transform: translateY(70px) scale(.46); opacity: 0; filter: brightness(0) drop-shadow(0 28px 40px rgba(0,0,0,.9)); animation: ruinsMasterEmerge 3.08s cubic-bezier(.12,.78,.18,1) .05s forwards, ruinsMasterIdle 2.8s ease-in-out 3.13s infinite; }
+#bossIntroOverlay.ruinsMasterIntro .bossIntroName { z-index: 3; margin-top: -24px; color: #ffe0a0; text-shadow: 0 0 12px rgba(255,191,70,.86), 0 5px 22px #000; animation: ruinsMasterTitleReveal .48s cubic-bezier(.15,.9,.25,1.18) 2.62s forwards; }
+.monsterCard.storyBoss { animation: ruinsLordReveal 1.5s cubic-bezier(.2,.8,.2,1) both; box-shadow: 0 0 48px rgba(16,12,10,.92); }
+.monsterCard.storyBoss .portrait .fallback { width: 100%; height: 100%; align-items: center; justify-content: center; background: radial-gradient(circle,#332c28,#070707 72%); color: #b8aa9c; font-size: 42px; letter-spacing: .12em; }
+.monsterCard.storyBoss .hpRow { visibility: hidden; }
+@keyframes ruinsLordReveal { from { opacity: 0; transform: scale(.7); filter: brightness(0); } 55% { opacity: 1; filter: brightness(0); } to { transform: none; filter: none; } }
 @keyframes bossIntroBackdrop { from { opacity: 0; } to { opacity: 1; } }
 @keyframes bossSkyDrop {
   0% { transform: translateY(-120vh) rotate(-7deg) scale(.62); }
@@ -843,10 +863,44 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   100% { opacity: 0; transform: translate(-50%,-50%) scale(16); border-width: 1px; }
 }
 @keyframes bossTitleReveal { from { opacity: 0; transform: translateY(18px) scale(.82); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes ruinsMasterSealAwaken {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(1.85) rotate(-52deg); filter: blur(16px) brightness(.3); }
+  35% { opacity: .28; filter: blur(7px) brightness(.55); }
+  68% { opacity: .76; transform: translate(-50%,-50%) scale(.9) rotate(8deg); filter: blur(1px) brightness(.82); }
+  78% { opacity: 1; transform: translate(-50%,-50%) scale(1.06) rotate(13deg); filter: brightness(1.35); }
+  100% { opacity: .7; transform: translate(-50%,-50%) scale(1) rotate(16deg); filter: brightness(.9); }
+}
+@keyframes ruinsMasterSealIdle { to { transform: translate(-50%,-50%) rotate(376deg); } }
+@keyframes ruinsMasterCoreFlare {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.18); }
+  32% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(2.15); }
+}
+@keyframes ruinsMasterEmerge {
+  0% { opacity: 0; transform: translateY(70px) scale(.46); filter: brightness(0) drop-shadow(0 28px 40px rgba(0,0,0,.9)); }
+  28% { opacity: 1; transform: translateY(22px) scale(.68); filter: brightness(0) drop-shadow(0 28px 40px rgba(0,0,0,.9)); }
+  61% { transform: translateY(2px) scale(.93); filter: brightness(.03) sepia(1) drop-shadow(0 28px 40px rgba(0,0,0,.9)); }
+  76% { transform: translateY(-7px) scale(1.045); filter: brightness(2.2) sepia(.35) drop-shadow(0 0 42px rgba(255,186,54,.95)); }
+  100% { opacity: 1; transform: none; filter: brightness(1) drop-shadow(0 24px 34px rgba(0,0,0,.82)) drop-shadow(0 0 17px rgba(255,177,44,.3)); }
+}
+@keyframes ruinsMasterIdle { 0%,100% { transform: none; } 50% { transform: translateY(-7px) scale(1.008); } }
+@keyframes ruinsMasterScreenShake {
+  0%,100% { transform: none; }
+  12% { transform: translate(-18px,9px) rotate(-.6deg); }
+  25% { transform: translate(16px,-8px) rotate(.5deg); }
+  40% { transform: translate(-11px,-5px); }
+  58% { transform: translate(9px,5px); }
+  76% { transform: translate(-5px,2px); }
+}
+@keyframes ruinsMasterShockwave {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.2); }
+  12% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(18); border-width: 1px; }
+}
+@keyframes ruinsMasterTitleReveal { from { opacity: 0; transform: translateY(22px) scale(.72); filter: blur(9px); letter-spacing: .34em; } to { opacity: 1; transform: none; filter: none; letter-spacing: .12em; } }
 @keyframes bossIntroLeave { to { opacity: 0; } }
 #expeditionView #actionArea { margin-top: 10px; padding-top: 13px; border-top: 1px solid #343b40; }
 #expeditionView #startBtn { min-height: 52px; border-color: #70a979; background: linear-gradient(180deg, #487d52, #315b3b); box-shadow: 0 8px 22px rgba(30,73,39,.34), inset 0 1px rgba(220,255,226,.12); font-size: 16px; font-weight: 800; letter-spacing: .1em; }
-#expeditionView #startBtn::after { content: '  →'; color: #bde0c3; }
 #expeditionView #startBtn:hover:not(:disabled) { border-color: #80bd89; background: linear-gradient(180deg, #4c8156, #396744); transform: translateY(-1px); }
 #expeditionView #retreatBtn { min-height: 48px; padding: 10px 16px; border-color: #9a7950; background: linear-gradient(180deg,#70583b,#58452f); box-shadow: 0 7px 16px rgba(61,42,24,.28); font-size: 15px; font-weight: 800; }
 #expeditionView #retreatBtn:hover { border-color: #c49a62; background: linear-gradient(180deg,#806644,#634e35); transform: translateY(-1px); }

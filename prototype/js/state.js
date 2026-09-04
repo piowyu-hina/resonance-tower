@@ -1,7 +1,7 @@
 import {
   INVENTORY_SLOT_COUNT, DEFAULT_SKIN_BY_CHARACTER, SKIN_DEFS, CHAR_DEFS, DEBUG_MODE,
   GOO_DEBUFF_CAP, GOO_DEBUFF_PER_STACK, STAT_LINE_MAX, GENERAL_STAT_LINES, DAMAGE_VARIANCE,
-  ITEM_DEFS, ROSTER_CHAR_IDS,
+  ITEM_DEFS, ROSTER_CHAR_IDS, PRE_AGENT_LEVEL_CAP,
 } from './constants.js';
 import { queueDialogue } from './story.js';
 import { render } from './ui-main.js';
@@ -25,7 +25,7 @@ export const PHASES = Object.freeze({
 export const PHASE_TRANSITIONS = Object.freeze({
   [PHASES.PREP_FLOOR]: new Set([PHASES.DUNGEON_INTRO]),
   [PHASES.DUNGEON_INTRO]: new Set([PHASES.COMBAT, PHASES.PREP_FLOOR]),
-  [PHASES.COMBAT]: new Set([PHASES.PREP_BOSS, PHASES.DEFEAT, PHASES.VICTORY, PHASES.PREP_FLOOR]),
+  [PHASES.COMBAT]: new Set([PHASES.PREP_BOSS, PHASES.BOSS_INTRO, PHASES.DEFEAT, PHASES.VICTORY, PHASES.PREP_FLOOR]),
   [PHASES.PREP_BOSS]: new Set([PHASES.BOSS_INTRO, PHASES.PREP_FLOOR]),
   [PHASES.BOSS_INTRO]: new Set([PHASES.COMBAT, PHASES.PREP_FLOOR]),
   [PHASES.DEFEAT]: new Set([PHASES.PREP_FLOOR]),
@@ -48,6 +48,9 @@ export const gameState = {
   // before acting, so retreating mid-death-animation can't let a stale
   // callback mutate a run that already ended.
   runId: 0,
+  chapter1State: 'forest',
+  expeditionMode: 'forest',
+  ruinsKillCount: 0,
   partyLocked: false, // once true (first "開始出擊" of a run), party can't change until endRun()
   mobsCleared: 0,     // counts full MOB WAVES cleared (not individual mobs) toward the boss gate
   partyBuff: { mult: 1, until: 0 },
@@ -114,6 +117,9 @@ export function initGame() {
   });
   gameState.party = ['wuming'];
   gameState.floor = 1;
+  gameState.chapter1State = CHAPTER1_STATES.FOREST;
+  gameState.expeditionMode = 'forest';
+  gameState.ruinsKillCount = 0;
   gameState.partyLocked = false;
   gameState.mobsCleared = 0;
   gameState.bankedGold = 0;
@@ -156,6 +162,81 @@ export function isPrepPhase(value = gameState.phase) {
 
 export function isCombatSurfacePhase(value = gameState.phase) {
   return value === PHASES.DUNGEON_INTRO || value === PHASES.BOSS_INTRO || value === PHASES.COMBAT;
+}
+
+// gameState.resonanceState[characterId] is a per-character pipeline: a
+// hidden unlock condition is met -> 'encountering' -> the character's own
+// scene/dialogue chain -> 'contracted'. Xiaochu is the only character wired
+// up today, but any future resonance character reuses these same states
+// with their own dialogue scripts (see design.md 契約角色與解鎖). Mirrors
+// the PHASES/PHASE_TRANSITIONS discipline above: nothing outside this file
+// may assign gameState.resonanceState[id] a bare string directly - always
+// go through setResonanceState(), which validates the transition and throws
+// on a stale or misspelled state name instead of silently wedging the story.
+export const RESONANCE_STATES = Object.freeze({
+  ENCOUNTERING: 'encountering',
+  FOLLOWING: 'following',
+  VILLAGE_RETURN: 'villageReturn',
+  GO_HOME: 'goHome',
+  BOOK_PENDING: 'bookPending',
+  BOOK_READING: 'bookReading',
+  OATH_READY: 'oathReady',
+  CONTRACTING: 'contracting',
+  CONTRACTED: 'contracted',
+});
+const RS = RESONANCE_STATES;
+// checkResonanceTriggers() is the only place allowed to set a character's
+// first-ever state, so "not set yet" only ever advances to ENCOUNTERING.
+const RESONANCE_INITIAL_TRANSITIONS = new Set([RS.ENCOUNTERING]);
+export const RESONANCE_TRANSITIONS = Object.freeze({
+  [RS.ENCOUNTERING]: new Set([RS.FOLLOWING]),
+  [RS.FOLLOWING]: new Set([RS.VILLAGE_RETURN]),
+  [RS.VILLAGE_RETURN]: new Set([RS.GO_HOME]),
+  [RS.GO_HOME]: new Set([RS.BOOK_PENDING]),
+  [RS.BOOK_PENDING]: new Set([RS.BOOK_READING]),
+  [RS.BOOK_READING]: new Set([RS.OATH_READY]),
+  [RS.OATH_READY]: new Set([RS.CONTRACTING]),
+  [RS.CONTRACTING]: new Set([RS.CONTRACTED]),
+  [RS.CONTRACTED]: new Set(),
+});
+
+export function setResonanceState(characterId, nextState, { force = false } = {}) {
+  if (!Object.values(RESONANCE_STATES).includes(nextState)) {
+    throw new Error(`Unknown resonance state: ${nextState}`);
+  }
+  const current = gameState.resonanceState[characterId];
+  if (current === nextState) return;
+  const allowed = current === undefined ? RESONANCE_INITIAL_TRANSITIONS : RESONANCE_TRANSITIONS[current];
+  if (!force && !allowed?.has(nextState)) {
+    throw new Error(`Illegal resonance transition for ${characterId}: ${current} -> ${nextState}`);
+  }
+  gameState.resonanceState[characterId] = nextState;
+}
+
+export function clearResonanceState(characterId) {
+  delete gameState.resonanceState[characterId];
+}
+
+// States where the player is mid-scene on the way home and prep/inventory/
+// saving must stay locked - deliberately excludes FOLLOWING (still freely
+// playable out in the field) and CONTRACTED (story fully resolved).
+const RESONANCE_STORY_LOCKED_STATES = new Set([
+  RS.VILLAGE_RETURN, RS.GO_HOME, RS.BOOK_PENDING, RS.BOOK_READING, RS.OATH_READY, RS.CONTRACTING,
+]);
+
+export const CHAPTER1_STATES = Object.freeze({
+  FOREST: 'forest',
+  RUINS: 'ruins',
+  GODDESS: 'goddess',
+  HOME_RETURN: 'homeReturn',
+  JOURNAL_PENDING: 'journalPending',
+  JOURNAL_READING: 'journalReading',
+  COMPLETE: 'complete',
+});
+
+export function setChapter1State(nextState) {
+  if (!Object.values(CHAPTER1_STATES).includes(nextState)) throw new Error(`Unknown chapter 1 state: ${nextState}`);
+  gameState.chapter1State = nextState;
 }
 
 export function characterSkins(characterId) {
@@ -212,8 +293,8 @@ export function unlockReqText(id) {
   if (u.type === 'killCount') return `擊殺 ${u.count} 隻史萊姆解鎖（目前 ${Math.min(gameState.slimeKillCount, u.count)}/${u.count}）`;
   if (u.type === 'potionCount') return `累計使用 ${u.count} 瓶藥水解鎖（目前 ${Math.min(gameState.potionUseCount, u.count)}/${u.count}）`;
   if (u.type === 'resonanceContract') {
-    if (gameState.resonanceState[id] === 'encountering') return '正在與未知的靈魂產生共鳴';
-    if (gameState.resonanceState[id] && gameState.resonanceState[id] !== 'contracted') return '已經相遇，尚未締結誓約';
+    if (gameState.resonanceState[id] === RS.ENCOUNTERING) return '正在與未知的靈魂產生共鳴';
+    if (gameState.resonanceState[id] && gameState.resonanceState[id] !== RS.CONTRACTED) return '已經相遇，尚未締結誓約';
     return `${conditionProgressText(u.trigger)}後，會與未知的共鳴靈產生同步`;
   }
   return '';
@@ -235,29 +316,37 @@ export function conditionProgressText(cond) {
 // Reaching a hidden condition only establishes resonance during an expedition.
 // The actual meeting and contract are deferred until the player returns home.
 export function checkResonanceTriggers() {
+  if (gameState.chapter1State !== CHAPTER1_STATES.COMPLETE) return false;
   return ROSTER_CHAR_IDS.find(id => {
     if (gameState.unlockedChars.has(id)) return false;
     const u = CHAR_DEFS[id].unlock;
     if (u.type !== 'resonanceContract' || gameState.resonanceState[id] || !conditionMet(u.trigger)) return false;
-    gameState.resonanceState[id] = 'encountering';
+    setResonanceState(id, RS.ENCOUNTERING);
     return true;
   });
 }
 
 export function startPendingVillageContracts() {
-  if (gameState.resonanceState.xiaochu !== 'following') return;
-  gameState.resonanceState.xiaochu = 'villageReturn';
+  if (gameState.resonanceState.xiaochu !== RS.FOLLOWING) return;
+  setResonanceState('xiaochu', RS.VILLAGE_RETURN);
   queueDialogue('xiaochu_village', () => {
-    gameState.resonanceState.xiaochu = 'goHome';
+    setResonanceState('xiaochu', RS.GO_HOME);
     render();
   });
 }
 
 export function contractStoryLocked() {
-  return ['villageReturn', 'goHome', 'bookPending', 'bookReading', 'oathReady', 'contracting'].includes(gameState.resonanceState.xiaochu);
+  const chapterLocked = [CHAPTER1_STATES.GODDESS, CHAPTER1_STATES.HOME_RETURN, CHAPTER1_STATES.JOURNAL_PENDING, CHAPTER1_STATES.JOURNAL_READING].includes(gameState.chapter1State);
+  return chapterLocked || RESONANCE_STORY_LOCKED_STATES.has(gameState.resonanceState.xiaochu);
 }
 
 export function xpToNext(level) { return level * 10; }
+
+export function characterLevelCap() {
+  return [CHAPTER1_STATES.FOREST, CHAPTER1_STATES.RUINS, CHAPTER1_STATES.GODDESS].includes(gameState.chapter1State)
+    ? PRE_AGENT_LEVEL_CAP
+    : Number.POSITIVE_INFINITY;
+}
 
 export function recomputeStats(c) {
   const def = CHAR_DEFS[c.id];
@@ -267,13 +356,20 @@ export function recomputeStats(c) {
 }
 
 export function addXp(c, amount) {
+  const cap = characterLevelCap();
+  if (c.level >= cap) {
+    c.level = cap;
+    c.xp = 0;
+    return;
+  }
   c.xp += amount;
-  while (c.xp >= xpToNext(c.level)) {
+  while (c.level < cap && c.xp >= xpToNext(c.level)) {
     c.xp -= xpToNext(c.level);
     c.level++;
     recomputeStats(c);
     log(`${CHAR_DEFS[c.id].name} 升級了！目前等級 ${c.level}`, 'good');
   }
+  if (c.level >= cap) c.xp = 0;
 }
 
 export function xpPoolForFloor(f) { return 20 + f * 5; }

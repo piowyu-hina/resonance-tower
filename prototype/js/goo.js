@@ -12,7 +12,7 @@ export function clearGooArena() {
   gameState.activeGoos = [];
   gameState.activeGooBatch = null;
   const arena = document.getElementById('bossArena');
-  if (arena) arena.querySelectorAll('.goo').forEach(el => el.remove());
+  if (arena) arena.querySelectorAll('.goo, .ruinsSpike, .ruinsSpikeHint, .ruinsSpikeImpact').forEach(el => el.remove());
 }
 
 export function spawnGoo(batch, index) {
@@ -21,7 +21,7 @@ export function spawnGoo(batch, index) {
   const el = document.createElement('div');
   el.className = 'goo';
   el.innerHTML = `
-    <img src="assets/skills/floor1/slime_boss_skill3.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+    <img src="assets/skills/floor1/slime_boss_skill3_effect.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
     <span class="fallback">🔵</span>
   `;
   const maxX = Math.max(0, arena.clientWidth - 34);

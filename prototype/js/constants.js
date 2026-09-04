@@ -67,6 +67,35 @@ export const MONSTER_DEFS = {
 
 export const FLOOR1_MOB_POOL = Object.keys(MONSTER_DEFS);
 
+export const RUINS_MONSTER_DEFS = {
+  ruinsRelics: {
+    name: '遺跡史萊姆', img: 'floor1/slime_relics', atk: 2,
+    skill: {
+      name: '古碑墜擊', icon: '◇', img: 'floor1/slime_relics_skill', cd: 6,
+      target: 'randomParty', effects: [{ type: 'damage', mult: 1.3 }],
+      desc: '喚起遺跡碎片墜向目標，造成 1.3 倍攻擊力傷害',
+    },
+  },
+  ruinsRock: {
+    name: '石頭史萊姆', img: 'floor1/slime_rock', atk: 2,
+    skill: {
+      name: '碎岩衝擊', icon: '◆', img: 'floor1/slime_rock_skill', cd: 8,
+      target: 'randomParty', effects: [{ type: 'damage', mult: 2 }],
+      desc: '捲起岩塊重擊目標，造成 2 倍攻擊力傷害',
+    },
+  },
+  ruinsDust: {
+    name: '塵埃史萊姆', img: 'floor1/slime_tornado', atk: 1,
+    skill: {
+      name: '塵沙旋風', icon: '◌', img: 'floor1/slime_tornado_skill', cd: 7,
+      target: 'randomParty', effects: [{ type: 'damage', mult: 1 }, { type: 'slow', mult: 1.5, duration: 4 }],
+      desc: '捲起塵沙造成傷害，並使目標攻速降低 4 秒',
+    },
+  },
+};
+export const RUINS_MOB_POOL = Object.keys(RUINS_MONSTER_DEFS);
+export const RUINS_KILL_TARGET = 10;
+
 // Inventory definitions are display/data only for now. The first backpack
 // pass deliberately has no consume/drop/shop behavior attached yet.
 export const ITEM_DEFS = {
@@ -279,6 +308,7 @@ export const DEFEAT_RESTART_DELAY_MS = 10000;
 export const MOB_ATK_INTERVAL = 2200;
 export const BOSS_ATK_INTERVAL = 2200;
 export const BOSS_ENTRY_GRACE_MS = 900;
+export const BOSS_INTRO_DURATION_MS = 5600;
 export const MONSTER_DEATH_ANIMATION_MS = 1100;
 export const MAX_IMPLEMENTED_FLOOR = 1; // raise this when floor 2 content is ready
 // design.md「區域推進」：floor numbers stay the internal progression unit,
@@ -333,6 +363,16 @@ export const BOSS_SKILL_CD = 5;  // seconds
 export const BOSS_SUMMON_CD_MS = 10000;
 export const BOSS_SUMMON_OPENING_MS = 3000;
 export const BOSS_SUMMON_MAX = 2;
+
+// Before the goddess appoints Wuming as her agent, ordinary human growth
+// stops here. The cap is lifted once chapter 1 advances past the ruins.
+export const PRE_AGENT_LEVEL_CAP = 10;
+
+// The Ruins Master is a real level-100 enemy even though its level remains
+// concealed as "XXX" in the UI during the first encounter.
+export const RUINS_LORD_LEVEL = 100;
+export const RUINS_LORD_SPIKE_COUNT = 4;
+export const RUINS_LORD_SPIKE_TRAVEL_MS = 5000;
 
 // Boss-only 黏液陣: clear the whole batch before it matures to earn damage;
 // one missed blob fails the batch and applies the party-wide ATK debuff.
