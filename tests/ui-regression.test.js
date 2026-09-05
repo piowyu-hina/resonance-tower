@@ -1531,9 +1531,13 @@ async function testExpeditionDeparture(browser) {
       gameState.roster.find(c => c.id === 'xiaochu').loadout.activeItemId = null;
       (await import('./js/ui-main.js')).render();
     });
-    assert.equal(await page.locator('.expeditionLoadout > div').first().locator('small').textContent(), '不攜帶道具');
+    assert.equal(await page.locator('.expeditionLoadout > div').first().locator('small').textContent(), '藥水');
     assert.equal(await page.locator('#expeditionSelectedSummary .combatItemQuickSlot').isVisible(), true);
     assert.equal(await page.locator('#expeditionSelectedSummary .activeQuickSlot').isVisible(), true);
+    await page.locator('#expeditionSelectedSummary .combatItemQuickSlot').click();
+    assert.equal(await page.locator('#combatItemPickerList .pickerItem').count(), 1, 'empty inventory only offers unequip');
+    assert.equal(await page.locator('#combatItemPickerList .unequip').textContent(), '◇不攜帶道具');
+    await page.locator('#combatItemPickerList .unequip').click();
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       const { ITEM_DEFS } = await import('./js/constants.js');
@@ -1544,6 +1548,8 @@ async function testExpeditionDeparture(browser) {
     assert.equal(await page.locator('#tooltip').isVisible(), true);
     await page.locator('#expeditionSelectedSummary .combatItemQuickSlot').click();
     assert.equal(await page.locator('#combatItemPicker').evaluate(el => el.classList.contains('open')), true);
+    assert.equal(await page.locator('#combatItemPickerList .pickerItem').count(), 2, 'only the owned potion plus unequip');
+    assert.equal(await page.locator('#combatItemPickerList .pickerItem:not(.unequip) img').getAttribute('src'), 'assets/item/potion.png');
     await page.keyboard.press('Escape');
     await page.locator('#expeditionSelectedSummary .activeQuickSlot').click();
     assert.equal(await page.locator('#charmPicker').evaluate(el => el.classList.contains('open')), true);

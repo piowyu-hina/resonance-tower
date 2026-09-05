@@ -281,7 +281,7 @@ export function renderExpeditionSelectedSummary() {
     <div class="expeditionLoadoutBlock">
       <div class="expeditionStepLabel"><span>3</span>${t('loadout.equipment')}</div>
       <div class="expeditionLoadout">
-        <div><small>${t(gameState.equippedCombatItemId ? 'loadout.potion' : 'loadout.noItems')}</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
+        <div><small>${t('loadout.potion')}</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
         <div><small>${t('loadout.charm')}</small><div class="quickSlot activeQuickSlot"></div></div>
       </div>
       <div class="expeditionTechniquePreview">
@@ -348,9 +348,10 @@ export function renderCombatItemPicker() {
     const item = localizedItemDef(itemId);
     if (!item.combatAction) return;
     const qty = inventoryItemCount(itemId);
+    if (qty <= 0) return;
     const option = document.createElement('button');
     option.type = 'button';
-    option.className = `pickerItem${gameState.equippedCombatItemId === itemId ? ' selected' : ''}${qty <= 0 ? ' unavailable' : ''}`;
+    option.className = `pickerItem${gameState.equippedCombatItemId === itemId ? ' selected' : ''}`;
     option.innerHTML = `
       <img src="assets/item/${item.img}.png" alt="${item.name}">
       <span>${item.name}</span>
