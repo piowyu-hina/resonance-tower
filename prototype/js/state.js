@@ -49,6 +49,7 @@ export const gameState = {
   // callback mutate a run that already ended.
   runId: 0,
   chapter1State: 'forest',
+  journalReading: { chapterId: 'shapeshifter', pages: {} },
   expeditionMode: 'forest',
   ruinsKillCount: 0,
   partyLocked: false, // once true (first "開始出擊" of a run), party can't change until endRun()
@@ -118,6 +119,7 @@ export function initGame() {
   gameState.party = ['wuming'];
   gameState.floor = 1;
   gameState.chapter1State = CHAPTER1_STATES.FOREST;
+  gameState.journalReading = { chapterId: 'shapeshifter', pages: {} };
   gameState.expeditionMode = 'forest';
   gameState.ruinsKillCount = 0;
   gameState.partyLocked = false;

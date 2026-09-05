@@ -162,6 +162,8 @@ export function runDebugAction(action) {
     debugStartBossFight();
   } else if (action === 'intro') {
     showBossIntro(() => {});
+  } else if (action === 'journal-preview') {
+    openTravelJournal({ preview: true });
   } else if (action === 'xiaochu-story') {
     setChapter1State(CHAPTER1_STATES.COMPLETE);
     closeOtherOverlays(null);

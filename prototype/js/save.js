@@ -3,6 +3,7 @@ import { gameState, xpToNext, PHASES, contractStoryLocked, recomputeStats, initG
 import { syncCoinItem } from './ui-commerce.js';
 import { render } from './ui-main.js';
 import { overlayUiState } from './ui-overlays.js';
+import { JOURNAL_CHAPTERS } from './story.js';
 
 // --- 桌面版手動存檔 ---
 // Only permanent progression is serialized. An expedition in progress must be
@@ -83,6 +84,7 @@ export function createSaveData() {
       ownedSkins: [...gameState.ownedSkins],
       equippedSkinByCharacter: { ...gameState.equippedSkinByCharacter },
       chapter1State: gameState.chapter1State,
+      journalReading: { chapterId: gameState.journalReading.chapterId, pages: { ...gameState.journalReading.pages } },
     },
   };
 }
@@ -155,6 +157,10 @@ export function normalizeSaveData(raw) {
     ownedSkins: owned,
     equippedSkinByCharacter: equipped,
     chapter1State,
+    journalReading: {
+      chapterId: JOURNAL_CHAPTERS.some(chapter => chapter.id === source.journalReading?.chapterId) ? source.journalReading.chapterId : JOURNAL_CHAPTERS[0].id,
+      pages: Object.fromEntries(JOURNAL_CHAPTERS.filter(chapter => Object.hasOwn(source.journalReading?.pages || {}, chapter.id)).map(chapter => [chapter.id, safeInteger(source.journalReading.pages[chapter.id], 0, chapter.pages.length - 1)])),
+    },
   };
 }
 
@@ -204,6 +210,7 @@ export function applySaveData(data) {
   gameState.ownedSkins = data.ownedSkins;
   gameState.equippedSkinByCharacter = data.equippedSkinByCharacter;
   gameState.chapter1State = data.chapter1State;
+  gameState.journalReading = data.journalReading;
   gameState.roster.forEach(character => {
     const saved = data.characters.get(character.id);
     if (!saved) return;

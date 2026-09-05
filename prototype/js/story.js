@@ -15,11 +15,11 @@ export const DIALOGUE_DEFS = {
     { speaker: 'wuming', text: '不要……' },
     { speaker: 'wuming', text: '我還不想死……！' },
     { speaker: 'narrator', text: '遺跡之主的攻擊敲碎了無名胸前的傳送石。', effect: 'teleportStoneBreak' },
-    { speaker: 'narrator', text: '碎裂的傳送石突然發出強烈光芒。' },
-    { speaker: 'narrator', text: '光芒包圍無名，無名整個人從遺跡中消失。' },
+    { speaker: 'narrator', text: '碎片間迸出白光。無名眼前，遺跡之主的輪廓逐漸模糊。' },
+    { speaker: 'narrator', text: '無名再也看不見眼前的巨影。光芒散去時，他已從遺跡中消失。' },
   ],
   chapter1_goddess: [
-    { speaker: 'narrator', text: '無名在一片明亮、安靜，像天堂一樣的地方醒來。' },
+    { speaker: 'narrator', text: '無名睜開眼睛。柔和的光映入眼底，耳邊已經聽不見遺跡中的轟鳴。' },
     { speaker: 'wuming', text: '這裡是……天堂嗎？' },
     { speaker: 'goddess', text: '是的。' },
     { speaker: 'wuming', text: '妳、妳是誰？' },
@@ -28,62 +28,62 @@ export const DIALOGUE_DEFS = {
     { speaker: 'goddess', text: '嗯……算是死了一半吧。' },
     { speaker: 'wuming', text: '死了一半？' },
     { speaker: 'goddess', text: '你被攻擊的時候，那條項鍊把你傳送到了這裡。' },
-    { speaker: 'wuming', text: '項鍊……？' },
-    { speaker: 'narrator', text: '無名低頭看著奶奶交給自己的項鍊。' },
-    { speaker: 'wuming', thought: true, text: '奶奶給我的項鍊，為什麼會有這種力量……' },
-    { speaker: 'goddess', text: '那原本是我很久以前使用的傳送石。只要它破裂，就會把持有者送回這裡。' },
+    { speaker: 'narrator', text: '無名低下頭。胸前已經沒有那枚熟悉的墜飾。' },
+    { speaker: 'wuming', text: '奶奶給我的那條……是它救了我？' },
+    { speaker: 'goddess', text: '嗯。那原本是我很久以前用的傳送石，只要它破裂，就會把持有者送回這裡。' },
     { speaker: 'wuming', text: '為什麼奶奶會有女神的東西……？' },
-    { speaker: 'goddess', text: '這個嘛……' },
-    { speaker: 'narrator', text: '神短暫移開視線。' },
-    { speaker: 'goddess', text: '總之，你現在還沒有完全死掉。' },
-    { speaker: 'goddess', text: '不過...你原本就會死，只是用不同方式上天堂而已。' },
+    { speaker: 'goddess', text: '我弄丟它很久了。沒想到會在人間，再次把人送回來。' },
+    { speaker: 'narrator', text: '無名想起最後逼近的攻擊，不自覺縮了縮肩膀。' },
+    { speaker: 'wuming', text: '如果沒有它……' },
+    { speaker: 'goddess', text: '那一擊會殺死你。傳送石把你帶走時，你還剩下一口氣。' },
     { speaker: 'wuming', text: '那我還能回去嗎？' },
-    { speaker: 'goddess', text: '正常來說，不行。' },
+    { speaker: 'goddess', text: '正常來說，來到這裡的人不能回去。' },
     { speaker: 'wuming', text: '怎麼這樣……' },
+    { speaker: 'narrator', text: '無名低下頭，努力眨了眨眼睛。' },
     { speaker: 'goddess', text: '先、先不要哭！' },
     { speaker: 'goddess', text: '雖然普通的死者不能回去，但是你還沒有完全死掉。' },
     { speaker: 'goddess', text: '只要你願意幫我完成一件事，我就能讓你以神之代理人的身分回到人間。' },
     { speaker: 'wuming', text: '真的嗎？' },
     { speaker: 'goddess', text: '真的。' },
     { speaker: 'wuming', text: '我要做什麼？' },
-    { speaker: 'narrator', text: '神露出有些為難的表情。' },
-    { speaker: 'goddess', text: '其實……有幾個孩子，本來應該來到這裡，卻不知道為什麼留在了人間。' },
-    { speaker: 'wuming', text: '孩子？' },
-    { speaker: 'goddess', text: '她們各自還有某種沒有完成的渴望。只要那份渴望還緊緊抓著她們，她們就找不到來到這裡的路。' },
+    { speaker: 'narrator', text: '女神收起笑容，放輕了聲音。' },
+    { speaker: 'goddess', text: '有幾個孩子，已經死了，卻還留在人間。' },
+    { speaker: 'wuming', text: '她們也回不了家嗎？' },
+    { speaker: 'goddess', text: '她們還有放不下的事。有些事沒做完，有些心願還沒能實現……所以一直沒有走到這裡。' },
     { speaker: 'wuming', text: '那妳不能直接帶她們回來嗎？' },
-    { speaker: 'goddess', text: '神不能強迫仍有留戀的靈魂離開。必須由一個還活著的人找到她們，讓她們自己願意跟著他走。' },
-    { speaker: 'goddess', text: '所以，我希望你能找到她們，和她們締結靈魂契約。' },
-    { speaker: 'wuming', text: '靈魂契約？' },
-    { speaker: 'goddess', text: '簡單來說，就是讓她們住進你的身體裡。' },
+    { speaker: 'goddess', text: '我不能強迫還有留戀的靈魂離開。她們需要一個還活著的人，聽她們說話，陪她們走一段路。' },
+    { speaker: 'wuming', text: '我能幫得上忙嗎？' },
+    { speaker: 'goddess', text: '先找到她們，聽聽她們想做什麼。如果你們願意同行，就可以締結靈魂契約。' },
+    { speaker: 'goddess', text: '有了契約，她們就能住進你的身體裡。' },
     { speaker: 'wuming', text: '住、住進我的身體？' },
     { speaker: 'wuming', text: '聽起來好可怕……' },
     { speaker: 'goddess', text: '不會啦！她們都是好孩子。' },
     { speaker: 'goddess', text: '大概。' },
     { speaker: 'wuming', text: '妳剛剛是不是說了「大概」？' },
     { speaker: 'goddess', text: '沒有喔。' },
+    { speaker: 'wuming', text: '可是，她們進來以後……我還會是我嗎？' },
+    { speaker: 'goddess', text: '當然。你還是你，她們也還是她們。你願意的時候，可以把身體借給她們；不願意，就說不。' },
     { speaker: 'goddess', text: '契約會讓你的靈魂成為她們返回這裡的道路。等你有一天真正走完自己的人生，就能帶著她們一起來到這裡。' },
     { speaker: 'wuming', text: '所以不是要我完成任務以後立刻死掉吧？' },
     { speaker: 'goddess', text: '當然不是！你正常地活著就好。' },
     { speaker: 'wuming', text: '太好了……' },
     { speaker: 'wuming', text: '可是，要怎麼和她們締結契約？' },
-    { speaker: 'goddess', text: '先找到她們，完成讓她們願意回應你的條件，再帶她們到指定的地方。' },
-    { speaker: 'goddess', text: '儀式只有在那個地方才能成立。' },
-    { speaker: 'wuming', text: '指定的地方在哪裡？' },
-    { speaker: 'goddess', text: '現在還沒有，我可以替你設定一個。' },
-    { speaker: 'narrator', text: '神想了一會兒。' },
-    { speaker: 'goddess', text: '就設在你家吧。' },
+    { speaker: 'goddess', text: '等你們都願意了，就帶她回你家吧。' },
     { speaker: 'wuming', text: '我家？' },
-    { speaker: 'goddess', text: '嗯。安全、熟悉，而且比較不會有人突然闖進來。' },
+    { speaker: 'goddess', text: '嗯。我會在你家留下祝福，契約儀式只有在那裡才能成立。' },
     { speaker: 'wuming', text: '那契約的時候要說什麼？' },
     { speaker: 'goddess', text: '要說……' },
-    { speaker: 'narrator', text: '神陷入沉思。' },
+    { speaker: 'narrator', text: '女神張開嘴，又停了下來。無名等著她繼續。' },
     { speaker: 'goddess', text: '我忘記了。' },
     { speaker: 'wuming', text: '怎麼會忘記這麼重要的事情！' },
-    { speaker: 'goddess', text: '等一下，我記得以前有一位朋友把儀式寫下來了。' },
+    { speaker: 'goddess', text: '等一下！我以前有位愛旅行的朋友，曾經記下他見過的一場契約儀式。' },
     { speaker: 'goddess', text: '那本書現在應該被叫作《旅人手記》吧？' },
     { speaker: 'wuming', text: '《旅人手記》？' },
     { speaker: 'wuming', text: '我家裡好像就有一本。' },
     { speaker: 'goddess', text: '真的嗎？那就沒問題了！' },
+    { speaker: 'goddess', text: '照著裡面的誓言，把你願意答應的事說清楚，也聽聽對方的回答。' },
+    { speaker: 'wuming', text: '如果她不願意呢？' },
+    { speaker: 'goddess', text: '那就不締約。能聽她說說話，也很好啊。' },
     { speaker: 'goddess', text: '找到那些孩子之後，記得帶她們回家，好好和她們談談。' },
     { speaker: 'goddess', text: '不要只把她們當成任務。要不要締結契約，最後必須由你們一起決定。' },
     { speaker: 'wuming', text: '嗯，我知道了。' },
@@ -92,19 +92,25 @@ export const DIALOGUE_DEFS = {
   ],
   chapter1_home_return: [
     { speaker: 'wuming', text: '我、我真的回來了……' },
-    { speaker: 'narrator', text: '無名確認自己的身體。' },
+    { speaker: 'narrator', text: '無名低頭看向原本受傷的地方，又慢慢握緊手掌。手指隨著他的心意收攏。' },
+    { speaker: 'narrator', text: '他長長吐出一口氣，肩膀終於放鬆下來。' },
     { speaker: 'wuming', text: '對了，《旅人手記》！' },
-    { speaker: 'narrator', text: '無名在家中尋找，最後翻出旅人手記。' },
+    { speaker: 'narrator', text: '無名翻找了一會兒，從幾本舊書底下抽出一本手記，拂去封面上的灰塵。' },
     { speaker: 'wuming', text: '找到了！' },
   ],
   chapter1_after_book: [
+    { speaker: 'narrator', text: '無名看著最後一頁，手指停在「我也沒有」那行字旁。' },
+    { speaker: 'wuming', text: '他明明救了大家……' },
+    { speaker: 'narrator', text: '屋裡很安靜。過了一會兒，無名才慢慢翻回記著誓言的那一頁。' },
     { speaker: 'wuming', text: '原來以前真的發生過類似的事情……' },
+    { speaker: 'wuming', text: '那些和他一起戰鬥的人，最後也陪著他嗎？' },
+    { speaker: 'narrator', text: '書裡沒有答案。無名的目光停在兩行誓言上，試著輕聲念了開頭，又停住。' },
     { speaker: 'wuming', text: '不過，這個契約台詞也太害羞了吧……' },
     { speaker: 'wuming', text: '可是，我要去哪裡找那些孩子？' },
-    { speaker: 'narrator', text: '無名苦惱片刻，接著搖了搖頭。' },
-    { speaker: 'wuming', text: '算了，現在想也想不出來。' },
+    { speaker: 'narrator', text: '無名望向窗外，肚子卻在這時叫了一聲。' },
+    { speaker: 'wuming', text: '……也是，總不能一直坐在這裡等。' },
     { speaker: 'wuming', text: '今天的伙食費還沒有著落，先填飽肚子要緊！' },
-    { speaker: 'wuming', text: '史萊姆！我來了！' },
+    { speaker: 'narrator', text: '他把手記放在桌上，拿起出門用的劍。' },
   ],
   xiaochu_encounter: [
     { speaker: 'xiaochu_orb', text: '哇，好厲害！' },
@@ -159,7 +165,7 @@ export const DIALOGUE_DEFS = {
     { speaker: 'xiaochu_orb', text: '嗯...' },
     { speaker: 'wuming', text: '我在此立誓。' },
     { speaker: 'wuming', text: '從今以後，無論生老病死，我都將與妳共同進退。' },
-    { speaker: 'wuming', text: '妳若生存，我也生存；妳若死亡，我也將死亡。' },
+    { speaker: 'wuming', text: '只要妳仍願意與我同行，我便不讓妳獨自走完這段路。' },
     { speaker: 'xiaochu_orb', text: '那我也立誓！' },
     { speaker: 'xiaochu_orb', text: '從今以後，不管發生什麼事，我都會和你共同進退。' },
     { speaker: 'xiaochu_orb', text: '你願意把身體借給我的時候，我一定會好好珍惜；你不願意的時候，我絕不勉強！' },
@@ -220,9 +226,9 @@ export const STORY_SPEAKERS = {
 
 export const JOURNAL_PAGES = [
   `我在這座城停留的第三天，第一次聽見「靈魂使者」這個稱呼。\n\n居民提到他時，總會刻意壓低聲音。\n\n他們說，那是一個能在戰鬥中變換身形的男人。前一刻還握著劍，下一刻卻可能拿起法杖；不只外貌，就連聲音和舉止也會完全改變。\n\n我問那究竟是什麼力量，沒有人能夠回答。\n\n他們只說，那個男人一定受到了某種詛咒。`,
-  `那天夜裡，我經過他的住處，看見窗內亮起了不同顏色的光。\n\n紅色、黃色、黑色、白色...光芒不斷交替，屋裡還傳出兩個人交談的聲音。\n\n可是透過窗戶，我明明只看見他一個人。\n\n不久後，他對著空無一人的房間念出了一段誓言。\n\n「我在此立誓。從今以後，無論生老病死，我都將與你共同進退。」\n\n「你若生存，我也生存；你若死亡，我也將死亡。」\n\n另一道聲音似乎也回應了他的誓言，可惜當時的風太大，我沒有聽清楚內容。`,
-  `回應結束的瞬間，整棟房子都被光芒籠罩。\n\n等到光芒散去，站在屋裡的人已經換成了截然不同的模樣。\n\n我一度以為有人趁著光芒進入了房間，但附近的居民告訴我，這種事情已經發生過很多次。\n\n有人說那只是幻術，也有人深信他已經被魔物附身。\n\n不過，想起那晚聽見的另一道聲音，我開始懷疑...\n\n那個男人或許從來都不是在自言自語。`,
-  `我在城裡停留了一段時間。就在我準備離開的前夕，魔物襲擊了這座城。\n\n我親眼看見靈魂使者在戰場上不斷變換身形。握劍的戰士、施展法術的術士，還有許多我從未見過的人，接連使用同一具身體戰鬥。\n\n最後，他成功封印了魔王，救下城裡的所有人。\n\n可是王室畏懼他的力量，認為他終有一天會成為更大的威脅，仍然下令將他處死。\n\n他被帶走的那一天，城裡沒有一個人替他說話。\n\n我也沒有。\n\n我始終不知道，那晚回應誓言的究竟是誰。\n\n如果那些看不見的同伴真的存在，我只希望在最後一段路上，他並不是獨自一人。`,
+  `那天夜裡，我經過他的住處，看見窗內亮起了不同顏色的光。\n\n光映在窗框上，屋裡傳來交談聲。一個聲音低些，另一個輕些，像是正在商量什麼。\n\n可是透過窗戶，我只看見他一個人。\n\n不久後，他面向空著的椅子，鄭重地念出一段誓言。\n\n「我在此立誓。從今以後，無論生老病死，我都將與你共同進退。」\n\n「只要你仍願意與我同行，我便不讓你獨自走完這段路。」\n\n另一道聲音回應了他。風掠過街道，我沒能聽清每一個字，只聽見最後那句：\n\n「我願意。」`,
+  `回應結束的瞬間，窗內亮得讓我抬手遮住了眼睛。\n\n等我再看時，屋裡已經站著另一個人。身形、衣著，連扶著椅背的姿勢都不同了。\n\n我守在街邊，沒有看見任何人進出。\n\n隔天問起這件事，附近的居民卻不願多談。有人說那只是幻術，也有人說他被魔物附了身。\n\n我把那晚聽清的誓言記了下來。另一個人說過什麼，我不敢憑猜測補上。\n\n我只記得，他念完後沒有催促，而是安靜地等著，直到那個聲音回答。\n\n那個男人或許從來都不是在自言自語。`,
+  `我準備離開的前夕，魔物攻進了城。\n\n城門旁，一名握劍的戰士替還沒逃走的人擋住去路上的魔物。光芒閃過，同一個位置站起一名術士，抬手攔下追來的火焰。\n\n那是靈魂使者。我第一次親眼看見，那些不同的人如何接連使用同一具身體戰鬥。\n\n直到魔王被他封印，街上的人才能走出藏身處。那天，大家都說是他救了這座城。\n\n後來，我卻在廣場上聽見了處死他的宣令。宣令官說，這份力量不受王室控制，今日能封印魔王，來日也可能危及王國。\n\n他被帶走時，我站在人群裡。身邊的人一個接一個低下頭，沒有人開口。\n\n我也沒有。\n\n我始終不知道，那晚回應誓言的究竟是誰。\n\n如果那些看不見的同伴真的存在，我只希望在最後一段路上，他並不是獨自一人。`,
 ];
 
 export const storyState = {
@@ -241,6 +247,7 @@ export const storyState = {
 let journalPageTransition = null;
 let heavenTransitionRun = null;
 let dialogueLineEffectRun = null;
+let presentationRun = null;
 
 function heavenTransitionDuration(normalDuration) {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 250 : normalDuration;
@@ -366,10 +373,14 @@ export function startSoulResonance() {
   void intro.offsetWidth;
   intro.classList.add('playing');
   intro.focus();
+  presentationRun = beginManagedTransition('story-presentation');
+  presentationRun.after(heavenTransitionDuration(3000), finishSoulResonance);
 }
 
 export function finishSoulResonance() {
   if (storyState.dialoguePhase !== 'intro') return;
+  presentationRun?.finish();
+  presentationRun = null;
   const intro = document.getElementById('soulResonance');
   intro.classList.remove('playing');
   intro.setAttribute('aria-hidden', 'true');
@@ -453,29 +464,81 @@ function finishChapter1Goddess() {
 }
 
 export function renderJournalPage() {
+  const chapter = JOURNAL_CHAPTERS.find(chapter => chapter.id === storyState.journalChapterId) || JOURNAL_CHAPTERS[0];
+  document.getElementById('journalChapterTitle').textContent = t(chapter.titleKey);
+  document.getElementById('journalChapterOrdinal').textContent = `CHAPTER ${JOURNAL_CHAPTERS.indexOf(chapter) + 1}`;
+  gameState.journalReading.chapterId = chapter.id;
+  gameState.journalReading.pages[chapter.id] = storyState.journalPage;
   const page = document.getElementById('journalPageText');
-  page.textContent = JOURNAL_PAGES[storyState.journalPage];
+  page.textContent = chapter.pages[storyState.journalPage];
   page.scrollTop = 0;
   document.getElementById('journalPageNumber').textContent = t('format.page', {
     current: formatLocaleNumber(storyState.journalPage + 1),
-    total: formatLocaleNumber(JOURNAL_PAGES.length),
+    total: formatLocaleNumber(chapter.pages.length),
   });
   document.getElementById('journalNextBtn').textContent = t(
-    storyState.journalPage === JOURNAL_PAGES.length - 1 ? 'journal.done' : 'journal.next',
+    storyState.journalPage === chapter.pages.length - 1 ? (journalStoryReading() ? 'journal.done' : 'journal.contentsBack') : 'journal.next',
   );
+  document.getElementById('journalPrevBtn').disabled = storyState.journalPage === 0;
 }
 
-export function openTravelJournal() {
+export const JOURNAL_CHAPTERS = [{ id: 'shapeshifter', titleKey: 'journal.chapter.shapeshifter', pages: JOURNAL_PAGES }];
+
+function journalStoryReading() {
+  if (storyState.journalPreview) return false;
+  return gameState.chapter1State === CHAPTER1_STATES.JOURNAL_READING ||
+    gameState.resonanceState.xiaochu === RESONANCE_STATES.BOOK_READING;
+}
+
+function openJournalChapter(id, resume = false) {
+  const chapter = JOURNAL_CHAPTERS.find(entry => entry.id === id);
+  if (!chapter) return;
+  resetJournalPageTurn();
+  storyState.journalChapterId = id;
+  storyState.journalPage = resume ? Math.min(chapter.pages.length - 1, gameState.journalReading.pages[id] || 0) : 0;
+  document.getElementById('journalContents').hidden = true;
+  document.querySelector('.journalBook').hidden = false;
+  document.getElementById('journalContentsBtn').hidden = journalStoryReading();
+  renderJournalPage();
+  document.getElementById('journalNextBtn').focus();
+}
+
+export function showJournalContents() {
+  if (journalStoryReading()) return;
+  resetJournalPageTurn();
+  document.querySelector('.journalBook').hidden = true;
+  document.getElementById('journalContents').hidden = false;
+  document.getElementById('journalContentsBtn').hidden = true;
+  const list = document.getElementById('journalChapterList');
+  list.replaceChildren();
+  JOURNAL_CHAPTERS.forEach((chapter, index) => {
+    const button = document.createElement('button');
+    button.className = 'journalChapterEntry';
+    const number = document.createElement('span');
+    number.textContent = String(index + 1).padStart(2, '0');
+    const title = document.createElement('b');
+    title.textContent = t(chapter.titleKey);
+    button.append(number, title);
+    button.addEventListener('click', () => openJournalChapter(chapter.id));
+    list.append(button);
+  });
+  const resume = document.getElementById('journalResumeBtn');
+  resume.hidden = !Object.hasOwn(gameState.journalReading.pages, gameState.journalReading.chapterId);
+  (resume.hidden ? list.querySelector('button') : resume).focus();
+}
+
+export function openTravelJournal({ preview = false } = {}) {
   closeOtherOverlays('journal');
+  storyState.journalPreview = preview;
   gameState.activeOverlay = 'journal';
   storyState.journalPage = 0;
-  if (gameState.resonanceState.xiaochu === RESONANCE_STATES.BOOK_PENDING) setResonanceState('xiaochu', RESONANCE_STATES.BOOK_READING);
-  if (gameState.chapter1State === CHAPTER1_STATES.JOURNAL_PENDING) setChapter1State(CHAPTER1_STATES.JOURNAL_READING);
-  renderJournalPage();
+  if (!preview && gameState.resonanceState.xiaochu === RESONANCE_STATES.BOOK_PENDING) setResonanceState('xiaochu', RESONANCE_STATES.BOOK_READING);
+  if (!preview && gameState.chapter1State === CHAPTER1_STATES.JOURNAL_PENDING) setChapter1State(CHAPTER1_STATES.JOURNAL_READING);
   const overlay = document.getElementById('journalOverlay');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
-  document.getElementById('journalNextBtn').focus();
+  if (journalStoryReading()) openJournalChapter('shapeshifter');
+  else showJournalContents();
 }
 
 export function closeTravelJournal(finished = false) {
@@ -484,13 +547,13 @@ export function closeTravelJournal(finished = false) {
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
   if (gameState.activeOverlay === 'journal') gameState.activeOverlay = null;
-  if (gameState.resonanceState.xiaochu === RESONANCE_STATES.BOOK_READING && finished) {
+  if (!storyState.journalPreview && gameState.resonanceState.xiaochu === RESONANCE_STATES.BOOK_READING && finished) {
     queueDialogue('xiaochu_after_book', () => {
       setResonanceState('xiaochu', RESONANCE_STATES.OATH_READY);
       render();
     });
   }
-  if (gameState.chapter1State === CHAPTER1_STATES.JOURNAL_READING && finished) {
+  if (!storyState.journalPreview && gameState.chapter1State === CHAPTER1_STATES.JOURNAL_READING && finished) {
     queueDialogue('chapter1_after_book', () => {
       setChapter1State(CHAPTER1_STATES.COMPLETE);
       render();
@@ -499,7 +562,8 @@ export function closeTravelJournal(finished = false) {
 }
 
 export function advanceTravelJournal() {
-  if (storyState.journalPage < JOURNAL_PAGES.length - 1) {
+  const chapter = JOURNAL_CHAPTERS.find(entry => entry.id === storyState.journalChapterId) || JOURNAL_CHAPTERS[0];
+  if (storyState.journalPage < chapter.pages.length - 1) {
     const page = document.getElementById('journalPageText');
     const turningLeaf = document.getElementById('journalTurningLeaf');
     const nextButton = document.getElementById('journalNextBtn');
@@ -515,7 +579,7 @@ export function advanceTravelJournal() {
     document.getElementById('journalTurningPageText').scrollTop = page.scrollTop;
     document.getElementById('journalTurningPageNumber').textContent = t('format.page', {
       current: formatLocaleNumber(storyState.journalPage + 1),
-      total: formatLocaleNumber(JOURNAL_PAGES.length),
+      total: formatLocaleNumber(chapter.pages.length),
     });
     nextButton.disabled = true;
     storyState.journalPage++;
@@ -539,7 +603,8 @@ export function advanceTravelJournal() {
     turningLeaf.classList.add('turning');
     transition.after(1100, finishTurn);
   } else {
-    closeTravelJournal(true);
+    if (journalStoryReading()) closeTravelJournal(true);
+    else showJournalContents();
   }
 }
 
@@ -634,6 +699,8 @@ export function startContractFormed(characterId) {
   void outro.offsetWidth;
   outro.classList.add('playing');
   outro.focus();
+  presentationRun = beginManagedTransition('story-presentation');
+  presentationRun.after(heavenTransitionDuration(3200), finishContractFormed);
 }
 
 export function finishContractFormed() {
@@ -641,6 +708,8 @@ export function finishContractFormed() {
 }
 
 export function closeDialogue() {
+  presentationRun?.cancel();
+  presentationRun = null;
   heavenTransitionRun?.cancel();
   heavenTransitionRun = null;
   dialogueLineEffectRun?.cancel();
@@ -687,15 +756,16 @@ export function bindDialogueUI() {
     if (event.target.closest('#soulResonance, #contractFormed, #heavenTransition')) return;
     if (storyState.dialoguePhase === 'dialogue') advanceDialogue();
   });
-  document.getElementById('soulResonance').addEventListener('click', finishSoulResonance);
-  document.getElementById('contractFormed').addEventListener('click', finishContractFormed);
-  document.getElementById('heavenTransition').addEventListener('click', () => {
-    if (storyState.dialoguePhase === 'intro') finishHeavenArrival();
-    else if (storyState.dialoguePhase === 'outro') finishHeavenDeparture();
-  });
   document.getElementById('travelJournalBtn').addEventListener('click', openTravelJournal);
   document.getElementById('journalCloseBtn').addEventListener('click', () => closeTravelJournal(false));
   document.getElementById('journalNextBtn').addEventListener('click', advanceTravelJournal);
+  document.getElementById('journalContentsBtn').addEventListener('click', showJournalContents);
+  document.getElementById('journalResumeBtn').addEventListener('click', () => openJournalChapter(gameState.journalReading.chapterId, true));
+  document.getElementById('journalPrevBtn').addEventListener('click', () => {
+    if (document.getElementById('journalTurningLeaf').classList.contains('turning') || storyState.journalPage <= 0) return;
+    storyState.journalPage--;
+    renderJournalPage();
+  });
   document.getElementById('contractFacilityBtn').addEventListener('click', beginContractPreparation);
   document.getElementById('contractCloseBtn').addEventListener('click', closeContractPanel);
   document.getElementById('xiaochuSoulBtn').addEventListener('click', () => {
@@ -714,15 +784,7 @@ export function bindDialogueUI() {
   document.addEventListener('keydown', event => {
     if ((event.key === 'Enter' || event.key === ' ') && gameState.activeOverlay === 'dialogue') {
       event.preventDefault();
-      if (storyState.dialoguePhase === 'intro') {
-        if (document.getElementById('heavenTransition').classList.contains('playing')) finishHeavenArrival();
-        else finishSoulResonance();
-      }
-      else if (storyState.dialoguePhase === 'dialogue') advanceDialogue();
-      else if (storyState.dialoguePhase === 'outro') {
-        if (document.getElementById('heavenTransition').classList.contains('playing')) finishHeavenDeparture();
-        else finishContractFormed();
-      }
+      if (storyState.dialoguePhase === 'dialogue' && !event.repeat) advanceDialogue();
       return;
     }
     if (event.key === 'Escape' && gameState.activeOverlay === 'journal') {
@@ -737,6 +799,8 @@ export function bindDialogueUI() {
     }
     if (event.key === 'F8' && !event.repeat) {
       event.preventDefault();
+      if (gameState.activeOverlay === 'dialogue' &&
+          (storyState.dialoguePhase !== 'dialogue' || storyState.lineEffectLocked)) return;
       previewContract('xiaochu');
     }
   });

@@ -73,6 +73,58 @@ function assertNoRuntimeErrors(page, view) {
   assert.deepEqual(page.runtimeErrors.map(error => error.message), [], `${view} emitted a runtime error`);
 }
 
+async function testJournalNavigation(browser) {
+  const preview = await openView(browser, 'village');
+  await preview.click('#debugToggleBtn');
+  await preview.click('[data-debug-action="journal-preview"]');
+  assert.equal(await preview.locator('#journalContents').isVisible(), true);
+  await preview.click('.journalChapterEntry');
+  for (let index = 0; index < JOURNAL_PAGES.length; index++) {
+    await preview.waitForFunction(() => !document.getElementById('journalNextBtn').disabled);
+    await preview.click('#journalNextBtn');
+  }
+  assert.equal(await preview.locator('#journalContents').isVisible(), true);
+  assert.equal(await preview.evaluate(() => window.__debugHooks.gameState.chapter1State), 'forest');
+  assertNoRuntimeErrors(preview, 'journal debug preview');
+  await preview.close();
+  const page = await openView(browser, 'journal');
+  await page.evaluate(async () => {
+    const { gameState } = await import('./js/state.js');
+    gameState.chapter1State = 'complete';
+    gameState.resonanceState = {};
+    const story = await import('./js/story.js');
+    story.closeTravelJournal();
+    story.openTravelJournal();
+  });
+  assert.equal(await page.locator('#journalContents').isVisible(), true);
+  assert.equal(await page.locator('.journalChapterEntry').count(), 1);
+  await page.click('.journalChapterEntry');
+  assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[0]);
+  await page.click('#journalNextBtn');
+  await page.waitForFunction(() => !document.getElementById('journalNextBtn').disabled);
+  await page.click('#journalContentsBtn');
+  await page.click('#journalResumeBtn');
+  assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[1]);
+  await page.click('#journalPrevBtn');
+  assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[0]);
+  await page.click('#journalNextBtn');
+  await page.waitForFunction(() => !document.getElementById('journalNextBtn').disabled);
+  await page.click('#journalCloseBtn');
+  await page.evaluate(async () => {
+    const save = await import('./js/save.js');
+    const raw = save.createSaveData();
+    const normalized = save.normalizeSaveData(raw);
+    const { gameState } = await import('./js/state.js');
+    gameState.journalReading = normalized.journalReading;
+    (await import('./js/story.js')).openTravelJournal();
+  });
+  await page.click('#journalResumeBtn');
+  assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[1]);
+  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.chapter1State), 'complete');
+  assertNoRuntimeErrors(page, 'journal navigation');
+  await page.close();
+}
+
 async function testMajorViewsRender(browser) {
   const views = [
     ['home', '#homeView'],
@@ -312,7 +364,10 @@ async function testXiaochuEncounterFlow(browser) {
   await waitForOverlay('dialogue');
   assert.equal(await xiaochuState(), 'contracting');
   await advanceDialogue(lineCount('xiaochu_oath')); // last line hands off to the contractFormed outro
-  await click('contractFormed'); // finishes the outro, chaining into xiaochu_first_possession
+  await click('contractFormed');
+  await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialoguePhase), 'outro');
+  await page.waitForFunction(() => window.__debugHooks.storyState.dialogueScriptId === 'xiaochu_first_possession');
   await advanceDialogue(lineCount('xiaochu_first_possession')); // includes both xiaochu_kiss lines
 
   assert.equal(await xiaochuState(), 'contracted');
@@ -520,7 +575,11 @@ async function testChapter1RuinsFlow(browser) {
     veilTransform: 'none',
   });
   await click('heavenTransition');
-  assert.equal(await page.textContent('#dialogueText'), '無名在一片明亮、安靜，像天堂一樣的地方醒來。');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
+  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialoguePhase), 'intro');
+  await page.waitForFunction(() => window.__debugHooks.storyState.dialoguePhase === 'dialogue');
+  assert.equal(await page.textContent('#dialogueText'), DIALOGUE_DEFS.chapter1_goddess[0].text);
   await advanceDialogue(2);
   assert.deepEqual(await page.evaluate(() => ({
     goddess: document.getElementById('dialoguePortraitFrame').classList.contains('goddessSpeaker'),
@@ -542,7 +601,28 @@ async function testChapter1RuinsFlow(browser) {
     playing: document.getElementById('heavenTransition').classList.contains('playing'),
     departure: document.getElementById('heavenTransition').classList.contains('departure'),
   })), { phase: 'outro', playing: true, departure: true });
+  const departureBounds = await page.evaluate(() => {
+    const stage = document.getElementById('heavenTransition');
+    const corridor = stage.querySelector('.heavenTransitionCorridor');
+    const veil = stage.querySelector('.heavenTransitionVeil');
+    const animations = stage.getAnimations({ subtree: true });
+    const samples = [1200, 2100, 2700].map(time => {
+      animations.forEach(animation => { animation.pause(); animation.currentTime = time; });
+      const frame = stage.getBoundingClientRect();
+      const light = corridor.getBoundingClientRect();
+      return light.left <= frame.left && light.right >= frame.right &&
+        light.top <= frame.top && light.bottom >= frame.bottom &&
+        getComputedStyle(veil).transform === 'none';
+    });
+    return samples;
+  });
+  assert.deepEqual(departureBounds, [true, true, true], 'return light never exposes an inset rectangular layer');
+  assert.equal(DIALOGUE_DEFS.chapter1_after_book.some(line => line.text.includes('這次可得仔細聽')), false);
   await click('heavenTransition');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
+  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialoguePhase), 'outro');
+  await page.waitForFunction(() => window.__debugHooks.storyState.dialogueScriptId === 'chapter1_home_return');
   assert.deepEqual(await page.evaluate(() => ({
     script: window.__debugHooks.storyState.dialogueScriptId,
     location: window.__debugHooks.overlayUiState.prepLocation,
@@ -673,6 +753,7 @@ async function testEventInteractions(browser) {
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
     await testMajorViewsRender(browser);
+    await testJournalNavigation(browser);
     await testDungeonEntry(browser);
     await testBossTransition(browser);
     await testSameSpeakerDialogue(browser);

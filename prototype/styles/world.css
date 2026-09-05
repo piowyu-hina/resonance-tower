@@ -1019,6 +1019,40 @@ button, input, select { font-size: 15px; }
 #tooltip .ttStat, #tooltip .ttSkill, #tooltip .ttMissing { font-size: 13px; }
 #log, .logLine { font-size: 14px; line-height: 1.55; }
 
+/* Secondary information must remain readable alongside the larger headings. */
+.homeGrowthLock, .detailIdentity .detailRarity,
+.detailSectionHeading small, .growthLevel, .growthInspectorHead span,
+.growthCompare small, .skinOption span, .skinPreview i,
+.expeditionStepLabel > span, .expeditionCharacter .selectedBadge,
+.atkLabel, .expLabel, .hpLabel { font-size: 12px; }
+.detailSectionHeading { flex-wrap: wrap; }
+.detailSectionHeading small, .growthInspectorHead span, .growthCompare small { color: #aab3bd; }
+.detailCharacterDescription { font-size: 15px; line-height: 1.8; }
+.detailSectionTitle, .growthVital, .growthCost { font-size: 14px; }
+.growthCard { padding-right: 40px; }
+.growthCardText b { font-size: 14px; }
+.growthCardText small { color: #b1bac5; font-size: 13px; }
+.growthCardText b, .growthCardText small { white-space: normal; overflow-wrap: anywhere; }
+.growthCompare strong { font-size: 15px; }
+#growthUpgradeBtn { font-size: 14px; min-height: 42px; }
+.shopSellActions button, .shopBuyRow button, #shopLeaveBtn { min-height: 42px; font-size: 14px; }
+.shopItemCopy { min-width: 0; }
+.shopItemCopy small { overflow: visible; text-overflow: clip; }
+.defeatMark, .victoryMark, .runResultHeading small, #journalPageNumber { font-size: 13px; }
+.runResultFoot, .runResultEmpty { color: #afb5bf; font-size: 14px; line-height: 1.65; }
+#defeatModal p, #victoryModal p { font-size: 15px; }
+.runResultItem span, .runResultItem b { font-size: 14px; }
+.runResultItem span { white-space: normal; overflow-wrap: anywhere; }
+.contractConfirm > small { font-size: 12px; }
+.contractFooter { font-size: 12px; color: #a5b3c1; letter-spacing: .06em; }
+#shopWallet { font-size: 14px; }
+@media (max-width: 650px) {
+  .shopSellActions { flex-wrap: wrap; }
+  .shopSellActions button { flex: 1 1 76px; }
+  .detailTitleRow { flex-wrap: wrap; }
+  .growthStats, .growthSkills { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* On very narrow phones, reserve a compact lane for guide Hina instead of
    squeezing the facility title down to one CJK character per line. */
 @media (max-width: 380px) {
@@ -1035,4 +1069,34 @@ button, input, select { font-size: 15px; }
   0% { opacity: 1; transform: rotateY(0); }
   72% { opacity: 1; transform: rotateY(-70deg); }
   100% { opacity: 0; transform: rotateY(-89deg); }
+}
+
+/* The old journal can hold many accounts without turning into a quest list. */
+.journalBook[hidden], #journalContents[hidden], #journalContentsBtn[hidden], #journalResumeBtn[hidden] { display: none; }
+#journalContents { flex: 1; min-height: 0; overflow-y: auto; margin: 18px 24px 24px; padding: 36px clamp(20px, 6vw, 72px); border: 1px solid #856844; border-radius: 5px; background: radial-gradient(ellipse at top, #eee0b8, transparent 75%), linear-gradient(95deg, #c3ac7d, #dfcda2 8%, #ddc99b 94%, #b9a071); box-shadow: 0 8px 24px #130c0a88, inset 0 0 35px #84613933; color: #44301f; font-family: Georgia, 'Noto Serif TC', serif; }
+.journalContentsHeading { text-align: center; margin-bottom: 28px; }
+.journalContentsHeading small { letter-spacing: .25em; font-size: 12px; }
+.journalContentsHeading h3 { margin: 10px 0; font-size: 30px; letter-spacing: .2em; }
+.journalContentsHeading p { font-size: 15px; line-height: 1.7; }
+#journalChapterList { display: grid; gap: 12px; }
+.journalChapterEntry { display: flex; align-items: baseline; gap: 20px; width: 100%; min-height: 72px; padding: 18px 12px; border: 0; border-bottom: 1px solid #795a3d66; background: transparent; color: #392718; text-align: left; font: inherit; cursor: pointer; }
+.journalChapterEntry span { font-size: 14px; color: #705437; }
+.journalChapterEntry b { font-size: 20px; line-height: 1.6; overflow-wrap: anywhere; }
+.journalChapterEntry:hover { background: #76533416; }
+#journalResumeBtn, #journalContentsBtn { min-height: 42px; padding: 8px 14px; border: 1px solid #896845; border-radius: 3px; background: #70503012; color: #49311f; font-size: 14px; cursor: pointer; }
+#journalResumeBtn { display: block; margin: 0 auto 26px; }
+#journalContentsBtn { margin-top: 28px; }
+.journalPageText { font-size: 17px; color: #302218; line-height: 1.9; }
+.journalFooter { gap: 8px; letter-spacing: .03em; }
+.journalFooter button { min-width: 0; min-height: 44px; padding: 9px 12px; font-size: 14px; }
+.journalFooter button:disabled { opacity: .45; }
+#journalPageNumber { white-space: nowrap; }
+@media (max-width: 600px) {
+  #journalContents { margin: 12px; padding: 24px 18px; }
+  .journalBook { grid-template-rows: auto minmax(0, 1fr); }
+  .journalChapterLeaf { min-height: 0; padding: 12px 16px; }
+  .journalChapterLeaf .journalCompass, .journalChapterLeaf > i { display: none; }
+  .journalChapter { margin-top: 5px; font-size: 19px; }
+  #journalContentsBtn { margin-top: 10px; }
+  .journalPageText { font-size: 16px; line-height: 1.85; }
 }

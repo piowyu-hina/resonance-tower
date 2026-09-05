@@ -40,4 +40,8 @@ assert.equal(normalized.ownedSkins.has('fake_skin'), false);
 assert.equal(normalized.equippedSkinByCharacter.xiaochu, 'xiaochu_default');
 
 assert.throws(() => normalizeSaveData({ version: 1 }), /不支援的存檔格式/);
+assert.deepEqual(normalized.journalReading, { chapterId: 'shapeshifter', pages: {} });
+const reading = progression => normalizeSaveData({ format: 'resonance-tower-save', version: 1, progression }).journalReading;
+assert.deepEqual(reading({ journalReading: { chapterId: 'shapeshifter', pages: { shapeshifter: 2 } } }), { chapterId: 'shapeshifter', pages: { shapeshifter: 2 } });
+assert.deepEqual(reading({ journalReading: { chapterId: 'unknown', pages: { shapeshifter: 999, unknown: 4 } } }), { chapterId: 'shapeshifter', pages: { shapeshifter: 3 } });
 console.log('save.test.js: all assertions passed');

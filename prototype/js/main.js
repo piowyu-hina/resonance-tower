@@ -2,7 +2,7 @@ import { MASTER_TICK_MS } from './constants.js';
 import { gameState, PHASES, initGame } from './state.js';
 import { initI18n } from './i18n.js';
 import { render, buildUI } from './ui-main.js';
-import { renderJournalPage, runContractPreviewFromUrl } from './story.js';
+import { renderJournalPage, showJournalContents, runContractPreviewFromUrl } from './story.js';
 import { renderInventory } from './ui-commerce.js';
 import { initDebugTools } from './debug.js';
 import { initSaveSystem } from './save.js';
@@ -17,7 +17,10 @@ import { debugState } from './debug.js';
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('localechange', () => {
   render();
-  if (gameState.activeOverlay === 'journal') renderJournalPage();
+  if (gameState.activeOverlay === 'journal') {
+    if (document.getElementById('journalContents').hidden) renderJournalPage();
+    else showJournalContents();
+  }
   if (gameState.activeOverlay === 'inventory') renderInventory();
 });
 

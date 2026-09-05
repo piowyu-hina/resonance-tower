@@ -401,6 +401,16 @@
   .mushroomGrid { width: 282px; }
 }
 
+/* Choices and puzzle instructions are gameplay text, not decorative captions. */
+.eventKicker { font-size: 12px; color: #a8bab0; }
+#eventSkipBtn { min-height: 40px; font-size: 14px; }
+#eventDescription { font-size: 15px; color: #c1cac5; }
+.eventChoice b { font-size: 16px; }
+.eventChoice span { font-size: 14px; color: #b5c1ba; }
+.crateClue, .herbClue, .pipeInstructions { font-size: 14px; }
+.crateDials button small, .herbChoices span, .pipeLegend { font-size: 12px; color: #aab9af; }
+.eventIdleCopy { font-size: 12px; color: #a4b2ab; }
+
 @media (prefers-reduced-motion: reduce) {
   #eventSceneImage, #eventModal, .eventChoice, .herbChoices button, .bubbleButton, .pipePiece { transition: none; }
   .pipeGrid button.flowing .pipeWater, .pipeBoard.solved .pipeTarget { animation: none; }
