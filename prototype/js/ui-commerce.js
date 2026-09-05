@@ -10,6 +10,16 @@ import { closeOtherOverlays } from './ui-overlays.js';
 // this file's drag handlers, not shared game state.
 let inventoryDragFrom = null;
 
+function alignVillageMerchant() {
+  const overlay = document.getElementById('shopOverlay');
+  const scene = document.getElementById('villageView');
+  if (!overlay.classList.contains('villageMerchant') || !scene.getClientRects().length) return;
+  const rect = scene.getBoundingClientRect();
+  for (const [key, value] of Object.entries({ left: rect.left, top: rect.top, width: rect.width, height: rect.height })) {
+    overlay.style.setProperty(`--merchant-scene-${key}`, `${value}px`);
+  }
+}
+
 export function renderShopDialogue() {
   if (shopUiState.lastShopDialogueMode !== gameState.shopMode) {
     shopUiState.shopDialogueIndex = 0;
@@ -20,6 +30,9 @@ export function renderShopDialogue() {
 }
 
 export function buildShopUI() {
+  window.addEventListener('resize', alignVillageMerchant);
+  window.addEventListener('scroll', alignVillageMerchant, { passive: true });
+  new ResizeObserver(alignVillageMerchant).observe(document.getElementById('villageView'));
   const buyList = document.getElementById('shopBuyList');
   SHOP_ITEMS.forEach(offer => {
     const item = localizedItemDef(offer.itemId);
@@ -74,6 +87,8 @@ export function renderShopView() {
   const shopOpen = gameState.activeOverlay === 'shop';
   const overlay = document.getElementById('shopOverlay');
   overlay.classList.toggle('open', shopOpen);
+  overlay.classList.toggle('villageMerchant', shopOpen && gameState.shopMode === 'town');
+  if (shopOpen) alignVillageMerchant();
   overlay.setAttribute('aria-hidden', String(!shopOpen));
   if (!shopOpen) {
     shopUiState.wasShopOpen = false;
