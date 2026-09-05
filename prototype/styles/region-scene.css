@@ -13,7 +13,7 @@
   .regionSceneActive #regionView .homeTopbar > div { position: absolute; top: 15%; left: 4%; text-shadow: 0 2px 8px #15170b; }
   .regionSceneActive #regionView .prepHeading { color: #ffedca; font-family: Georgia, 'Noto Serif TC', serif; font-size: 32px !important; letter-spacing: .12em; }
   .regionSceneActive #regionView .prepMsg { color: #efe1c7; font-size: 16px; margin-top: 8px; }
-  .regionSceneActive #regionBackBtn { position: absolute; left: 4%; bottom: 6%; pointer-events: auto; border: 0 !important; background: transparent !important; box-shadow: none !important; color: #ffedca; font-family: Georgia, 'Noto Serif TC', serif; font-size: 22px; text-shadow: 0 2px 5px #15170b; }
+  .regionSceneActive #regionBackBtn { position: absolute; left: 1.5%; top: 25%; width: 17%; height: 35%; display: flex; align-items: end; justify-content: center; padding: 0 0 8px !important; pointer-events: auto; border: 0 !important; background: transparent !important; box-shadow: none !important; color: #ffedca; font-family: Georgia, 'Noto Serif TC', serif; font-size: 22px; text-shadow: 0 2px 5px #15170b; }
   .regionSceneActive #regionBackBtn:hover { color: #ffd58e; background: transparent !important; }
   .regionSceneActive #regionView .regionGrid { position: absolute; right: 4%; bottom: 6%; width: 55%; max-height: 58%; display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; padding: 4px; scrollbar-width: thin; }
   .regionSceneActive #regionView .regionCard { display: block; min-height: 0; border: 1px solid #c5a16a9c; border-radius: 10px; background: linear-gradient(120deg, #382b1eee, #221e16f0); color: #f0dec0; box-shadow: 0 12px 32px #15120c55; }

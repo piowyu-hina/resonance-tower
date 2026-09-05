@@ -3,6 +3,7 @@
 - 使用內建 image_gen 生成，以 `prototype/assets/backgrounds/village-square.png` 為畫風及世界觀參考。
 - 成品：`prototype/assets/backgrounds/expedition-trail.png`（1672 × 941）。
 - 遠征入口使用完整場景背景，右下暖棕目的地資訊卡；左側可返回村莊。點選區域後仍進入既有戰前準備。
+- 返回村莊的點擊區覆蓋左上方實際村門，文字位於門前小徑。
 - 樣式：`prototype/styles/region-scene.css`。只套用桌面區域選擇場景。
 
 ## 最終生成提示詞
@@ -16,4 +17,3 @@ Composition: wide 16:9 panoramic establishing view at human eye level, beautiful
 Style: match the reference's detailed painted timber and stone, softly outlined forms, atmospheric depth, cozy elegant JRPG storybook background. Warm ochre and honey sunlight balanced with muted olive and forest green, subtly cool distant foliage. Inviting sense of a journey about to begin.
 Constraints: no text, letters, symbols, logos, watermark, UI, panels, cards, magical portals, towers, giant monuments, characters or foreground weapons. Opaque landscape PNG.
 ```
-

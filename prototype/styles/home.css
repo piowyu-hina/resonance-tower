@@ -54,12 +54,12 @@
   .homeSceneActive #homeGrowthBtn { left: 12%; top: 39%; width: 17%; height: 46%; }
   .homeSceneActive #xiaochuTalkBtn { left: 37%; top: 20%; width: 25%; height: 65%; }
   .homeSceneActive #xiaochuTalkBtn.soulConversation { left: 37%; top: 80%; width: 25%; height: 12%; }
-  .homeSceneActive #travelJournalBtn { left: 62%; top: 72%; width: 17%; height: 22%; }
+  .homeSceneActive #travelJournalBtn { left: 63%; top: 73%; width: 14%; height: 14%; }
   .homeSceneActive #contractFacilityBtn { left: 63%; top: 25%; width: 13%; height: 45%; }
   .homeSceneActive #homeMenu .homeFacilityBtn > img { position: absolute; inset: 0; width: 100%; height: 93%; max-width: none; max-height: none; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 8px 14px #160c084d); }
   .homeSceneActive #travelJournalBtn > img, .homeSceneActive #contractFacilityBtn > img { display: none; }
   .homeSceneActive #homeMenu .homeFacilityBtn > span:not(.homeGuideHina) { position: absolute; top: 94%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 290px; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
-  .homeSceneActive #homeMenu #travelJournalBtn > span:not(.homeGuideHina) { top: 52%; }
+  .homeSceneActive #homeMenu #travelJournalBtn > span:not(.homeGuideHina) { top: 94%; }
   .homeSceneActive #homeMenu #xiaochuTalkBtn.soulConversation > span:not(.homeGuideHina) { top: 0; }
   .homeSceneActive #homeMenu #homeGrowthBtn > span:not(.homeGuideHina) { top: 100%; }
   .homeSceneActive #homeBackBtn > span,
