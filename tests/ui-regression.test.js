@@ -21,10 +21,12 @@ global.window = { location: { search: '' } };
 global.document = { getElementById: () => null, addEventListener: () => {}, dispatchEvent: () => {}, documentElement: {} };
 const { DIALOGUE_DEFS, JOURNAL_PAGES } = await import('../prototype/js/story.js');
 const { characterPortraitPath, characterBattlePortraitPath, characterFullArtPath } = await import('../prototype/js/state.js');
-for (const getPath of [characterPortraitPath, characterBattlePortraitPath, characterFullArtPath]) {
+for (const getPath of [characterPortraitPath, characterBattlePortraitPath]) {
   assert.equal(getPath('xiaochu'), 'assets/characters/xiaochu_battle_chibi.png');
   assert.ok(fs.existsSync(path.join(prototypeDir, getPath('xiaochu'))));
 }
+assert.equal(characterFullArtPath('xiaochu'), 'assets/characters/xiaochu_full_2.png');
+assert.ok(fs.existsSync(path.join(prototypeDir, characterFullArtPath('xiaochu'))));
 const lineCount = scriptId => DIALOGUE_DEFS[scriptId].length;
 const approvedEncounter = fs.readFileSync(path.resolve(__dirname, '../story/xiaochu-first-encounter.md'), 'utf8')
   .split('## 劇情正文')[1].trim().split(/\r?\n/).filter(line => line.trim())
@@ -1007,7 +1009,7 @@ async function testXiaochuDaily(browser) {
   await page.click('#debugToggleBtn');
   await page.click('[data-debug-action="xiaochu-daily"]');
   await page.click('#debugToggleBtn');
-  assert.equal(await page.locator('#xiaochuTalkBtn img').getAttribute('src'), 'assets/characters/xiaochu_battle_chibi.png');
+  assert.equal(await page.locator('#xiaochuTalkBtn img').getAttribute('src'), 'assets/characters/xiaochu_full_2.png');
   const button = page.locator('#xiaochuTalkBtn');
   assert.equal(await button.isVisible(), true);
   assert.equal(await button.isEnabled(), true);

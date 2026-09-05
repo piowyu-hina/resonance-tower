@@ -216,7 +216,7 @@ export const DIALOGUE_PRESENTATION = {
 export const STORY_SPEAKERS = {
   goddess: { name: '女神', art: 'assets/story/goddess.png', goddess: true },
   xiaochu_voice: { name: '？？？', narration: true },
-  xiaochu_unknown: { name: '？？？', art: 'assets/characters/xiaochu_battle_chibi.png' },
+  xiaochu_unknown: { name: '？？？', art: 'assets/characters/xiaochu_full_2.png' },
   narrator: { name: '', narration: true },
 };
 
