@@ -72,7 +72,7 @@ try {
           story.renderDialogueLine();
         }, view);
         await page.locator('#dialoguePortraitImg').evaluate(img => img.decode());
-        if (!(await page.getAttribute('#dialoguePortraitImg', 'src')).endsWith('/xiaochu_full_2.png')) throw new Error('Expected new Xiaochu dialogue art');
+        if (!(await page.getAttribute('#dialoguePortraitImg', 'src')).endsWith('/xiaochu_battle_chibi.png')) throw new Error('Expected new Xiaochu dialogue art');
       }
       if (view.startsWith('slime-')) {
         await page.evaluate(async () => {
