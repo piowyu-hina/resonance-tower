@@ -287,7 +287,7 @@ export const ROSTER_CHAR_IDS = Object.keys(CHAR_DEFS).filter(id => !CHAR_DEFS[id
 // skins only need an entry here and matching image files; combat balance and
 // unlock data stay on CHAR_DEFS.
 export const SKIN_DEFS = {
-  wuming_default: { characterId: 'wuming', name: '有帽', portrait: 'lixue', fullArt: 'lixue_full', preview: 'lixue_full' },
+  wuming_default: { characterId: 'wuming', name: '初始外觀', portrait: 'lixue', fullArt: 'lixue_full', preview: 'lixue_full' },
   xiaochu_default: { characterId: 'xiaochu', name: '原始外觀', portrait: 'xiaochu', battlePortrait: 'xiaochu', fullArt: 'xiaochu_full' },
   fengzi_default: { characterId: 'fengzi', name: '原始外觀', portrait: 'fengzi', fullArt: 'fengzi_full' },
 };

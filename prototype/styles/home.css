@@ -33,9 +33,6 @@
   .homeSceneActive #homeBackBtn { position: absolute; left: 87%; top: 22%; width: 11%; height: 48%; display: flex; align-items: end; justify-content: center; }
   .homeSceneActive #homeBackBtn { pointer-events: auto; padding: 5px 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; color: #fff0d9; font-family: Georgia, 'Noto Serif TC', serif; font-size: 23px; text-shadow: 0 2px 5px #19120f; }
   .homeSceneActive #homeBackBtn:focus-visible { outline: 2px dashed #eac78a; outline-offset: 5px; }
-  .homeSceneActive #homeBackBtn > span { padding: 6px 14px; border: 1px solid #d9ba7b38; border-radius: 20px; background: #251b1399; color: #dbc5a4; font-size: 16px; letter-spacing: .16em; transition: background .2s, color .2s, border-color .2s; }
-  .homeSceneActive #homeBackBtn:hover:not(:disabled) > span,
-  .homeSceneActive #homeBackBtn:focus-visible > span { background: #34251de6; color: #fff2da; border-color: #eac78a99; }
   .homeSceneActive #homeMenu { display: block; position: absolute; inset: 0; }
   .homeSceneActive #homeMenu[hidden] { display: none; }
   .homeSceneActive #homeMenu .homeFacilityBtn {
@@ -71,12 +68,18 @@
   .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible):not(:disabled) small { opacity: 1; }
   .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible, .storyRequired) b::after { width: 72px; }
   .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible, .storyRequired) b { color: #ffe1a3; }
+  .homeSceneActive #homeBackBtn > span,
+  .homeSceneActive #homeMenu #homeGrowthBtn b { padding: 6px 14px; border: 1px solid #d9ba7b38; border-radius: 20px; background: #251b1399; color: #dbc5a4; font-family: Georgia, 'Noto Serif TC', serif; font-size: 16px; font-weight: 500; line-height: 1.5; letter-spacing: .16em; text-shadow: 0 2px 5px #19120f; transition: background .2s, color .2s, border-color .2s; }
+  .homeSceneActive #homeMenu #homeGrowthBtn b::after { content: none; }
+  .homeSceneActive #homeBackBtn:is(:hover, :focus-visible):not(:disabled) > span,
+  .homeSceneActive #homeMenu #homeGrowthBtn:is(:hover, :focus-visible):not(:disabled) b { background: #34251de6; color: #fff2da; border-color: #eac78a99; }
   .homeSceneActive #homeMenu .homeFacilityBtn:focus-visible { outline: 2px dashed #eac78a; outline-offset: 5px; }
   .homeSceneActive #homeMenu .homeFacilityBtn:disabled { opacity: .45; cursor: default; }
   .homeSceneActive #homeMenu .homeFacilityBtn.storyFocusTarget { opacity: 1; }
   .homeSceneActive #homeMenu .homeGuideHina { top: auto; bottom: 16%; right: -70px; width: 180px; height: 218px; }
   .homeSceneActive #homeMenu #homeGrowthBtn .homeGuideHina { right: -65%; bottom: 40%; }
   @media (prefers-reduced-motion: reduce) {
+    .homeSceneActive #homeBackBtn > span, .homeSceneActive #homeMenu #homeGrowthBtn b { transition: none; }
     .homeSceneActive #homeMenu .homeFacilityBtn b::after, .homeSceneActive #homeMenu .homeFacilityBtn small { transition: none; }
   }
 }

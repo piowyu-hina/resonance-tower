@@ -1255,6 +1255,11 @@ async function testDesktopHome(browser) {
     });
     await page.waitForTimeout(650);
     assert.equal(await page.locator('#homeView .homeTopbar .prepHeading').count(), 0, 'room title is removed, not merely hidden at desktop widths');
+    const hintStyles = await page.evaluate(() => ['#homeGrowthBtn b', '#homeBackBtn > span'].map(selector => {
+      const style = getComputedStyle(document.querySelector(selector));
+      return ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'color', 'backgroundColor', 'border', 'borderRadius', 'padding', 'letterSpacing', 'textShadow'].map(key => style[key]);
+    }));
+    assert.deepEqual(hintStyles[0], hintStyles[1], 'home cultivation and exit share the same visual language');
     for (const id of ['homeGrowthBtn', 'travelJournalBtn', 'contractFacilityBtn']) {
       const target = page.locator(`#${id}`);
       assert.equal(await target.isVisible(), true);
@@ -1337,6 +1342,7 @@ async function testDesktopHome(browser) {
     await page.locator('.detailArtFrame img').evaluate(el => el.decode());
     assert.match(await page.locator('.detailArtFrame img').getAttribute('src'), /lixue_full\.png$/);
     assert.equal(await page.locator('[data-skin-id="wuming_default"]').getAttribute('aria-pressed'), 'true');
+    assert.match(await page.locator('[data-skin-id="wuming_default"]').textContent(), /初始外觀/);
     if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-appearance-${width}.png`) });
     await page.locator('.skinOption').first().click();
     assert.equal(await page.locator('#homeTab-profile').getAttribute('aria-selected'), 'true', 'equipping preserves active tab');

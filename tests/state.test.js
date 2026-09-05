@@ -5,7 +5,7 @@ global.document = { getElementById: () => null, addEventListener: () => {}, disp
 
 const { PHASES, gameState, setPhase, isPrepPhase, isCombatSurfacePhase, addXp, CHAPTER1_STATES } = await import('../prototype/js/state.js');
 const { characterSkins, equipCharacterSkin, characterFullArtPath, characterBattlePortraitPath } = await import('../prototype/js/state.js');
-assert.deepEqual(characterSkins('wuming').map(skin => skin.name), ['有帽']);
+assert.deepEqual(characterSkins('wuming').map(skin => skin.name), ['初始外觀']);
 assert.equal(equipCharacterSkin('wuming', 'lixue_nohat'), false);
 gameState.equippedSkinByCharacter.wuming = 'lixue_nohat';
 assert.equal(characterFullArtPath('wuming'), 'assets/characters/lixue_full.png', 'removed appearance falls back to default');
