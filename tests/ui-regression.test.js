@@ -1259,6 +1259,17 @@ async function testDesktopVillage(browser) {
     near(geometry.ratio, geometry.artRatio, 'background keeps original proportions');
     assert.equal(geometry.overflow, false);
     assert.ok(geometry.targets.every(t => t.inside && t.labelHit), 'buildings and labels are clickable');
+    assert.equal(await page.locator('#saveGameBtn').isVisible(), false);
+    assert.equal(await page.locator('#loadGameBtn').isVisible(), false);
+    await page.locator('#bagBtn').focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.getAttribute('#inventoryOverlay', 'aria-hidden'), 'false');
+    await page.click('#inventoryCloseBtn');
+    const beforeDebug = await page.locator('#villageView').boundingBox();
+    await page.click('#debugToggleBtn');
+    assert.equal(await page.locator('#debugPanel').isVisible(), true);
+    assert.deepEqual(await page.locator('#villageView').boundingBox(), beforeDebug, 'debug panel does not shift the village');
+    await page.click('#debugToggleBtn');
     if (process.argv.includes('--village-only')) {
       fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
       await page.screenshot({ path: path.resolve(__dirname, `../test-results/village-scene-${width}.png`) });

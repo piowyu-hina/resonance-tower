@@ -8,6 +8,8 @@ With user confirmation, home guidance now uses characters/guider.png and the hom
 
 Label refinement: removed the solid brown plates in favor of warm ivory serif names, soft dark text shadows and a fine gold underline. Hover and keyboard focus brighten the name, extend the underline and reveal the description without moving the clickable label. The gate is named 村口 / Village Gate. Mandatory home guidance keeps a gold text emphasis without restoring the old box.
 
+Header refinement: village-only overlay header with a soft dark gradient, smaller brand, frameless inventory entry and a subdued separated developer button. The debug panel overlays the scene without moving hotspots. Save/load controls are hidden globally at user request; DOM bindings and serialization remain intact, no new persistence behavior. Inventory contents and other screens' header styling are unchanged. design.md records the current scope and deferred home redesign.
+
 Validation: npm test passed; focused desktop checks at widths 1024, 1440 and 1920 passed, covering art aspect ratio, building/label hit areas, shop entry, keyboard gate entry, home round-trip, app width reset and mandatory home guidance. Mobile overlay geometry tests remain, but the desktop-only village beneath them is no longer required to fit a phone viewport.
 
 Generation prompt:

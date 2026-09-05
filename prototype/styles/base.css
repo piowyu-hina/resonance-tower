@@ -130,6 +130,7 @@ img {
 #floorLabel { color: #cbd0d1; font-size: 12px; }
 .headerActions { display: flex; align-items: center; gap: 6px; }
 .saveActions { display: flex; align-items: center; gap: 5px; margin-left: 2px; padding-left: 8px; border-left: 1px solid #41484d; }
+.saveActions[hidden] { display: none; }
 .saveActions button {
   min-width: 58px;
   padding: 7px 10px;
