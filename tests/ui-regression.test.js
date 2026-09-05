@@ -1363,7 +1363,9 @@ async function testDesktopHome(browser) {
     assert.deepEqual(await page.locator('#growthUpgradeBtn').boundingBox(), upgradeBeforeAppearance, 'returning restores the pinned workspace');
     assert.equal(await page.locator('.detailArtFrame').isVisible(), true);
     await page.setViewportSize({ width, height: 1080 });
+    const cultivationSize = await page.locator('#characterDetailModal').evaluate(el => [getComputedStyle(el).width, getComputedStyle(el).height]);
     await page.click('#characterDetailCloseBtn');
+    assert.deepEqual(await page.locator('#characterDetailModal').evaluate(el => [getComputedStyle(el).width, getComputedStyle(el).height]), cultivationSize, 'closing retains the home layout throughout fade-out');
     assert.equal(await page.locator('#homeGrowthBtn').evaluate(el => el === document.activeElement), true, 'closing returns keyboard focus to room entry');
     const door = await page.locator('#homeBackBtn').evaluate(el => {
       const r = el.getBoundingClientRect();

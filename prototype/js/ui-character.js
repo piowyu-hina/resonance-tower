@@ -23,7 +23,9 @@ export function setCharacterDetailOpen(open, characterId = null) {
   gameState.activeOverlay = open ? 'characterDetail' : (gameState.activeOverlay === 'characterDetail' ? null : gameState.activeOverlay);
   const overlay = document.getElementById('characterDetailOverlay');
   overlay.classList.toggle('open', open);
-  overlay.classList.toggle('homeCharacterDetail', open && overlayUiState.prepLocation === 'home');
+  // Keep the active layout during fade-out; reset it on the next open.
+  // Removing the home theme here snaps the still-visible modal from 1280px to 980px.
+  if (open) overlay.classList.toggle('homeCharacterDetail', overlayUiState.prepLocation === 'home');
   overlay.setAttribute('aria-hidden', String(!open));
   hideTooltip();
   if (!open) {
