@@ -4,6 +4,14 @@ global.window = { location: { search: '' } };
 global.document = { getElementById: () => null, addEventListener: () => {}, dispatchEvent: () => {}, documentElement: {} };
 
 const { PHASES, gameState, setPhase, isPrepPhase, isCombatSurfacePhase, addXp, CHAPTER1_STATES } = await import('../prototype/js/state.js');
+const { characterSkins, equipCharacterSkin, characterFullArtPath, characterBattlePortraitPath } = await import('../prototype/js/state.js');
+assert.deepEqual(characterSkins('wuming').map(skin => skin.name), ['有帽', '無帽']);
+assert.equal(equipCharacterSkin('wuming', 'lixue_nohat'), true);
+assert.equal(characterFullArtPath('wuming'), 'assets/characters/lixue_nohat_full.png');
+assert.equal(characterBattlePortraitPath('wuming'), 'assets/characters/lixue.png');
+assert.equal(equipCharacterSkin('xiaochu', 'lixue_nohat'), false);
+assert.equal(equipCharacterSkin('wuming', 'wuming_default'), true);
+assert.equal(characterFullArtPath('wuming'), 'assets/characters/lixue_full.png');
 
 const initial = { phase: gameState.phase, prep: isPrepPhase(), combatSurface: isCombatSurfacePhase() };
 setPhase(PHASES.DUNGEON_INTRO);

@@ -39,7 +39,7 @@ export default {
   'home.journalDesc': 'Review knowledge and stories from your travels',
   'home.contract': 'Forge Covenant',
   'home.contractDesc': 'Answer a waiting soul',
-  'character.description.wuming': 'A young traveler living in a corner of the village. Kind, simple, and direct, he makes a living clearing monsters beyond the village and always answers the soul voices that reach him.',
+  'character.description.wuming': 'A young traveler living in a corner of the village. Kind, simple, and direct, she makes a living clearing monsters beyond the village and always answers the soul voices that reach her.',
   'character.description.xiaochu': 'A young swordswoman from the soul layer. Cheerful and competitive, she longs to wield a sword in the material world; she has no fixed human appearance and changes form based on the person she possesses.',
   'character.description.fengzi': 'A resonant soul skilled in frost, healing, and protective magic. Equally capable of hindering enemies and stabilizing a dangerous fight, Fengzi balances offense and support.',
   'region.title': 'Expedition Gate',

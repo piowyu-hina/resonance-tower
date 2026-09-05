@@ -39,7 +39,7 @@ export const EVENT_DEFS = Object.freeze([
     kind: 'choice',
     image: 'ruins_entrance.png',
     title: '遺跡之地',
-    description: '無名在森林深處發現了一處陌生的遺跡入口。',
+    description: '璃雪在森林深處發現了一處陌生的遺跡入口。',
     options: [
       { title: '進入遺跡', desc: '踏入遺跡，探索深處。', apply: () => result('你踏入了遺跡。', 'success', '', 'enterRuins') },
       { title: '暫時離開', desc: '繼續原本的森林遠征。', apply: () => result('你暫時離開了遺跡入口。', 'neutral', '') },

@@ -216,23 +216,23 @@ export const SHOP_ITEMS = [
 // literal needs several constants.js exports already initialized, so
 // constants.js must never depend on state.js at its own module top level.)
 
-// Keys and asset basenames use stable character ids, never job-class names -
-// 無名 in particular has no fixed class ("無職").
+// Keep the legacy wuming character ID for save compatibility; Lixue uses
+// lixue asset basenames and still has no fixed class ("無職").
 export const CHAR_DEFS = {
   wuming: {
-    name: '無名', icon: '🥷', img: 'wuming', rarity: 'common',
+    name: '璃雪', icon: '🥷', img: 'lixue', rarity: 'common',
     unlock: { type: 'free' }, // starting character, always available
     baseHp: 32, baseAtk: 7, baseDef: 1,
     atkInterval: 1800, // middle of the pack pace - generalist, not a speedster
     action: {
-      name: '我還能撐住', icon: '💚', img: 'wuming_action_resolve_v2', cooldown: 18,
+      name: '我還能撐住', icon: '💚', img: 'lixue_action', cooldown: 18,
       type: 'healAndResolve', pct: 0.15, reduction: 0.3, duration: 4,
       desc: '恢復自身 15% 最大生命，4 秒內受到的敵方直接傷害減少 30%；不含反傷與事件傷害，不會復活或免死',
     },
     skills: [
-      { name: '試探刺擊', icon: '🗡️', img: 'wuming_skill1', cd: 4, type: 'damage', mult: 2, desc: '向前刺擊，造成 2 倍攻擊力的單體傷害' },
-      { name: '穩住腳步', icon: '💨', img: 'wuming_skill2', cd: 8, type: 'evasionSelf', chance: 0.5, duration: 4, desc: '4 秒內有 50% 機率閃避敵方普攻與一般技能；成功後獲得 10 秒破綻就緒，不疊加。遺跡之主攻擊及首領場地機制不適用' },
-      { name: '抓到空隙了！', icon: '🗡️', img: 'wuming_skill3', cd: 10, type: 'openingStrike', mult: 2, openingMult: 3.2, desc: '造成 2 倍攻擊力傷害；消耗破綻就緒時提升為 3.2 倍，就緒且冷卻完成時優先施放' },
+      { name: '試探刺擊', icon: '🗡️', img: 'lixue_skill1', cd: 4, type: 'damage', mult: 2, desc: '向前刺擊，造成 2 倍攻擊力的單體傷害' },
+      { name: '穩住腳步', icon: '💨', img: 'lixue_skill2', cd: 8, type: 'evasionSelf', chance: 0.5, duration: 4, desc: '4 秒內有 50% 機率閃避敵方普攻與一般技能；成功後獲得 10 秒破綻就緒，不疊加。遺跡之主攻擊及首領場地機制不適用' },
+      { name: '抓到空隙了！', icon: '🗡️', img: 'lixue_skill3', cd: 10, type: 'openingStrike', mult: 2, openingMult: 3.2, desc: '造成 2 倍攻擊力傷害；消耗破綻就緒時提升為 3.2 倍，就緒且冷卻完成時優先施放' },
     ],
   },
   xiaochu: {
@@ -287,7 +287,8 @@ export const ROSTER_CHAR_IDS = Object.keys(CHAR_DEFS).filter(id => !CHAR_DEFS[id
 // skins only need an entry here and matching image files; combat balance and
 // unlock data stay on CHAR_DEFS.
 export const SKIN_DEFS = {
-  wuming_default: { characterId: 'wuming', name: '原始外觀', portrait: 'wuming', fullArt: 'wuming_full' },
+  wuming_default: { characterId: 'wuming', name: '有帽', portrait: 'lixue', fullArt: 'lixue_full', preview: 'lixue_full' },
+  lixue_nohat: { characterId: 'wuming', name: '無帽', portrait: 'lixue', fullArt: 'lixue_nohat_full', preview: 'lixue_nohat_full', free: true },
   xiaochu_default: { characterId: 'xiaochu', name: '原始外觀', portrait: 'xiaochu', battlePortrait: 'xiaochu', fullArt: 'xiaochu_full' },
   fengzi_default: { characterId: 'fengzi', name: '原始外觀', portrait: 'fengzi', fullArt: 'fengzi_full' },
 };

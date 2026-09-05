@@ -96,7 +96,7 @@ export const gameState = {
   shopAutoLeave: true,
 
   // Cosmetics are permanent collection data and never affect combat stats.
-  ownedSkins: new Set(Object.values(DEFAULT_SKIN_BY_CHARACTER)),
+  ownedSkins: new Set([...Object.values(DEFAULT_SKIN_BY_CHARACTER), ...Object.keys(SKIN_DEFS).filter(id => SKIN_DEFS[id].free)]),
   equippedSkinByCharacter: { ...DEFAULT_SKIN_BY_CHARACTER },
 
   charEls: {},    // id -> battle-card DOM refs, only for CURRENT active party, rebuilt on entering combat

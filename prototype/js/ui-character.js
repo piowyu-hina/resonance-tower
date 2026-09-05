@@ -271,7 +271,7 @@ export function renderCharacterDetail(characterId) {
       <div class="skinPicker">
         ${skins.map(skin => `
           <button type="button" aria-pressed="${gameState.equippedSkinByCharacter[characterId] === skin.skinId}" class="skinOption${gameState.equippedSkinByCharacter[characterId] === skin.skinId ? ' selected' : ''}" data-skin-id="${skin.skinId}">
-            <span class="skinPreview"><img src="assets/characters/${skin.portrait}.png" alt="${skin.name}"><i aria-hidden="true">✓</i></span><span>${skin.name}</span>
+            <span class="skinPreview"><img src="assets/characters/${skin.preview || skin.portrait}.png" alt="${skin.name}"><i aria-hidden="true">✓</i></span><span>${skin.name}</span>
           </button>`).join('')}
       </div>
       <div class="growthVital"><span>HP</span><b>${Math.max(0, c.curHp)} / ${c.maxHp}</b></div>

@@ -37,6 +37,12 @@ assert.equal(normalized.characters.get('xiaochu').lineLevels.atk, 100);
 assert.equal(normalized.characters.get('xiaochu').lineLevels.skill0, 4);
 assert.equal(normalized.characters.get('xiaochu').activeItemId, 'powerCharm');
 assert.equal(normalized.ownedSkins.has('fake_skin'), false);
+assert.equal(normalized.ownedSkins.has('lixue_nohat'), true, 'old saves receive the free hatless appearance');
+assert.equal(normalized.equippedSkinByCharacter.wuming, 'wuming_default', 'legacy default remains valid');
+const hatless = normalizeSaveData({ format: 'resonance-tower-save', version: 1, progression: {
+  equippedSkinByCharacter: { wuming: 'lixue_nohat' },
+} });
+assert.equal(hatless.equippedSkinByCharacter.wuming, 'lixue_nohat', 'hatless choice survives normalization');
 assert.equal(normalized.equippedSkinByCharacter.xiaochu, 'xiaochu_default');
 
 assert.throws(() => normalizeSaveData({ version: 1 }), /不支援的存檔格式/);

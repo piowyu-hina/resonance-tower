@@ -7,7 +7,7 @@ export const XIAOCHU_DAILY_TALKS = [
 
 export const XIAOCHU_DAILY_DIALOGUES = {
   xiaochu_daily_practice: [
-    { speaker: 'narrator', text: '無名把劍靠在桌邊，低頭看了看自己的手。' },
+    { speaker: 'narrator', text: '璃雪把劍靠在桌邊，低頭看了看自己的手。' },
     { speaker: 'xiaochu', thought: true, text: '還在想剛才那一下？' },
     { speaker: 'wuming', text: '妳拿劍的時候，好像不太會猶豫。' },
     { speaker: 'xiaochu', thought: true, text: '有啊。只是你看不出來。' },
@@ -17,14 +17,14 @@ export const XIAOCHU_DAILY_DIALOGUES = {
     { speaker: 'xiaochu', thought: true, text: '所以才要練習嘛。下次換你拿，我幫你看。' },
     { speaker: 'wuming', text: '那妳要早一點提醒。' },
     { speaker: 'xiaochu', thought: true, text: '知道啦。不要等你揮完了才喊。' },
-    { speaker: 'narrator', text: '無名笑了一下，把劍往牆邊挪好。今天先不在屋裡試了。' },
+    { speaker: 'narrator', text: '璃雪笑了一下，把劍往牆邊挪好。今天先不在屋裡試了。' },
   ],
   xiaochu_daily_chair: [
-    { speaker: 'narrator', text: '整理桌子時，無名順手擦了擦旁邊那張椅子。' },
+    { speaker: 'narrator', text: '整理桌子時，璃雪順手擦了擦旁邊那張椅子。' },
     { speaker: 'xiaochu', thought: true, text: '那張也要擦啊？' },
     { speaker: 'wuming', text: '都擦到這裡了。' },
     { speaker: 'xiaochu', thought: true, text: '我現在又坐不到。' },
-    { speaker: 'narrator', text: '無名停了一下，抹布還搭在椅背上。' },
+    { speaker: 'narrator', text: '璃雪停了一下，抹布還搭在椅背上。' },
     { speaker: 'wuming', text: '……也是。' },
     { speaker: 'xiaochu', thought: true, text: '你每次叫我，都還會往那邊看。' },
     { speaker: 'wuming', text: '不然我要看哪裡？' },
@@ -34,7 +34,7 @@ export const XIAOCHU_DAILY_DIALOGUES = {
     { speaker: 'xiaochu', thought: true, text: '好。我也還在習慣。' },
   ],
   xiaochu_daily_departure: [
-    { speaker: 'narrator', text: '無名把行囊攤在桌上，重新檢查繫帶。' },
+    { speaker: 'narrator', text: '璃雪把行囊攤在桌上，重新檢查繫帶。' },
     { speaker: 'xiaochu', thought: true, text: '你已經拉過三次了。' },
     { speaker: 'wuming', text: '有嗎？' },
     { speaker: 'xiaochu', thought: true, text: '有。左邊兩次，右邊一次。' },
@@ -42,9 +42,9 @@ export const XIAOCHU_DAILY_DIALOGUES = {
     { speaker: 'xiaochu', thought: true, text: '不然我幫你數數？劍、行囊……還有我。' },
     { speaker: 'wuming', text: '妳又不會被忘在家裡。' },
     { speaker: 'xiaochu', thought: true, text: '也是。這樣倒是很方便。' },
-    { speaker: 'narrator', text: '無名鬆開繫帶，把行囊放到門邊。' },
+    { speaker: 'narrator', text: '璃雪鬆開繫帶，把行囊放到門邊。' },
     { speaker: 'wuming', text: '準備好了。不過，我想再坐一下。' },
     { speaker: 'xiaochu', thought: true, text: '好啊。又沒有人催我們。' },
-    { speaker: 'narrator', text: '他坐回椅子上。門外的腳步聲經過，又漸漸遠了。' },
+    { speaker: 'narrator', text: '她坐回椅子上。門外的腳步聲經過，又漸漸遠了。' },
   ],
 };

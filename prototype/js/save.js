@@ -145,6 +145,7 @@ export function normalizeSaveData(raw) {
 
   const owned = new Set((Array.isArray(source.ownedSkins) ? source.ownedSkins : []).filter(id => SKIN_DEFS[id]));
   Object.values(DEFAULT_SKIN_BY_CHARACTER).forEach(id => owned.add(id));
+  Object.entries(SKIN_DEFS).filter(([, skin]) => skin.free).forEach(([id]) => owned.add(id));
   const equipped = { ...DEFAULT_SKIN_BY_CHARACTER };
   Object.entries(source.equippedSkinByCharacter || {}).forEach(([characterId, skinId]) => {
     const skin = SKIN_DEFS[skinId];

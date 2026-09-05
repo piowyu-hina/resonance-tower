@@ -317,7 +317,7 @@ async function testSameSpeakerDialogue(browser) {
   const page = await openView(browser, 'dialogue');
   await page.evaluate(async () => {
     const story = await import('./js/story.js');
-    story.storyState.dialogueLineIndex = story.DIALOGUE_DEFS.xiaochu_encounter.findIndex(line => line.speaker === 'xiaochu' && line.text === '無名……');
+    story.storyState.dialogueLineIndex = story.DIALOGUE_DEFS.xiaochu_encounter.findIndex(line => line.speaker === 'xiaochu' && line.text === '璃雪……');
     story.renderDialogueLine();
   });
   await page.waitForTimeout(650);
@@ -713,7 +713,7 @@ async function testChapter1RuinsFlow(browser) {
     returning: document.getElementById('dialoguePortraitFrame').classList.contains('goddessReturning'),
     entering: document.getElementById('dialoguePortraitImg').classList.contains('lineEntering'),
   })), { goddess: true, returning: true, entering: false });
-  assert.equal(DIALOGUE_DEFS.chapter1_goddess.some(line => line.text === '歡迎回到人間，無名。'), false);
+  assert.equal(DIALOGUE_DEFS.chapter1_goddess.some(line => line.text === '歡迎回到人間，璃雪。'), false);
   await advanceDialogue(lineCount('chapter1_goddess') - 4);
   assert.deepEqual(await page.evaluate(() => ({
     phase: window.__debugHooks.storyState.dialoguePhase,
@@ -1077,8 +1077,9 @@ async function testWumingSkills(browser) {
       assert.equal(await page.locator('.growthCard b').filter({ hasText: name }).count(), 1);
     }
     for (const id of ['skill1', 'skill2', 'skill3', 'action']) {
-      const basename = id === 'action' ? 'wuming_action_resolve_v2' : `wuming_${id}`;
-      const img = page.locator(`.growthCard img[src="assets/skills/${basename}.png"]`);
+      const basename = `lixue_${id}`;
+      const line = id === 'action' ? 'action' : `skill${Number(id.slice(-1)) - 1}`;
+      const img = page.locator(`.growthCard[data-line="${line}"] img[src="assets/skills/${basename}.png"]`);
       await img.evaluate(el => el.decode());
       assert.ok(await img.evaluate(el => el.naturalWidth > 0));
     }
@@ -1107,7 +1108,7 @@ async function testWumingSkills(browser) {
       return { hp: c.curHp, statuses: [...document.querySelectorAll('#partySide .statusName')].map(el => el.textContent) };
     });
     assert.ok(state.hp > 1);
-    assert.equal(await page.locator('.charActionButton > img[src="assets/skills/wuming_action_resolve_v2.png"]:visible').count(), 1, 'combat action uses the versioned resolve artwork');
+    assert.equal(await page.locator('.charActionButton > img[src="assets/skills/lixue_action.png"]:visible').count(), 1, 'combat action uses the new Lixue resolve artwork');
     for (const label of ['靈巧閃避', '破綻就緒', '撐住']) assert.ok(state.statuses.includes(label));
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     assertNoRuntimeErrors(page, 'Wuming skill UI');
@@ -1122,6 +1123,9 @@ async function testDialogueSizing(browser) {
     for (const speaker of ['xiaochu', 'wuming', 'goddess']) {
       await page.evaluate(async speaker => {
         const story = await import('./js/story.js');
+        if (speaker === 'wuming') {
+          (await import('./js/state.js')).equipCharacterSkin('wuming', 'lixue_nohat');
+        }
         if (story.storyState.dialogueScript) story.closeDialogue();
         story.queueDialogue('xiaochu_home');
         const line = Object.values(story.DIALOGUE_DEFS).flat().filter(line => line.speaker === speaker)
@@ -1133,6 +1137,10 @@ async function testDialogueSizing(browser) {
         story.renderDialogueLine();
       }, speaker);
       await page.locator('#dialoguePortraitImg').evaluate(img => img.decode());
+      if (speaker === 'wuming') {
+        assert.equal(await page.locator('#dialogueSpeakerName').textContent(), '璃雪');
+        assert.match(await page.locator('#dialoguePortraitImg').getAttribute('src'), /lixue_nohat_full\.png$/);
+      }
       await page.waitForTimeout(800);
       const layout = await page.evaluate(() => {
         const portrait = document.getElementById('dialoguePortraitFrame').getBoundingClientRect();
@@ -1267,7 +1275,7 @@ async function testDesktopHome(browser) {
     await page.click('#homeGrowthBtn b');
     assert.equal(await page.locator('#homeGrowthView').count(), 0, 'no intermediate roster page');
     assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeSceneActive')), true);
-    assert.equal(await page.locator('#characterDetailName').textContent(), '無名');
+    assert.equal(await page.locator('#characterDetailName').textContent(), '璃雪');
     assert.equal(await page.locator('[data-home-character="xiaochu"]').isDisabled(), true);
     assert.equal(await page.locator('#characterDetailOverlay').evaluate(el => el.classList.contains('homeCharacterDetail')), true);
     await page.locator('.detailArtFrame img').evaluate(img => img.decode());
@@ -1298,7 +1306,7 @@ async function testDesktopHome(browser) {
       if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-pinned-${width}-${height}.png`) });
     }
     assert.equal(await page.locator('#homeTab-growth').getAttribute('aria-selected'), 'true');
-    assert.equal(await page.locator('.detailPortraitColumn #characterDetailName').textContent(), '無名');
+    assert.equal(await page.locator('.detailPortraitColumn #characterDetailName').textContent(), '璃雪');
     assert.equal(await page.locator('.growthWallet').count(), 0, 'no separate book wallet in home');
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
@@ -1324,6 +1332,11 @@ async function testDesktopHome(browser) {
     assert.equal(await page.locator('.detailCharacterDescription').isVisible(), true);
     assert.equal(await page.locator('#growthUpgradeBtn').isVisible(), false);
     assert.deepEqual(await page.locator('.detailArtFrame').boundingBox(), artBeforeTab, 'portrait stays on stage across tabs');
+    assert.equal(await page.locator('.skinOption').count(), 2, 'both Lixue appearances are free');
+    await page.locator('[data-skin-id="lixue_nohat"]').click();
+    await page.locator('.detailArtFrame img').evaluate(el => el.decode());
+    assert.match(await page.locator('.detailArtFrame img').getAttribute('src'), /lixue_nohat_full\.png$/);
+    assert.equal(await page.locator('[data-skin-id="lixue_nohat"]').getAttribute('aria-pressed'), 'true');
     if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-appearance-${width}.png`) });
     await page.locator('.skinOption').first().click();
     assert.equal(await page.locator('#homeTab-profile').getAttribute('aria-selected'), 'true', 'equipping preserves active tab');
@@ -1360,7 +1373,7 @@ async function testDesktopHome(browser) {
     assert.equal(await page.locator('[data-home-character="xiaochu"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.evaluate(() => window.__debugHooks.gameState.seenCharacterIds.has('xiaochu')), true);
     await page.click('[data-home-character="wuming"]');
-    assert.equal(await page.locator('#characterDetailName').textContent(), '無名');
+    assert.equal(await page.locator('#characterDetailName').textContent(), '璃雪');
     await page.keyboard.press('Escape');
     await page.locator('#characterDetailOverlay').waitFor({ state: 'hidden' });
     assert.equal(await page.locator('#characterDetailOverlay').isVisible(), false);
