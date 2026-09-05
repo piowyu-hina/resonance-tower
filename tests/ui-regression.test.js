@@ -860,6 +860,40 @@ async function testEventInteractions(browser) {
   await waitForEventToFinish(page, 'aqueduct puzzle');
 }
 
+async function testSoftBattleArt(browser) {
+  for (const width of [1440, 390]) {
+    const page = await openView(browser, 'village');
+    await page.setViewportSize({ width, height: 1000 });
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      gameState.unlockedChars.add('xiaochu');
+      gameState.party = ['xiaochu'];
+      (await import('./js/debug.js')).debugStartBossFight();
+      gameState.activeOverlay = 'test-pause';
+      (await import('./js/ui-main.js')).render();
+    });
+    const art = page.locator('#partySide .portrait > img');
+    assert.equal(await art.getAttribute('src'), 'assets/characters/xiaochu-battle-breakout-transparent.png');
+    const metrics = await art.evaluate(async img => {
+      await img.decode();
+      const css = getComputedStyle(img);
+      const rect = img.getBoundingClientRect();
+      return { ratio: rect.width / rect.height, naturalRatio: img.naturalWidth / img.naturalHeight,
+        mask: css.maskImage, radius: css.borderRadius,
+        frameOverflow: getComputedStyle(img.parentElement).overflowX,
+        frameMask: getComputedStyle(img.parentElement).maskImage };
+    });
+    near(metrics.ratio, metrics.naturalRatio, 'battle art retains its proportions');
+    assert.match(metrics.mask, /linear-gradient/);
+    assert.match(metrics.mask, /80%/);
+    assert.equal(metrics.radius, '0px');
+    assert.equal(metrics.frameOverflow, 'visible');
+    assert.equal(metrics.frameMask, 'none', 'status icons must not inherit the artwork mask');
+    assertNoRuntimeErrors(page, 'soft battle art');
+    await page.close();
+  }
+}
+
 (async () => {
   const server = await startServer();
   const { port } = server.address();
@@ -869,6 +903,11 @@ async function testEventInteractions(browser) {
     if (process.argv.includes('--xiaochu-only')) {
       await testXiaochuEncounterFlow(browser);
       console.log('ui-regression.test.js: Xiaochu encounter-to-covenant assertions passed');
+      return;
+    }
+    await testSoftBattleArt(browser);
+    if (process.argv.includes('--battle-art-only')) {
+      console.log('ui-regression.test.js: soft battle art assertions passed');
       return;
     }
     await testMajorViewsRender(browser);

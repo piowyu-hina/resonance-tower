@@ -260,6 +260,11 @@ export function characterPortraitPath(characterId) {
   return `assets/characters/${equippedSkin(characterId).portrait}.png`;
 }
 
+export function characterBattlePortraitPath(characterId) {
+  const skin = equippedSkin(characterId);
+  return `assets/characters/${skin.battlePortrait || skin.portrait}.png`;
+}
+
 export function characterFullArtPath(characterId) {
   return `assets/characters/${equippedSkin(characterId).fullArt}.png`;
 }

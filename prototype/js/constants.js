@@ -287,7 +287,7 @@ export const ROSTER_CHAR_IDS = Object.keys(CHAR_DEFS).filter(id => !CHAR_DEFS[id
 // unlock data stay on CHAR_DEFS.
 export const SKIN_DEFS = {
   wuming_default: { characterId: 'wuming', name: '原始外觀', portrait: 'wuming', fullArt: 'wuming_full' },
-  xiaochu_default: { characterId: 'xiaochu', name: '原始外觀', portrait: 'xiaochu', fullArt: 'xiaochu_full' },
+  xiaochu_default: { characterId: 'xiaochu', name: '原始外觀', portrait: 'xiaochu', battlePortrait: 'xiaochu-battle-breakout-transparent', fullArt: 'xiaochu_full' },
   fengzi_default: { characterId: 'fengzi', name: '原始外觀', portrait: 'fengzi', fullArt: 'fengzi_full' },
 };
 
