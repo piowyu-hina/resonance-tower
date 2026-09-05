@@ -880,7 +880,8 @@ async function testSoftBattleArt(browser) {
       const rect = img.getBoundingClientRect();
       const frame = img.parentElement;
       const bounds = frame.getBoundingClientRect();
-      return { ratio: rect.width / rect.height, naturalRatio: img.naturalWidth / img.naturalHeight,
+      return { width: rect.width, height: rect.height,
+        frameWidth: frame.clientWidth, frameHeight: frame.clientHeight, fit: css.objectFit,
         inside: rect.left >= bounds.left + frame.clientLeft - .5 &&
           rect.right <= bounds.left + frame.clientLeft + frame.clientWidth + .5 &&
           rect.top >= bounds.top + frame.clientTop - .5 &&
@@ -889,11 +890,12 @@ async function testSoftBattleArt(browser) {
         frameOverflow: getComputedStyle(img.parentElement).overflowX,
         frameMask: getComputedStyle(img.parentElement).maskImage };
     });
-    near(metrics.ratio, metrics.naturalRatio, 'battle art retains its proportions');
-    assert.equal(metrics.inside, true, 'the complete image must stay inside the inner portrait frame');
-    assert.match(metrics.mask, /linear-gradient/);
-    assert.match(metrics.mask, /80%/);
-    assert.equal(metrics.radius, '0px');
+    near(metrics.width, metrics.frameWidth, 'art viewport fills inner frame width');
+    near(metrics.height, metrics.frameHeight, 'art viewport fills inner frame height');
+    assert.equal(metrics.fit, 'cover', 'enlarge art proportionally to fill the inner frame');
+    assert.equal(metrics.inside, true, 'art viewport must stay inside the inner portrait frame');
+    assert.equal(metrics.mask, 'none', 'no bottom fade');
+    assert.equal(metrics.radius, '6px');
     assert.equal(metrics.frameOverflow, 'visible');
     assert.equal(metrics.frameMask, 'none', 'status icons must not inherit the artwork mask');
     assertNoRuntimeErrors(page, 'soft battle art');
