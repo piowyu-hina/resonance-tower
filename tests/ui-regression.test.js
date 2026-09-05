@@ -1284,6 +1284,20 @@ async function testDesktopHome(browser) {
     assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeSceneActive')), true);
     assert.equal(await page.locator('#characterDetailName').textContent(), '璃雪');
     assert.equal(await page.locator('[data-home-character="xiaochu"]').isDisabled(), true);
+    const nameOffset = await page.locator('[data-home-character="wuming"]').evaluate(button => {
+      const card = button.getBoundingClientRect();
+      const name = button.querySelector('span').getBoundingClientRect();
+      return Math.abs(name.y + name.height / 2 - card.y - card.height / 2);
+    });
+    assert.ok(nameOffset < 2, 'single-line character name is vertically centered next to a two-line locked character');
+    const workspace = await page.evaluate(() => {
+      const choices = document.querySelector('.homeGrowthChoices').getBoundingClientRect();
+      const inspector = document.querySelector('.growthInspector').getBoundingClientRect();
+      const art = document.querySelector('.growthSkills .growthCard img').getBoundingClientRect();
+      return { gap: inspector.top - choices.bottom, inspectorHeight: inspector.height, artWidth: art.width };
+    });
+    assert.ok(workspace.gap <= 16 && workspace.inspectorHeight <= 220, 'stat upgrade panel is compact and follows choices');
+    assert.ok(workspace.artWidth >= 48, 'skill artwork is large enough to read');
     assert.equal(await page.locator('#characterDetailOverlay').evaluate(el => el.classList.contains('homeCharacterDetail')), true);
     await page.locator('.detailArtFrame img').evaluate(img => img.decode());
     await page.waitForTimeout(250);
