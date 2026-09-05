@@ -1283,13 +1283,13 @@ async function testDesktopHome(browser) {
     assert.equal(await page.locator('#homeGrowthView').count(), 0, 'no intermediate roster page');
     assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeSceneActive')), true);
     assert.equal(await page.locator('#characterDetailName').textContent(), '璃雪');
-    assert.equal(await page.locator('[data-home-character="xiaochu"]').isDisabled(), true);
+    assert.equal(await page.locator('[data-home-character="xiaochu"]').count(), 0, 'locked characters are absent from cultivation');
     const nameOffset = await page.locator('[data-home-character="wuming"]').evaluate(button => {
       const card = button.getBoundingClientRect();
       const name = button.querySelector('span').getBoundingClientRect();
       return Math.abs(name.y + name.height / 2 - card.y - card.height / 2);
     });
-    assert.ok(nameOffset < 2, 'single-line character name is vertically centered next to a two-line locked character');
+    assert.ok(nameOffset < 2, 'single-line character name is vertically centered');
     const workspace = await page.evaluate(() => {
       const choices = document.querySelector('.homeGrowthChoices').getBoundingClientRect();
       const inspector = document.querySelector('.growthInspector').getBoundingClientRect();
@@ -1391,6 +1391,8 @@ async function testDesktopHome(browser) {
       gameState.unlockedChars.add('xiaochu');
     });
     await page.click('#homeGrowthBtn');
+    assert.equal(await page.locator('[data-home-character="xiaochu"]').count(), 1, 'contracted character appears in cultivation');
+    assert.match(await page.locator('[data-home-character="xiaochu"]').textContent(), /NEW/, 'newly unlocked character keeps the NEW marker');
     await page.click('[data-home-character="xiaochu"]');
     assert.equal(await page.locator('#characterDetailName').textContent(), '小初');
     assert.equal(await page.locator('[data-home-character="xiaochu"]').getAttribute('aria-pressed'), 'true');

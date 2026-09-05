@@ -244,11 +244,10 @@ export function renderCharacterDetail(characterId) {
     <div class="detailPortraitColumn">
       ${atHome ? `<nav class="homeCharacterPicker" aria-label="選擇培養角色">
         <span class="homeCultivationTitle">角色培養</span>
-        <div class="homeCharacterChoices">${gameState.roster.map(member => {
-          const available = isCharUnlocked(member.id);
-          const isNew = available && !gameState.seenCharacterIds.has(member.id);
-          return `<button type="button" data-home-character="${member.id}" aria-pressed="${member.id === characterId}" ${available ? '' : 'disabled'}>
-            <span>${CHAR_DEFS[member.id].name}</span>${!available ? '<small>尚未締結契約</small>' : isNew ? '<small>NEW</small>' : ''}</button>`;
+        <div class="homeCharacterChoices">${gameState.roster.filter(member => isCharUnlocked(member.id)).map(member => {
+          const isNew = !gameState.seenCharacterIds.has(member.id);
+          return `<button type="button" data-home-character="${member.id}" aria-pressed="${member.id === characterId}">
+            <span>${CHAR_DEFS[member.id].name}</span>${isNew ? '<small>NEW</small>' : ''}</button>`;
         }).join('')}</div>
       </nav>` : ''}
       <div class="detailArtFrame">
