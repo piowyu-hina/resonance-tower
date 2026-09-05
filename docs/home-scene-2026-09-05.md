@@ -2,7 +2,7 @@
 
 ## 2026-09-06 cultivation update (current)
 
-The desktop room omits the floating top-left "家" title; the door return and all facility hotspots remain visible and interactive.
+The floating top-left "家" title and subtitle are removed from the room markup, not just hidden by desktop CSS (which previously left the title visible below 960px). The door return and all facility hotspots remain visible and interactive.
 
 The user replaced wuming_home.png with a seated Wuming and a complete right-hand door. The growth hotspot now covers Wuming, the village return covers the door, and the journal hotspot aligns with the new table book. The original button IDs, story locks and guide targets remain intact. The new background is user-provided; no art was generated or edited in this implementation.
 

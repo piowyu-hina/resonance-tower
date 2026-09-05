@@ -1246,7 +1246,7 @@ async function testDesktopHome(browser) {
       (await import('./js/ui-main.js')).render();
     });
     await page.waitForTimeout(650);
-    assert.equal(await page.locator('#homeView .homeTopbar .prepHeading').isVisible(), false, 'room scene needs no floating title');
+    assert.equal(await page.locator('#homeView .homeTopbar .prepHeading').count(), 0, 'room title is removed, not merely hidden at desktop widths');
     for (const id of ['homeGrowthBtn', 'travelJournalBtn', 'contractFacilityBtn']) {
       const target = page.locator(`#${id}`);
       assert.equal(await target.isVisible(), true);

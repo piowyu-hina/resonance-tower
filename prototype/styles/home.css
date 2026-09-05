@@ -30,12 +30,10 @@
     box-shadow: none;
   }
   .homeSceneActive .homeTopbar { position: absolute; z-index: 2; inset: 0; display: block; padding: 0; margin: 0; border: 0; pointer-events: none; }
-  .homeSceneActive .homeTopbar > div { display: none; }
   .homeSceneActive #homeBackBtn { position: absolute; left: 87%; top: 22%; width: 11%; height: 48%; display: flex; align-items: end; justify-content: center; }
   .homeSceneActive #homeBackBtn { pointer-events: auto; padding: 5px 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; color: #fff0d9; font-family: Georgia, 'Noto Serif TC', serif; font-size: 23px; text-shadow: 0 2px 5px #19120f; }
   .homeSceneActive #homeBackBtn:focus-visible { outline: 2px dashed #eac78a; outline-offset: 5px; }
   .homeSceneActive #homeBackBtn:hover:not(:disabled) { color: #fff2da; }
-  .homeSceneActive #homeView .prepMsg { display: none; }
   .homeSceneActive #homeMenu { display: block; position: absolute; inset: 0; }
   .homeSceneActive #homeMenu[hidden] { display: none; }
   .homeSceneActive #homeMenu .homeFacilityBtn {
