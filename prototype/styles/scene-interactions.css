@@ -1,0 +1,89 @@
+/* Scene-object labels use the village's typography and hover treatment. */
+@media (min-width: 960px) {
+  #app .sceneHotspot { display: block; padding: 0; margin: 0; border: 0; border-radius: 35% 35% 12% 12%; background: transparent; box-shadow: none; overflow: visible; transform: none; animation: none; text-align: center; cursor: pointer; }
+  #app #regionView .sceneHotspot:hover { background: transparent; box-shadow: none; transform: none; }
+#app .sceneHotspot .sceneHotspotCopy {
+  position: absolute;
+  top: 94%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  width: max-content;
+  min-width: 120px;
+  max-width: 290px;
+  padding: 0;
+  border: 0;
+  gap: 4px;
+  pointer-events: none;
+}
+#app .sceneHotspot .sceneHotspotCopy::after { display: none; }
+#app .sceneHotspot .sceneHotspotCopy b {
+  pointer-events: auto;
+  position: relative;
+  display: block;
+  min-width: 100px;
+  padding: 8px 22px 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff0d9;
+  box-shadow: none;
+  font-family: Georgia, 'Noto Serif TC', 'PMingLiU', serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-shadow: 0 2px 3px #21160fff, 0 0 9px #21160fe6, 0 3px 18px #21160fcc;
+  transition: color .2s, text-shadow .2s;
+}
+#app .sceneHotspot .sceneHotspotCopy b::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 44px;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, #f6cf8c 25%, #f6cf8c 75%, transparent);
+  box-shadow: 0 1px 3px #302010;
+  transition: width .2s, filter .2s;
+}
+#app .sceneHotspot .sceneHotspotCopy small {
+  color: #fff0d6;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 4px 14px;
+  border-radius: 0;
+  background: radial-gradient(ellipse, #30271eb8, #30271e50 55%, transparent 75%);
+  text-shadow: 0 1px 3px #21160f, 0 0 6px #21160f;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity .18s, transform .18s;
+}
+#app .sceneHotspot:is(:hover, :focus-visible):not(:disabled) .sceneHotspotCopy b {
+  color: #fff9eb;
+  text-shadow: 0 2px 3px #21160f, 0 0 8px #21160f, 0 0 18px #f5d29499;
+}
+#app .sceneHotspot:is(:hover, :focus-visible):not(:disabled) .sceneHotspotCopy b::after { width: 72px; filter: brightness(1.25); }
+#app .sceneHotspot:is(:hover, :focus-visible):not(:disabled) .sceneHotspotCopy small { opacity: 1; transform: none; }
+#app .sceneHotspot:focus-visible { outline: 2px dashed #ffe4b7; outline-offset: 4px; }
+#app .sceneHotspot:active:not(:disabled) .sceneHotspotCopy b { color: #eac38a; }
+#app .sceneHotspot:disabled { cursor: default; }
+#app .sceneHotspot:disabled .sceneHotspotCopy { opacity: .45; }
+#app .sceneHotspot.storyRequired .sceneHotspotCopy b { color: #ffe0a0; text-shadow: 0 2px 3px #21160f, 0 0 8px #21160f, 0 0 18px #ffcc71; }
+#app .sceneHotspot.storyRequired .sceneHotspotCopy b::after { width: 72px; }
+#app .sceneHotspot.storyFocusTarget { box-shadow: none; }
+#app .sceneHotspot.storyFocusTarget::before { border-radius: 30%; }
+
+  #app .sceneHotspot .sceneHotspotCopy { flex-direction: row; justify-content: center; }
+  #app #regionView .sceneHotspotCopy { gap: 4px; padding: 0; }
+  #app #regionView .sceneHotspotCopy b { font-size: 24px; }
+  #app #regionView .sceneHotspotCopy > small { font-size: 14px; }
+  #app #regionBackBtn .sceneHotspotCopy { left: 70%; }
+  #app #travelJournalBtn .sceneHotspotCopy { left: 38%; }
+  #app .sceneHotspot .sceneHotspotCopy small { position: absolute; left: 100%; width: 180px; text-align: left; pointer-events: none; }
+  #app #forestRegionBtn .sceneHotspotCopy small { left: auto; right: 100%; text-align: right; }
+  @media (prefers-reduced-motion: reduce) {
+    #app .sceneHotspot .sceneHotspotCopy b, #app .sceneHotspot .sceneHotspotCopy b::after, #app .sceneHotspot .sceneHotspotCopy small { transition: none; }
+  }
+}

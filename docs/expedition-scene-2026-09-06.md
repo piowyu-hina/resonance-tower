@@ -2,7 +2,7 @@
 
 - 使用內建 image_gen 生成，以 `prototype/assets/backgrounds/village-square.png` 為畫風及世界觀參考。
 - 成品：`prototype/assets/backgrounds/expedition-trail.png`（1672 × 941）。
-- 遠征入口使用完整場景背景，右下暖棕目的地資訊卡；左側可返回村莊。點選區域後仍進入既有戰前準備。
+- 遠征入口使用完整場景背景；森林與村門採用村莊同款名稱／底線提示，資訊卡已移除。點森林後進入既有區域情報與戰前準備。
 - 返回村莊的點擊區覆蓋左上方實際村門，文字位於門前小徑。
 - 樣式：`prototype/styles/region-scene.css`。只套用桌面區域選擇場景。
 

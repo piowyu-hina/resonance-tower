@@ -13,25 +13,13 @@
   .regionSceneActive #regionView .homeTopbar > div { position: absolute; top: 15%; left: 4%; text-shadow: 0 2px 8px #15170b; }
   .regionSceneActive #regionView .prepHeading { color: #ffedca; font-family: Georgia, 'Noto Serif TC', serif; font-size: 32px !important; letter-spacing: .12em; }
   .regionSceneActive #regionView .prepMsg { color: #efe1c7; font-size: 16px; margin-top: 8px; }
-  .regionSceneActive #regionBackBtn { position: absolute; left: 1.5%; top: 25%; width: 17%; height: 35%; display: flex; align-items: end; justify-content: center; padding: 0 0 8px !important; pointer-events: auto; border: 0 !important; background: transparent !important; box-shadow: none !important; color: #ffedca; font-family: Georgia, 'Noto Serif TC', serif; font-size: 22px; text-shadow: 0 2px 5px #15170b; }
-  .regionSceneActive #regionBackBtn:hover { color: #ffd58e; background: transparent !important; }
-  .regionSceneActive #regionView .regionGrid { position: absolute; right: 4%; bottom: 6%; width: 55%; max-height: 58%; display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; padding: 4px; scrollbar-width: thin; }
-  .regionSceneActive #regionView .regionCard { display: block; min-height: 0; border: 1px solid #c5a16a9c; border-radius: 10px; background: linear-gradient(120deg, #382b1eee, #221e16f0); color: #f0dec0; box-shadow: 0 12px 32px #15120c55; }
-  .regionSceneActive #regionView .regionArt { display: none; }
-  .regionSceneActive #regionView .regionCopy { padding: 22px 26px; gap: 8px; }
-  .regionSceneActive #regionView .regionTitleRow { flex-wrap: wrap; }
-  .regionSceneActive #regionView .regionTitleRow b { color: #ffe5b2; font-family: Georgia, 'Noto Serif TC', serif; font-size: 27px; }
-  .regionSceneActive #regionView .regionTitleRow em { color: #e9d6b5; border-color: #b5936455; background: #c6a16a15; font-size: 13px; }
-  .regionSceneActive #regionView .regionCopy > small { color: #d7c9b1; font-size: 16px; }
-  .regionSceneActive #regionView .regionIntel { margin-top: 4px; font-size: 14px; color: #c0ac89; grid-template-columns: 78px minmax(0, 1fr); }
-  .regionSceneActive #regionView .regionTags span { color: #eed5b7; background: #ae80561a; border-color: #ab875345; }
-  .regionSceneActive #regionView .regionDrops { color: #e0c9a2; white-space: normal; }
-  .regionSceneActive #regionView .regionChoose { margin-top: 8px; padding-top: 12px; border-color: #c5a16a42; color: #f2d095; font-size: 16px; }
-  .regionSceneActive #regionView .regionCard:hover { border-color: #f4d294; background: linear-gradient(120deg, #473522f2, #292319f5); }
-  .regionSceneActive #regionView button:focus-visible { outline: 2px solid #ffe0a0; outline-offset: 2px; }
-  @media (max-height: 800px) {
-    .regionSceneActive #regionView .regionGrid { bottom: 4%; max-height: 62%; width: 58%; }
-    .regionSceneActive #regionView .regionCopy { padding: 14px 20px; gap: 6px; }
-    .regionSceneActive #regionView .regionTitleRow b { font-size: 24px; }
-  }
+  .regionSceneActive #regionBackBtn { position: absolute; left: 1.5%; top: 25%; width: 17%; height: 35%; pointer-events: auto; }
+  .regionSceneActive #regionView .regionGrid { position: absolute; inset: 0; display: block; pointer-events: none; }
+  .regionSceneActive #regionView #forestRegionBtn { position: absolute; left: 57%; top: 27%; width: 35%; height: 36%; min-height: 0; pointer-events: auto; }
+  .regionSceneActive #regionView .regionArt,
+  .regionSceneActive #regionView .regionTitleRow em,
+  .regionSceneActive #regionView .regionIntel,
+  .regionSceneActive #regionView .regionChoose { display: none; }
+  .regionSceneActive #regionView .regionTitleRow { display: block; }
+  .regionSceneActive #regionView .regionCopy { justify-content: center; }
 }

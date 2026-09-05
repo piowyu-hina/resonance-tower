@@ -13,9 +13,10 @@
 <link rel="stylesheet" href="styles/journal.css?v=20260905-2">
 <link rel="stylesheet" href="styles/shop.css?v=20260906-restored2">
 <link rel="stylesheet" href="styles/village.css?v=20260905-4">
-<link rel="stylesheet" href="styles/region-scene.css?v=20260906-hotspots2">
+<link rel="stylesheet" href="styles/region-scene.css?v=20260906-hotspots3">
 <link rel="stylesheet" href="styles/home.css?v=20260906-book5">
 <link rel="stylesheet" href="styles/home-growth.css?v=20260906-character10">
+<link rel="stylesheet" href="styles/scene-interactions.css?v=20260906-1">
 </head>
 <body>
 
@@ -103,9 +104,9 @@
         <button id="homeGrowthBtn" class="homeFacilityBtn homeGrowthBtn" type="button">
           <span><b data-i18n="home.growth">角色培養</b><small data-i18n="home.growthDesc">查看角色、能力與技能成長</small></span>
         </button>
-        <button id="travelJournalBtn" class="homeFacilityBtn journalFacilityBtn" type="button">
+        <button id="travelJournalBtn" class="homeFacilityBtn journalFacilityBtn sceneHotspot" type="button">
           <img src="assets/ui/book.png" alt="">
-          <span><b data-i18n="home.journal">旅人手記</b><small data-i18n="home.journalDesc">查看旅途中記下的知識與故事</small></span>
+          <span class="sceneHotspotCopy"><b data-i18n="home.journal">旅人手記</b><small data-i18n="home.journalDesc">查看旅途中記下的知識與故事</small></span>
         </button>
         <button id="contractFacilityBtn" class="homeFacilityBtn contractFacilityBtn" type="button" hidden>
           <img src="assets/skills/lixue_skill2.png" alt="">
@@ -119,16 +120,16 @@
     </div>
     <div id="regionView">
       <div class="homeTopbar">
-        <button id="regionBackBtn" class="navBackBtn" type="button" data-i18n="common.back.village">← 村莊</button>
+        <button id="regionBackBtn" class="sceneHotspot" type="button"><span class="sceneHotspotCopy"><b data-i18n="village.title">村莊</b><small data-i18n="result.returnVillage">返回村莊</small></span></button>
         <div>
           <div class="prepHeading" data-i18n="region.title">遠征入口</div>
           <div class="prepMsg" data-i18n="region.subtitle">選擇這次遠征要前往的地區。</div>
         </div>
       </div>
       <div class="regionGrid">
-        <button id="forestRegionBtn" class="regionCard" type="button">
+        <button id="forestRegionBtn" class="regionCard sceneHotspot" type="button">
           <span class="regionArt"><img src="assets/ui/slime_forest.png" alt="史萊姆叢林"></span>
-          <span class="regionCopy">
+          <span class="regionCopy sceneHotspotCopy">
             <span class="regionTitleRow"><b id="forestRegionName">史萊姆叢林</b><em id="forestRegionLevel">推薦 Lv.1</em></span>
             <small id="forestRegionDescription">史萊姆棲息的近郊叢林</small>
             <span class="regionIntel"><span data-i18n="region.threats">主要威脅</span><span id="forestRegionThreats" class="regionTags"></span></span>
