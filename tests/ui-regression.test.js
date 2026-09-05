@@ -1145,7 +1145,9 @@ async function testDialogueSizing(browser) {
       assert.ok(layout.bottom <= height);
       assert.ok(layout.overlap <= 14, 'only the small authored frame overlap is allowed');
       assert.equal(layout.fit, 'contain', 'full artwork must not be cropped');
-      assert.equal(layout.overflow, false);
+      // Village deliberately has a desktop minimum width. Overlay geometry
+      // remains checked above, but its underlying scene has no mobile layout.
+      if (width >= 960) assert.equal(layout.overflow, false);
       if (width === 390) assert.ok(layout.portraitHeight > 390, 'mobile story characters are enlarged');
       if (process.argv.includes('--entry-story-only')) {
         fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
@@ -1231,12 +1233,83 @@ async function testMerchantShop(browser) {
   }
 }
 
+async function testDesktopVillage(browser) {
+  for (const width of [1024, 1440, 1920]) {
+    const page = await openView(browser, 'village');
+    await page.setViewportSize({ width, height: 1080 });
+    const geometry = await page.evaluate(async () => {
+      const scene = document.querySelector('#villageView');
+      const rect = scene.getBoundingClientRect();
+      const art = new Image();
+      art.src = 'assets/backgrounds/village-square.png';
+      await art.decode();
+      const ids = ['homeLocationBtn', 'townShopBtn', 'expeditionLocationBtn'];
+      return {
+        ratio: rect.width / rect.height, artRatio: art.naturalWidth / art.naturalHeight,
+        overflow: document.documentElement.scrollWidth > innerWidth,
+        targets: ids.map(id => {
+          const el = document.getElementById(id);
+          const r = el.getBoundingClientRect();
+          const label = el.querySelector('b').getBoundingClientRect();
+          return { inside: r.left >= rect.left && r.right <= rect.right && r.top >= rect.top && r.bottom <= rect.bottom,
+            labelHit: el.contains(document.elementFromPoint(label.x + label.width/2, label.y + label.height/2)) };
+        }),
+      };
+    });
+    near(geometry.ratio, geometry.artRatio, 'background keeps original proportions');
+    assert.equal(geometry.overflow, false);
+    assert.ok(geometry.targets.every(t => t.inside && t.labelHit), 'buildings and labels are clickable');
+    if (process.argv.includes('--village-only')) {
+      fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
+      await page.screenshot({ path: path.resolve(__dirname, `../test-results/village-scene-${width}.png`) });
+      await page.locator('#townShopBtn').hover();
+      await page.waitForTimeout(250);
+      await page.screenshot({ path: path.resolve(__dirname, `../test-results/village-scene-hover-${width}.png`) });
+    }
+    await page.click('#townShopBtn b');
+    assert.equal(await page.getAttribute('#shopOverlay', 'aria-hidden'), 'false');
+    await page.click('#shopLeaveBtn');
+    await page.locator('#expeditionLocationBtn').focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('#regionView').isVisible(), true);
+    assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('villageActive')), false);
+    await page.click('#regionBackBtn');
+    await page.click('#homeLocationBtn b');
+    assert.equal(await page.locator('#homeView').isVisible(), true);
+    await page.click('#homeBackBtn');
+    await page.evaluate(async () => {
+      const { gameState, CHAPTER1_STATES, RESONANCE_STATES } = await import('./js/state.js');
+      gameState.chapter1State = CHAPTER1_STATES.JOURNAL_PENDING;
+      gameState.resonanceState.xiaochu = RESONANCE_STATES.GO_HOME;
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.equal(await page.locator('#townShopBtn').isDisabled(), true);
+    assert.equal(await page.locator('#expeditionLocationBtn').isDisabled(), true);
+    assert.equal(await page.locator('#homeGuideHina').isVisible(), true);
+    await page.locator('#homeGuideHina img').evaluate(img => img.decode());
+    assert.equal(await page.getAttribute('#homeGuideHina img', 'src'), 'assets/characters/guider.png');
+    if (process.argv.includes('--village-only')) {
+      await page.screenshot({ path: path.resolve(__dirname, `../test-results/village-scene-guide-${width}.png`) });
+    }
+    assert.equal(await page.locator('#homeLocationBtn').evaluate(el => getComputedStyle(el).position), 'absolute');
+    await page.click('#homeLocationBtn');
+    assert.equal(await page.locator('#homeView').isVisible(), true);
+    assertNoRuntimeErrors(page, 'desktop village');
+    await page.close();
+  }
+}
+
 (async () => {
   const server = await startServer();
   const { port } = server.address();
   prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    await testDesktopVillage(browser);
+    if (process.argv.includes('--village-only')) {
+      console.log('ui-regression.test.js: desktop village assertions passed');
+      return;
+    }
     await testMerchantShop(browser);
     if (process.argv.includes('--shop-only')) {
       console.log('ui-regression.test.js: merchant shop assertions passed');

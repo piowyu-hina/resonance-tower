@@ -1,0 +1,114 @@
+/* Desktop village: fixed artwork coordinates keep destinations on their buildings.
+   Deliberately no mobile layout; do not crop the scene or rearrange its hotspots. */
+#app.villageActive {
+  width: min(1600px, calc(100vw - 48px), calc((100dvh - 112px) * 1.7768));
+  min-width: 960px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #262826;
+  box-shadow: 0 24px 70px #0007;
+}
+.villageActive #header { margin: 0; padding: 10px 24px; border: 0; }
+.villageActive #prepView { padding: 0; margin: 0; border: 0; background: none; }
+.villageActive #debugPanel { margin: 0 18px 12px; }
+#villageView {
+  padding: 0;
+  min-height: 0;
+  aspect-ratio: 1672 / 941;
+  border: 0;
+  border-radius: 0;
+  isolation: isolate;
+  background: #776d50 url('../assets/backgrounds/village-square.png') center / 100% 100% no-repeat;
+}
+#villageView::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, #211c2026, transparent 25%, transparent 76%, #201d2440);
+}
+#villageView .villageIntro { position: absolute; top: 4%; left: 3.5%; margin: 0; padding: 0; pointer-events: none; }
+#villageView .villageIntro::before { display: none; }
+#villageView .villageIntro::after { color: #433829; font-size: 11px; letter-spacing: .26em; margin-top: 9px; text-shadow: 0 1px 10px #fff9; }
+#villageView .prepHeading { color: #352b24; font-size: 34px; letter-spacing: .22em; font-family: Georgia, 'Noto Serif TC', serif; margin: 0; text-shadow: 0 2px 14px #fff9; }
+#villageView .prepMsg { display: none; }
+#villageView .villageLocations { display: block; position: absolute; inset: 0; }
+#villageView .villageLocation {
+  position: absolute !important;
+  display: block;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 35% 35% 12% 12%;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  transform: none;
+  cursor: pointer;
+  animation: none;
+  text-align: center;
+}
+#villageView #homeLocationBtn { left: 3%; top: 21%; width: 33%; height: 52%; }
+#villageView #townShopBtn { left: 40%; top: 28%; width: 32%; height: 56%; }
+#villageView #expeditionLocationBtn { left: 73%; top: 16%; width: 25%; height: 58%; }
+#villageView .villageLocationCopy {
+  position: absolute;
+  top: 94%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  width: max-content;
+  min-width: 120px;
+  max-width: 290px;
+  padding: 0;
+  border: 0;
+  gap: 8px;
+  pointer-events: none;
+}
+#villageView .villageLocationCopy::after { display: none; }
+#villageView .villageLocationCopy b {
+  pointer-events: auto;
+  display: block;
+  padding: 9px 26px 10px;
+  border: 1px solid #e6cca866;
+  border-radius: 4px 14px 4px 14px;
+  background: linear-gradient(110deg, #352b25f2, #44352eee);
+  color: #ffedce;
+  box-shadow: 0 5px 15px #22170f55;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  transition: background .2s, transform .2s, border-color .2s;
+}
+#villageView .villageLocationCopy small {
+  color: #fff0d6;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 5px 12px;
+  border-radius: 4px;
+  background: #30271eed;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity .18s, transform .18s;
+}
+#villageView .villageLocation:is(:hover, :focus-visible):not(:disabled) .villageLocationCopy b {
+  transform: translateY(-4px);
+  border-color: #ffe1a7;
+  background: #614a31;
+}
+#villageView .villageLocation:is(:hover, :focus-visible):not(:disabled) .villageLocationCopy small { opacity: 1; transform: none; }
+#villageView .villageLocation:focus-visible { outline: 2px dashed #ffe4b7; outline-offset: 4px; }
+#villageView .villageLocation:active:not(:disabled) .villageLocationCopy b { transform: translateY(-1px); }
+#villageView .villageLocation:disabled { cursor: default; }
+#villageView .villageLocation:disabled .villageLocationCopy { opacity: .45; }
+#villageView .villageLocation.storyRequired .villageLocationCopy b { border-color: #ffe0a0; box-shadow: 0 0 0 2px #edc27a44, 0 0 22px #ffcc7155; }
+#villageView .villageLocation.storyFocusTarget { box-shadow: none; }
+#villageView .villageLocation.storyFocusTarget::before { border-radius: 30%; }
+#villageView .homeGuideHina { top: auto; bottom: 8%; right: -14%; width: 180px; height: 218px; }
+@media (prefers-reduced-motion: reduce) {
+  #villageView .villageLocationCopy b, #villageView .villageLocationCopy small { transition: none; }
+}
