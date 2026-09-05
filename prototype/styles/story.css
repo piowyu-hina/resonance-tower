@@ -28,14 +28,10 @@
 #storyWuming[data-beat="dodge"] { animation: storyWumingDodge .8s ease-in-out both; }
 #storyWuming[data-beat="hit"] { animation: storyWumingHit .8s ease-in-out both; }
 #storyWuming[data-beat="strike"] { animation: storyWumingStrike .8s ease-in-out both; }
-.storySwordArc { position: absolute; left: 65%; top: 30%; width: 90%; height: 24%; border-top: 5px solid #fff6cd; border-radius: 50%; filter: drop-shadow(0 0 8px #f7d692); opacity: 0; transform-origin: left center; }
-#storyWuming[data-beat="hit"] .storySwordArc { animation: storySwordSlash .28s ease-out both; }
-#storyWuming[data-beat="strike"] .storySwordArc { animation: storySwordSlash .3s .32s ease-out both; }
 @keyframes storyWumingBreathe { 0%,100% { transform: none; } 50% { transform: translateY(-3px) rotate(.6deg); } }
 @keyframes storyWumingDodge { 0%,100% { transform: none; } 35%,60% { transform: translateX(-12%) rotate(-7deg); } }
 @keyframes storyWumingHit { 0% { transform: none; } 25% { transform: translateX(5%) rotate(5deg); } 48% { transform: translate(-10%,4%) rotate(-13deg); } 68%,100% { transform: translate(-8%,6%) rotate(-9deg); } }
 @keyframes storyWumingStrike { 0% { transform: translate(-8%,6%) rotate(-9deg); } 25% { transform: translateX(-10%) rotate(-5deg); } 52% { transform: translateX(var(--wuming-strike-x, 18%)) rotate(9deg); } 100% { transform: none; } }
-@keyframes storySwordSlash { 0% { opacity: 0; transform: rotate(-55deg) scaleX(.4); } 35% { opacity: .95; } 100% { opacity: 0; transform: rotate(35deg) scaleX(1.15); } }
 #storySlime[data-beat="enter"] { animation: storySlimeEnter .8s cubic-bezier(.2,.7,.3,1) both; }
 #storySlime[data-beat="hop"] { animation: storySlimeHop .8s ease-in-out both; }
 #storySlime[data-beat="hit"] { animation: storySlimeHit .8s ease-in-out both; }
