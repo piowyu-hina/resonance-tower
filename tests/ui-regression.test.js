@@ -873,7 +873,7 @@ async function testSoftBattleArt(browser) {
       (await import('./js/ui-main.js')).render();
     });
     const art = page.locator('#partySide .portrait > img');
-    assert.equal(await art.getAttribute('src'), 'assets/characters/xiaochu-battle-breakout-transparent.png');
+    assert.equal(await art.getAttribute('src'), 'assets/characters/xiaochu_battle_chibi.png');
     const metrics = await art.evaluate(async img => {
       await img.decode();
       const css = getComputedStyle(img);
