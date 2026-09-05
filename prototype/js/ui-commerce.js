@@ -114,7 +114,7 @@ export function renderShopView() {
     : t('shop.nothingToSell');
   sellBtn.disabled = crystalQty <= 0;
   const sellOneBtn = document.getElementById('shopSellOneBtn');
-  sellOneBtn.innerHTML = `<img class="shopPriceCoin" src="assets/item/${shopCoinIcon}" alt="">${SHOP_MONSTER_CRYSTAL_SELL_PRICE}`;
+  sellOneBtn.innerHTML = `<span>${t('shop.sellOne')}</span><img class="shopPriceCoin" src="assets/item/${shopCoinIcon}" alt="">${SHOP_MONSTER_CRYSTAL_SELL_PRICE}`;
   sellOneBtn.disabled = crystalQty <= 0;
   const autoLeaveBtn = document.getElementById('shopAutoLeaveBtn');
   autoLeaveBtn.style.display = gameState.shopMode === 'dungeon' ? '' : 'none';
@@ -127,9 +127,9 @@ export function renderShopView() {
     row.querySelector('.shopItemCopy small').textContent = item.desc;
     row.querySelector('.shopOwned').textContent = t('shop.owned', {
       quantity: formatLocaleNumber(inventoryItemCount(offer.itemId)),
-    });
+    }) + (shopGold() < offer.price ? ` · ${t('shop.insufficientGold')}` : '');
     const buyBtn = row.querySelector('button');
-    buyBtn.innerHTML = `<img class="shopPriceCoin" src="assets/item/${shopCoinIcon}" alt="">${offer.price}`;
+    buyBtn.innerHTML = `<span>${t('shop.buy')}</span><img class="shopPriceCoin" src="assets/item/${shopCoinIcon}" alt="">${offer.price}`;
     buyBtn.disabled = shopGold() < offer.price;
   });
 }

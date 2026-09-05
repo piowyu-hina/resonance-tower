@@ -1162,7 +1162,7 @@ async function testDialogueSizing(browser) {
 }
 
 async function testMerchantShop(browser) {
-  for (const [width, height] of [[1440, 1000], [390, 844], [320, 568], [844, 390]]) {
+  for (const [width, height] of [[1440, 1000], [1280, 720], [1024, 768], [390, 844], [320, 568], [844, 390]]) {
     const page = await openView(browser, 'shop');
     await page.setViewportSize({ width, height });
     await page.evaluate(async () => {
@@ -1202,7 +1202,17 @@ async function testMerchantShop(browser) {
     if (width >= 960) {
       assert.equal(await page.locator('#shopModal').evaluate(el => getComputedStyle(el).backgroundColor), 'rgba(0, 0, 0, 0)', 'no full shop backing');
       assert.equal(await page.locator('.shopKeeperPanel').evaluate(el => getComputedStyle(el, '::before').display), 'none', 'merchant arch frame removed');
-      assert.equal(await page.locator('#shopOverlay').evaluate(el => getComputedStyle(el).backdropFilter), 'none', 'village remains unblurred');
+      assert.equal(await page.locator('.shopKeeperIdentity').isVisible(), false, 'no floating merchant name');
+      assert.equal(await page.locator('#shopBuySection .shopSectionTitle').isVisible(), false, 'no duplicate section heading');
+      const sceneLayout = await page.locator('#shopModal').evaluate(el => {
+        const art = el.querySelector('.shopKeeperArt').getBoundingClientRect();
+        const dialogue = el.querySelector('#shopDialogue').getBoundingClientRect();
+        const close = el.querySelector('#shopLeaveBtn').getBoundingClientRect();
+        return { scrolls: el.scrollHeight > el.clientHeight,
+          contains: art.top >= 0 && dialogue.bottom <= innerHeight && close.right <= innerWidth,
+          hit: el.querySelector('#shopLeaveBtn').contains(document.elementFromPoint(close.x + close.width / 2, close.y + close.height / 2)) };
+      });
+      assert.ok(!sceneLayout.scrolls && sceneLayout.contains && sceneLayout.hit, 'merchant, chat and close stay on screen');
     }
     await page.locator('.shopBuyRow[data-item-id="potion"] button').click();
     const balances = () => page.evaluate(async () => {
