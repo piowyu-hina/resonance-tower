@@ -125,6 +125,45 @@ async function testJournalNavigation(browser) {
   await page.close();
 }
 
+async function testJournalLayout(browser) {
+  const page = await openView(browser, 'village');
+  await page.evaluate(async () => (await import('./js/story.js')).openTravelJournal({ preview: true }));
+  for (const locale of ['zh-Hant', 'en']) {
+    await page.evaluate(async locale => (await import('./js/i18n.js')).setLocale(locale), locale);
+    for (const [width, height] of [[320, 740], [390, 844], [768, 540], [1440, 1000]]) {
+      await page.setViewportSize({ width, height });
+      await page.evaluate(async () => {
+        (await import('./js/story.js')).showJournalContents();
+        const list = document.getElementById('journalChapterList');
+        // Stress the layout with extra DOM entries only; never add fake story data.
+        const entry = list.firstElementChild;
+        for (let i = 0; i < 20; i++) list.append(entry.cloneNode(true));
+        list.lastElementChild.scrollIntoView({ block: 'end' });
+      });
+      assert.equal(await page.evaluate(() => {
+        const panel = document.querySelector('.journalPanel').getBoundingClientRect();
+        const list = document.getElementById('journalChapterList');
+        const last = list.lastElementChild.getBoundingClientRect();
+        const bounds = list.getBoundingClientRect();
+        return panel.left >= 0 && panel.right <= document.documentElement.clientWidth + 1 &&
+          panel.top >= 0 && panel.bottom <= innerHeight + 1 &&
+          last.bottom <= bounds.bottom + 1 && bounds.height >= 80 &&
+          list.scrollWidth <= list.clientWidth + 1;
+      }), true, `chapter list fits and scrolls at ${width}px / ${locale}`);
+      await page.evaluate(async () => (await import('./js/story.js')).showJournalContents());
+      await page.click('.journalChapterEntry');
+      assert.equal(await page.evaluate(() => {
+        const next = document.getElementById('journalNextBtn').getBoundingClientRect();
+        const text = document.getElementById('journalPageText');
+        return next.bottom <= innerHeight && next.right <= document.documentElement.clientWidth &&
+          text.clientHeight >= 80 && text.scrollWidth <= text.clientWidth + 1;
+      }), true, `reading controls fit at ${width}px / ${locale}`);
+    }
+  }
+  assertNoRuntimeErrors(page, 'journal responsive layout');
+  await page.close();
+}
+
 async function testMajorViewsRender(browser) {
   const views = [
     ['home', '#homeView'],
@@ -754,6 +793,7 @@ async function testEventInteractions(browser) {
   try {
     await testMajorViewsRender(browser);
     await testJournalNavigation(browser);
+    await testJournalLayout(browser);
     await testDungeonEntry(browser);
     await testBossTransition(browser);
     await testSameSpeakerDialogue(browser);

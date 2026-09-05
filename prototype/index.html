@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="styles/story.css?v=20260905-12">
 <link rel="stylesheet" href="styles/world.css?v=20260905-11">
 <link rel="stylesheet" href="styles/events.css?v=20260905-2">
+<link rel="stylesheet" href="styles/journal.css?v=20260905-1">
 </head>
 <body>
 
@@ -358,9 +359,28 @@
       <button id="journalCloseBtn" type="button" aria-label="關閉旅人手記" data-i18n-aria-label="journal.close">×</button>
     </header>
     <div id="journalContents" hidden>
-      <div class="journalContentsHeading"><small>CONTENTS</small><h3 data-i18n="journal.contents">目錄</h3><p data-i18n="journal.contentsNote">旅人沿途留下的見聞。</p></div>
-      <button id="journalResumeBtn" type="button" data-i18n="journal.resume" hidden>繼續上次閱讀</button>
-      <nav id="journalChapterList" aria-label="手記篇章" data-i18n-aria-label="journal.chapters"></nav>
+      <div class="journalContentsHeading">
+        <small>THE TRAVELER’S JOURNAL</small>
+        <h3 data-i18n="journal.title">旅人手記</h3>
+        <p data-i18n="journal.contentsNote">旅人沿途留下的見聞。</p>
+        <svg class="journalMapArt" viewBox="0 0 240 240" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width=".65">
+            <circle cx="120" cy="120" r="89"/><circle cx="120" cy="120" r="75" stroke-dasharray="1 8"/>
+            <circle cx="120" cy="120" r="47"/><path d="M120 15V225M15 120H225M47 47L193 193M47 193L193 47"/>
+            <path d="M120 43L133 106L197 120L133 134L120 197L107 134L43 120L107 106Z"/>
+            <path d="M120 43V197M43 120H197M20 174Q55 135 80 163T151 176T226 148" stroke-dasharray="3 5"/>
+            <circle cx="80" cy="163" r="3"/><circle cx="151" cy="176" r="3"/>
+          </g>
+          <path d="M120 43L133 106L120 120L107 134L120 197V120L43 120L107 106Z" fill="currentColor" opacity=".2"/>
+        </svg>
+        <span class="journalCoverFoot" aria-hidden="true">✦ &nbsp; MEMORIES ALONG THE WAY</span>
+      </div>
+      <div class="journalContentsPaper">
+        <header class="journalContentsTitle"><small>INDEX</small><h3 data-i18n="journal.contents">目錄</h3></header>
+        <button id="journalResumeBtn" type="button" data-i18n="journal.resume" hidden>繼續上次閱讀</button>
+        <nav id="journalChapterList" aria-label="手記篇章" data-i18n-aria-label="journal.chapters"></nav>
+        <span class="journalContentsFolio" aria-hidden="true">— &nbsp; ✦ &nbsp; —</span>
+      </div>
     </div>
     <div class="journalBook">
       <aside class="journalChapterLeaf">

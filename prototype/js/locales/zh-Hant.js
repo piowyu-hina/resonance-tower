@@ -161,6 +161,7 @@ export default {
   'journal.resume': '繼續上次閱讀',
   'journal.contentsNote': '旅人沿途留下的見聞。',
   'journal.chapters': '手記篇章',
+  'journal.pageCount': '{count} 頁',
   'journal.done': '讀完',
   'contract.title': '締結誓約',
   'contract.subtitle': '回應跨越生死而來的靈魂頻率',

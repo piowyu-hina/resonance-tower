@@ -518,7 +518,16 @@ export function showJournalContents() {
     number.textContent = String(index + 1).padStart(2, '0');
     const title = document.createElement('b');
     title.textContent = t(chapter.titleKey);
-    button.append(number, title);
+    const copy = document.createElement('span');
+    copy.className = 'journalEntryCopy';
+    const excerpt = document.createElement('small');
+    excerpt.className = 'journalEntryExcerpt';
+    excerpt.textContent = chapter.pages[0].split('\n\n')[0];
+    const pages = document.createElement('small');
+    pages.className = 'journalEntryPages';
+    pages.textContent = t('journal.pageCount', { count: formatLocaleNumber(chapter.pages.length) });
+    copy.append(title, excerpt, pages);
+    button.append(number, copy);
     button.addEventListener('click', () => openJournalChapter(chapter.id));
     list.append(button);
   });

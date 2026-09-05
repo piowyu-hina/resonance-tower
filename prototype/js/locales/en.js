@@ -167,6 +167,7 @@ export default {
   'journal.resume': 'Continue Reading',
   'journal.contentsNote': 'Accounts left by a traveler along the way.',
   'journal.chapters': 'Journal chapters',
+  'journal.pageCount': '{count} pages',
   'journal.done': 'Finish',
   'contract.title': 'Forge Covenant',
   'contract.subtitle': 'Answer the frequency of a soul reaching beyond death',
