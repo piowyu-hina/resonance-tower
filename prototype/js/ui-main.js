@@ -1,7 +1,7 @@
 import { CHAR_DEFS, RARITY_DEFS, regionName, localizedRegionDef, MOBS_PER_FLOOR, SOLO_PARTY_LIMIT, GOO_SKILL_CD_MS, ITEM_DEFS, RUINS_KILL_TARGET } from './constants.js';
 import {
   gameState, PHASES, isPrepPhase, isCombatSurfacePhase, contractStoryLocked, isCharUnlocked,
-  characterPortraitPath, characterBattlePortraitPath, characterSkins, equippedSkin, unlockReqText, aliveMonsters,
+  characterPortraitPath, characterFullArtPath, characterBattlePortraitPath, characterSkins, equippedSkin, unlockReqText, aliveMonsters,
   RESONANCE_STATES, setResonanceState, CHAPTER1_STATES,
   characterActionInterval, characterActionCooldown,
   activeCharacterStatuses,
@@ -198,7 +198,7 @@ export function buildUI() {
     card.innerHTML = `
       <span class="homeGrowthNew" hidden>NEW</span>
       <span class="homeGrowthPortrait">
-        <img src="${characterPortraitPath(c.id)}" alt="${def.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <img src="${characterFullArtPath(c.id)}" alt="${def.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <span class="fallback" style="display:none;">缺少圖片</span>
       </span>
       <span class="homeGrowthInfo">
@@ -519,6 +519,7 @@ export function render() {
   app.classList.toggle('villageActive', atVillageSurface);
   const atHomeSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'home';
   app.classList.toggle('homeSceneActive', atHomeSurface && overlayUiState.homeMode === 'menu');
+  app.classList.toggle('homeGrowthActive', atHomeSurface && overlayUiState.homeMode === 'growth');
   const atRegionSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'regions';
   const visibleSurface = !inPrep
     ? document.getElementById('combatView')
@@ -630,7 +631,7 @@ export function renderPrepView() {
   Object.entries(overlayUiState.homeEls).forEach(([id, refs]) => {
     const c = gameState.roster.find(entry => entry.id === id);
     refs.lvl.textContent = c.level;
-    refs.portrait.src = characterPortraitPath(id);
+    refs.portrait.src = characterFullArtPath(id);
     const unlocked = isCharUnlocked(id);
     const isNew = unlocked && !gameState.seenCharacterIds.has(id);
     refs.card.classList.toggle('charLocked', !unlocked);

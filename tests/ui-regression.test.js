@@ -1266,7 +1266,33 @@ async function testDesktopHome(browser) {
     await page.click('#homeGrowthBtn b');
     assert.equal(await page.locator('#homeGrowthView').isVisible(), true);
     assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeSceneActive')), false);
+    assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeGrowthActive')), true);
+    await page.locator('#homeRoster .homeGrowthPortrait img').first().evaluate(img => img.decode());
+    await page.waitForTimeout(650);
+    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-roster-${width}.png`) });
+    await page.locator('#homeRoster .homeGrowthCard:not(.charLocked)').first().click();
+    assert.equal(await page.locator('#characterDetailOverlay').evaluate(el => el.classList.contains('homeCharacterDetail')), true);
+    await page.locator('.detailArtFrame img').evaluate(img => img.decode());
+    await page.waitForTimeout(250);
+    const detailLayout = await page.locator('#characterDetailModal').evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return { fits: rect.left >= 0 && rect.right <= innerWidth && rect.bottom <= innerHeight,
+        overflow: el.scrollWidth > el.clientWidth,
+        contained: getComputedStyle(el.querySelector('.detailArtFrame img')).objectFit === 'contain' };
+    });
+    assert.ok(detailLayout.fits && !detailLayout.overflow && detailLayout.contained, 'home detail fits desktop and preserves full art');
+    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-detail-${width}.png`) });
+    await page.locator('.growthCard[data-line="action"]').click();
+    assert.ok(await page.locator('.growthInspectorHead h3').textContent());
+    await page.click('#characterDetailCloseBtn');
     await page.click('#homeGrowthBackBtn');
+    const door = await page.locator('#homeBackBtn').evaluate(el => {
+      const r = el.getBoundingClientRect();
+      const scene = document.querySelector('#homeView').getBoundingClientRect();
+      return { rightSide: r.left > scene.left + scene.width * .8,
+        hit: el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) };
+    });
+    assert.ok(door.rightSide && door.hit, 'exit is a clickable door hotspot');
     assert.equal(await page.locator('#homeGrowthBtn > img').count(), 0, 'no resident guide portrait');
     await page.evaluate(async () => {
       const { gameState, RESONANCE_STATES } = await import('./js/state.js');

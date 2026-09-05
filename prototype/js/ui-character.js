@@ -19,6 +19,7 @@ export function setCharacterDetailOpen(open, characterId = null) {
   gameState.activeOverlay = open ? 'characterDetail' : (gameState.activeOverlay === 'characterDetail' ? null : gameState.activeOverlay);
   const overlay = document.getElementById('characterDetailOverlay');
   overlay.classList.toggle('open', open);
+  overlay.classList.toggle('homeCharacterDetail', open && overlayUiState.prepLocation === 'home');
   overlay.setAttribute('aria-hidden', String(!open));
   hideTooltip();
   if (!open) return;

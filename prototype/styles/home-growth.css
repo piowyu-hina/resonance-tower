@@ -1,0 +1,68 @@
+/* Desktop home cultivation. Combat/expedition detail styling remains independent. */
+@media (min-width: 960px) {
+  #app.homeGrowthActive { width: min(1440px, calc(100vw - 48px)); padding: 24px 32px; border-color: #826544; background: linear-gradient(#241b15dc, #241b15ef), url('../assets/backgrounds/wuming_home.png?v=20260906-seated') center / cover; }
+  .homeGrowthActive #header { border-color: #a7895738; }
+  .homeGrowthActive #prepView, .homeGrowthActive #homeView { padding: 0; border: 0; background: none; box-shadow: none; }
+  .homeGrowthActive #homeGrowthBackBtn { margin: 16px 0 24px; border: 0 !important; background: none !important; box-shadow: none !important; color: #eed7af; font-size: 16px; }
+  .homeGrowthActive .homeGrowthShell { padding: 0 12px 28px; border: 0; background: none; box-shadow: none; }
+  .homeGrowthActive .homeSectionHeading { margin-bottom: 28px; border: 0; color: #f7e4c4; font-family: Georgia, 'Noto Serif TC', serif; font-size: 30px; letter-spacing: .16em; }
+  .homeGrowthActive #homeRoster { grid-template-columns: repeat(auto-fit, minmax(270px, 360px)); gap: 28px; }
+  .homeGrowthActive .homeGrowthCard { grid-template-columns: 1fr; gap: 0; padding: 16px 22px 24px; border: 1px solid #b0915d65; border-radius: 120px 120px 8px 8px; background: radial-gradient(ellipse at 50% 30%, #bd92552e, transparent 65%), linear-gradient(#4c38256b, #251c15d9); box-shadow: none; transition: border-color .2s, background .2s; }
+  .homeGrowthActive .homeGrowthCard:hover:not(.charLocked), .homeGrowthActive .homeGrowthCard:focus-visible { border-color: #e5c087; background-color: #78533238; outline: 2px solid #e5c087; outline-offset: 4px; }
+  .homeGrowthActive .homeGrowthPortrait { height: clamp(270px, 30vh, 360px); border-radius: 0; background: none; overflow: visible; }
+  .homeGrowthActive .homeGrowthPortrait img { object-fit: contain; filter: drop-shadow(0 8px 12px #100b0866); }
+  .homeGrowthActive .homeGrowthInfo { gap: 10px; padding-top: 20px; }
+  .homeGrowthActive .homeGrowthInfo b { color: #ffedce; font-family: Georgia, 'Noto Serif TC', serif; font-size: 28px; }
+  .homeGrowthActive .homeGrowthInfo small, .homeGrowthActive .homeGrowthInfo em, .homeGrowthActive .homeGrowthMeta { color: #d0b998; font-size: 14px; }
+  .homeGrowthActive .homeGrowthMeta .rarityTag { border: 0; padding: 0; }
+  .homeGrowthActive .homeGrowthSkills { margin: 4px 0; gap: 10px; }
+  .homeGrowthActive .homeGrowthSkills img { width: 48px; height: 48px; border-color: #9a79584f; background: #251c154f; }
+  .homeGrowthActive .homeGrowthLock { border-radius: inherit; background: #241c16df; color: #dbc6a6; font-size: 16px; }
+  .homeGrowthActive .homeGrowthNew { top: 16px; right: 16px; }
+
+  #characterDetailOverlay.homeCharacterDetail { background: #1c140fd1; }
+  .homeCharacterDetail #characterDetailModal { width: min(1280px, calc(100vw - 48px)); padding: 28px; border: 1px solid #a58250; border-radius: 12px; background: radial-gradient(ellipse at 10% 40%, #72513255, transparent 48%), #2c2119; color: #f0ddbd; scrollbar-color: #9b7850 #2c2119; }
+  .homeCharacterDetail #characterDetailCloseBtn { width: 40px; height: 40px; top: 0; border-color: #ac8b59; background: #36271e; color: #f8e3bf; }
+  .homeCharacterDetail #characterDetailContent { grid-template-columns: minmax(240px, .85fr) minmax(460px, 1.25fr); gap: 32px; }
+  .homeCharacterDetail .detailPortraitColumn { position: sticky; top: 24px; align-self: start; }
+  .homeCharacterDetail .detailArtFrame { height: min(680px, calc(100dvh - 120px)); min-height: 350px; border: 0; border-radius: 0; background: radial-gradient(ellipse, #c6a2651f, transparent 68%); overflow: visible; box-shadow: none; }
+  .homeCharacterDetail .detailArtFrame::before, .homeCharacterDetail .detailArtFrame::after { display: none; }
+  .homeCharacterDetail .detailArtFrame img { max-height: 100%; object-fit: contain; }
+  .homeCharacterDetail .detailInfo { padding: 0 4px 4px; }
+  .homeCharacterDetail .detailTitleRow h2 { color: #ffebc8; font-family: Georgia, 'Noto Serif TC', serif; font-size: 38px; text-shadow: none; }
+  .homeCharacterDetail .detailTitleRow span { color: #cfb694; font-size: 14px; }
+  .homeCharacterDetail .detailIdentity .detailRarity { border: 0; padding: 0; }
+  .homeCharacterDetail .detailCharacterDescription { padding: 8px 0 14px; border: 0; border-bottom: 1px solid #ac8b593d; background: none; color: #dac6a7; font-size: 16px; }
+  .homeCharacterDetail .detailCharacterDescription::before { display: none; }
+  .homeCharacterDetail .growthWallet span { padding: 7px 9px; border-color: #99774e66; border-radius: 5px; background: #201812; font-size: 14px; }
+  .homeCharacterDetail .detailSectionTitle { color: #dabe93; font-size: 16px; margin-top: 20px; }
+  .homeCharacterDetail .detailSectionHeading small { color: #bca383; font-size: 13px; }
+  .homeCharacterDetail .skinOption { border-color: #806648; background: #382a20; color: #d8c1a0; box-shadow: none; }
+  .homeCharacterDetail .skinOption.selected { border-color: #e1be84; background: #574029; }
+  .homeCharacterDetail .skinOption img { background: none; object-fit: contain; }
+  .homeCharacterDetail .growthVital { background: #3b2a21; color: #d6bea0; font-size: 15px; }
+  .homeCharacterDetail .growthGrid { gap: 10px; }
+  .homeCharacterDetail .growthCard { padding: 12px 12px 26px; gap: 10px; border-color: #806447; background: #36281e; border-radius: 6px; box-shadow: none; }
+  .homeCharacterDetail .growthCard:hover { background: #483426; border-color: #ccaa76; }
+  .homeCharacterDetail .growthCard.selected { border-color: #e5c087; background: #59412a; box-shadow: inset 3px 0 #e5c087; }
+  .homeCharacterDetail .growthCard.actionCard::after { color: #e3be79; }
+  .homeCharacterDetail .growthCard img { background: #241a1366; object-fit: contain; }
+  .homeCharacterDetail .growthCardText b { font-size: 16px; color: #f7e4c7; }
+  .homeCharacterDetail .growthCardText small { color: #d3b998; font-size: 14px; }
+  .homeCharacterDetail .growthLevel { top: auto; bottom: 6px; right: 10px; color: #efd197; font-size: 13px; }
+  .homeCharacterDetail .growthLevel::before { color: #c3a885; }
+  .homeCharacterDetail .growthInspector { padding: 18px; border-color: #b28d56; background: #211911; }
+  .homeCharacterDetail .growthInspectorHead h3 { color: #ffe6bb; font-size: 21px; }
+  .homeCharacterDetail .growthInspectorHead span, .homeCharacterDetail .growthSkillDescription > span, .homeCharacterDetail .growthCost { color: #c9ae88; font-size: 14px; }
+  .homeCharacterDetail .growthSkillDescription { color: #eddbbd; font-size: 16px; }
+  .homeCharacterDetail .growthCompare > div { background: #3a2b1f; padding: 12px; }
+  .homeCharacterDetail .growthCompare small { color: #c5a984; font-size: 14px; }
+  .homeCharacterDetail .growthCompare strong { color: #f5e1c0; font-size: 16px; }
+  .homeCharacterDetail #growthUpgradeBtn { min-height: 44px; font-size: 16px; background: #815a2e; border-color: #cea565; }
+  .homeCharacterDetail #growthUpgradeBtn:hover:not(:disabled) { background: #9a703b; }
+  .homeCharacterDetail #growthUpgradeBtn:disabled { background: #352c24; color: #b6a18a; border-color: #6d5842; }
+  .homeCharacterDetail button:focus-visible { outline: 2px solid #f3d397; outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    .homeGrowthActive .homeGrowthCard { transition: none; }
+  }
+}
