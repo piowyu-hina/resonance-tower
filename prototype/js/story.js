@@ -490,12 +490,12 @@ function journalStoryReading() {
     gameState.resonanceState.xiaochu === RESONANCE_STATES.BOOK_READING;
 }
 
-function openJournalChapter(id, resume = false) {
+function openJournalChapter(id) {
   const chapter = JOURNAL_CHAPTERS.find(entry => entry.id === id);
   if (!chapter) return;
   resetJournalPageTurn();
   storyState.journalChapterId = id;
-  storyState.journalPage = resume ? Math.min(chapter.pages.length - 1, gameState.journalReading.pages[id] || 0) : 0;
+  storyState.journalPage = 0;
   document.getElementById('journalContents').hidden = true;
   document.querySelector('.journalBook').hidden = false;
   document.getElementById('journalContentsBtn').hidden = journalStoryReading();
@@ -531,9 +531,7 @@ export function showJournalContents() {
     button.addEventListener('click', () => openJournalChapter(chapter.id));
     list.append(button);
   });
-  const resume = document.getElementById('journalResumeBtn');
-  resume.hidden = !Object.hasOwn(gameState.journalReading.pages, gameState.journalReading.chapterId);
-  (resume.hidden ? list.querySelector('button') : resume).focus();
+  list.querySelector('button')?.focus();
 }
 
 export function openTravelJournal({ preview = false } = {}) {
@@ -571,15 +569,28 @@ export function closeTravelJournal(finished = false) {
 }
 
 export function advanceTravelJournal() {
+  if (document.getElementById('journalTurningLeaf').classList.contains('turning')) return;
   const chapter = JOURNAL_CHAPTERS.find(entry => entry.id === storyState.journalChapterId) || JOURNAL_CHAPTERS[0];
   if (storyState.journalPage < chapter.pages.length - 1) {
+    turnJournalPage(1);
+  } else {
+    if (journalStoryReading()) closeTravelJournal(true);
+    else showJournalContents();
+  }
+}
+
+function turnJournalPage(direction) {
+    const chapter = JOURNAL_CHAPTERS.find(entry => entry.id === storyState.journalChapterId) || JOURNAL_CHAPTERS[0];
+    const target = storyState.journalPage + direction;
+    if (target < 0 || target >= chapter.pages.length) return;
     const page = document.getElementById('journalPageText');
     const turningLeaf = document.getElementById('journalTurningLeaf');
+    const readingLeaf = document.querySelector('.journalReadingLeaf');
     const nextButton = document.getElementById('journalNextBtn');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (turningLeaf.classList.contains('turning')) return;
     if (reducedMotion) {
-      storyState.journalPage++;
+      storyState.journalPage = target;
       renderJournalPage();
       return;
     }
@@ -590,18 +601,25 @@ export function advanceTravelJournal() {
       current: formatLocaleNumber(storyState.journalPage + 1),
       total: formatLocaleNumber(chapter.pages.length),
     });
-    nextButton.disabled = true;
-    storyState.journalPage++;
+    storyState.journalPage = target;
     renderJournalPage();
+    nextButton.disabled = true;
+    document.getElementById('journalPrevBtn').disabled = true;
+    document.getElementById('journalContentsBtn').disabled = true;
     journalPageTransition?.cancel();
     const transition = beginManagedTransition('journalPageTurn');
     journalPageTransition = transition;
     const finishTurn = () => transition.finish(() => {
       turningLeaf.classList.remove('turning');
+      readingLeaf.classList.remove('pageTurning', 'pageTurningBack');
       turningLeaf.setAttribute('aria-hidden', 'true');
       document.getElementById('journalTurningPageText').textContent = '';
       nextButton.disabled = false;
-      if (gameState.activeOverlay === 'journal') nextButton.focus();
+      document.getElementById('journalPrevBtn').disabled = storyState.journalPage === 0;
+      document.getElementById('journalContentsBtn').disabled = false;
+      if (gameState.activeOverlay === 'journal') {
+        (direction < 0 && storyState.journalPage > 0 ? document.getElementById('journalPrevBtn') : nextButton).focus();
+      }
       if (journalPageTransition === transition) journalPageTransition = null;
     });
     transition.listen(turningLeaf, 'animationend', event => {
@@ -610,11 +628,9 @@ export function advanceTravelJournal() {
     turningLeaf.classList.remove('turning');
     void turningLeaf.offsetWidth;
     turningLeaf.classList.add('turning');
+    readingLeaf.classList.toggle('pageTurningBack', direction < 0);
+    readingLeaf.classList.add('pageTurning');
     transition.after(1100, finishTurn);
-  } else {
-    if (journalStoryReading()) closeTravelJournal(true);
-    else showJournalContents();
-  }
 }
 
 function resetJournalPageTurn() {
@@ -623,9 +639,12 @@ function resetJournalPageTurn() {
   const turningLeaf = document.getElementById('journalTurningLeaf');
   if (!turningLeaf) return;
   turningLeaf.classList.remove('turning');
+  document.querySelector('.journalReadingLeaf').classList.remove('pageTurning', 'pageTurningBack');
   turningLeaf.setAttribute('aria-hidden', 'true');
   document.getElementById('journalTurningPageText').textContent = '';
   document.getElementById('journalNextBtn').disabled = false;
+  document.getElementById('journalPrevBtn').disabled = storyState.journalPage === 0;
+  document.getElementById('journalContentsBtn').disabled = false;
 }
 
 export function openContractPanel() {
@@ -769,11 +788,8 @@ export function bindDialogueUI() {
   document.getElementById('journalCloseBtn').addEventListener('click', () => closeTravelJournal(false));
   document.getElementById('journalNextBtn').addEventListener('click', advanceTravelJournal);
   document.getElementById('journalContentsBtn').addEventListener('click', showJournalContents);
-  document.getElementById('journalResumeBtn').addEventListener('click', () => openJournalChapter(gameState.journalReading.chapterId, true));
   document.getElementById('journalPrevBtn').addEventListener('click', () => {
-    if (document.getElementById('journalTurningLeaf').classList.contains('turning') || storyState.journalPage <= 0) return;
-    storyState.journalPage--;
-    renderJournalPage();
+    turnJournalPage(-1);
   });
   document.getElementById('contractFacilityBtn').addEventListener('click', beginContractPreparation);
   document.getElementById('contractCloseBtn').addEventListener('click', closeContractPanel);

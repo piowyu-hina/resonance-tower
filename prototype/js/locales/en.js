@@ -164,7 +164,6 @@ export default {
   'journal.prev': 'Previous',
   'journal.contents': 'Contents',
   'journal.contentsBack': 'Contents',
-  'journal.resume': 'Continue Reading',
   'journal.contentsNote': 'Accounts left by a traveler along the way.',
   'journal.chapters': 'Journal chapters',
   'journal.pageCount': '{count} pages',

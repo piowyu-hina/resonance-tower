@@ -158,7 +158,6 @@ export default {
   'journal.prev': '上一頁',
   'journal.contents': '目錄',
   'journal.contentsBack': '回目錄',
-  'journal.resume': '繼續上次閱讀',
   'journal.contentsNote': '旅人沿途留下的見聞。',
   'journal.chapters': '手記篇章',
   'journal.pageCount': '{count} 頁',

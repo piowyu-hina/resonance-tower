@@ -22,7 +22,7 @@ const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const report = [];
 try {
   for (const width of (process.argv.includes('--sheets-only') ? [] : [1440, 390])) {
-    for (const view of (process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-resume', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
+    for (const view of (process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
       const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1000 } });
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
@@ -34,13 +34,13 @@ try {
         gameState.resonanceState = {};
         (await import('./js/story.js')).openTravelJournal();
       });
-      if (view === 'journal-resume' || view === 'journal-reread') {
+      if (view === 'journal-reread') {
         await page.evaluate(async () => {
           const { gameState } = await import('./js/state.js');
           gameState.journalReading.pages.shapeshifter = 1;
           (await import('./js/story.js')).openTravelJournal({ preview: true });
         });
-        if (view === 'journal-reread') await page.click('#journalResumeBtn');
+        await page.click('.journalChapterEntry');
       }
       if (view === 'combat') {
         await page.evaluate(async () => { const d = await import('./js/debug.js'); d.debugStartBossFight(); });
@@ -55,6 +55,19 @@ try {
         return { small, overflow: document.documentElement.scrollWidth > innerWidth + 1 };
       });
       await page.screenshot({ path: path.join(output, `${width}-${view}.png`), fullPage: true });
+      if (view === 'journal-reread') {
+        for (const direction of ['next', 'prev']) {
+          await page.click(direction === 'next' ? '#journalNextBtn' : '#journalPrevBtn');
+          await page.evaluate(() => {
+            document.querySelector('.journalReadingLeaf').getAnimations({ subtree: true }).forEach(animation => {
+              animation.pause();
+              animation.currentTime = 360;
+            });
+          });
+          await page.screenshot({ path: path.join(output, `${width}-journal-turn-${direction}.png`) });
+          await page.waitForFunction(() => !document.getElementById('journalNextBtn').disabled);
+        }
+      }
       report.push({ width, view, ...audit, errors });
       await page.close();
     }

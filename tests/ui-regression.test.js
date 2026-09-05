@@ -103,8 +103,11 @@ async function testJournalNavigation(browser) {
   await page.click('#journalNextBtn');
   await page.waitForFunction(() => !document.getElementById('journalNextBtn').disabled);
   await page.click('#journalContentsBtn');
-  await page.click('#journalResumeBtn');
-  assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[1]);
+  assert.equal(await page.locator('#journalResumeBtn').count(), 0);
+  await page.click('.journalChapterEntry');
+  assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[0]);
+  await page.click('#journalNextBtn');
+  await page.waitForFunction(() => !document.getElementById('journalPrevBtn').disabled);
   await page.click('#journalPrevBtn');
   assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[0]);
   await page.click('#journalNextBtn');
@@ -118,8 +121,8 @@ async function testJournalNavigation(browser) {
     gameState.journalReading = normalized.journalReading;
     (await import('./js/story.js')).openTravelJournal();
   });
-  await page.click('#journalResumeBtn');
-  assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[1]);
+  await page.click('.journalChapterEntry');
+  assert.equal(await page.textContent('#journalPageText'), JOURNAL_PAGES[0]);
   assert.equal(await page.evaluate(() => window.__debugHooks.gameState.chapter1State), 'complete');
   assertNoRuntimeErrors(page, 'journal navigation');
   await page.close();
