@@ -148,7 +148,7 @@
 #dialoguePortraitFrame.sceneArt img { object-position: center; }
 #dialoguePortraitFrame.narration { display: none; }
 #dialoguePortraitFrame.narration + #dialogueBox { margin-top: 0; border-radius: 10px; font-style: italic; }
-#dialoguePortraitFrame.goddessSpeaker::before { content: ''; position: absolute; inset: -8%; background: url('../assets/story/goddess_back.png') center / contain no-repeat; opacity: .62; filter: drop-shadow(0 0 24px rgba(255,213,121,.42)); }
+#dialoguePortraitFrame.goddessSpeaker::before { content: ''; position: absolute; inset: -8%; background: url('../assets/story/goddess_back_v2.png') center / contain no-repeat; opacity: .62; filter: drop-shadow(0 0 24px rgba(255,213,121,.42)); }
 #dialoguePortraitFrame.goddessSpeaker img { position: relative; z-index: 1; }
 #dialogueOverlay.heavenDialogue #dialoguePortraitFrame.goddessSpeaker {
   width: min(480px, 90vw);

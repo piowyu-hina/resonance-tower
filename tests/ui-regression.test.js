@@ -1261,10 +1261,8 @@ async function testDesktopVillage(browser) {
     assert.ok(geometry.targets.every(t => t.inside && t.labelHit), 'buildings and labels are clickable');
     assert.equal(await page.locator('#saveGameBtn').isVisible(), false);
     assert.equal(await page.locator('#loadGameBtn').isVisible(), false);
-    await page.locator('#bagBtn').focus();
-    await page.keyboard.press('Enter');
-    assert.equal(await page.getAttribute('#inventoryOverlay', 'aria-hidden'), 'false');
-    await page.click('#inventoryCloseBtn');
+    assert.equal(await page.locator('#bagBtn').isVisible(), false, 'village keeps the inventory entry off stage');
+    await page.waitForTimeout(600); // Wait for the existing surface entrance animation.
     const beforeDebug = await page.locator('#villageView').boundingBox();
     await page.click('#debugToggleBtn');
     assert.equal(await page.locator('#debugPanel').isVisible(), true);
@@ -1284,6 +1282,11 @@ async function testDesktopVillage(browser) {
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('#regionView').isVisible(), true);
     assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('villageActive')), false);
+    assert.equal(await page.locator('#bagBtn').isVisible(), true, 'inventory remains available outside the village scene');
+    await page.locator('#bagBtn').focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.getAttribute('#inventoryOverlay', 'aria-hidden'), 'false');
+    await page.click('#inventoryCloseBtn');
     await page.click('#regionBackBtn');
     await page.click('#homeLocationBtn b');
     assert.equal(await page.locator('#homeView').isVisible(), true);

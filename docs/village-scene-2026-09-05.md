@@ -10,6 +10,8 @@ Label refinement: removed the solid brown plates in favor of warm ivory serif na
 
 Header refinement: village-only overlay header with a soft dark gradient, smaller brand, frameless inventory entry and a subdued separated developer button. The debug panel overlays the scene without moving hotspots. Save/load controls are hidden globally at user request; DOM bindings and serialization remain intact, no new persistence behavior. Inventory contents and other screens' header styling are unchanged. design.md records the current scope and deferred home redesign.
 
+Follow-up: the village inventory entry is now hidden entirely for immersion, with access retained on other screens. User-provided merchant.png replaces the shop portrait (merchant_full.png retained); updated xiaochu_full.png and goddess.png use their existing references. goddess_back_v2.png is connected to both the goddess dialogue halo and heaven transition sigil. No changes to image pixels, story scripts or animation timings; xiaochu_kiss_wuming.png remains unassigned pending an approved scene.
+
 Validation: npm test passed; focused desktop checks at widths 1024, 1440 and 1920 passed, covering art aspect ratio, building/label hit areas, shop entry, keyboard gate entry, home round-trip, app width reset and mandatory home guidance. Mobile overlay geometry tests remain, but the desktop-only village beneath them is no longer required to fit a phone viewport.
 
 Generation prompt:
