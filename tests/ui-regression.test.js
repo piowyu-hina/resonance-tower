@@ -488,7 +488,7 @@ async function testXiaochuEncounterFlow(browser) {
   assert.equal(await isUnlocked(), true);
   await advanceDialogue(lineCount('xiaochu_after'));
   assert.equal(await page.evaluate(() => window.__debugHooks.gameState.xiaochuStoryChapter), 4);
-  assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true, 'contracted Xiaochu retains optional daily conversations');
+  assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), false, 'contracted Xiaochu has no floating home conversation entry');
   assert.equal(await page.locator('#homeBackBtn').isEnabled(), true);
   assert.equal(await page.evaluate(async () => !!(await import('./js/story.js')).DIALOGUE_DEFS.xiaochu_trust), false, 'retired travel requirement is not an active dialogue');
   assertNoRuntimeErrors(page, 'xiaochu completed covenant');
@@ -1009,7 +1009,7 @@ async function testXiaochuDaily(browser) {
   await page.click('#debugToggleBtn');
   assert.equal(await page.locator('#xiaochuTalkBtn img').getAttribute('src'), 'assets/characters/xiaochu_full.png');
   const button = page.locator('#xiaochuTalkBtn');
-  assert.equal(await button.isVisible(), true);
+  assert.equal(await button.isVisible(), false, 'daily content is retained without a home entry');
   assert.equal(await button.isEnabled(), true);
   assert.equal(await button.evaluate(el => el.classList.contains('storyRequired')), false);
   if (process.argv.includes('--daily-only')) {
@@ -1017,7 +1017,7 @@ async function testXiaochuDaily(browser) {
     await page.screenshot({ path: path.resolve(__dirname, '../test-results/xiaochu-daily-home.png') });
   }
   for (const [index, id] of ['xiaochu_daily_practice', 'xiaochu_daily_chair', 'xiaochu_daily_departure'].entries()) {
-    await button.click();
+    await page.evaluate(async () => (await import('./js/story.js')).talkToXiaochu());
     const opened = await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       const { storyState } = await import('./js/story.js');
@@ -1047,7 +1047,7 @@ async function testXiaochuDaily(browser) {
     });
   }
   await page.setViewportSize({ width: 390, height: 844 });
-  assert.equal(await button.isVisible(), true);
+  assert.equal(await button.isVisible(), false);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
   if (process.argv.includes('--daily-only')) {
     await page.screenshot({ path: path.resolve(__dirname, '../test-results/xiaochu-daily-mobile.png') });
@@ -1379,7 +1379,7 @@ async function testDesktopHome(browser) {
       gameState.resonanceState.xiaochu = RESONANCE_STATES.CONTRACTED;
       (await import('./js/ui-main.js')).render();
     });
-    assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true);
+    assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), false, 'no daily conversation hotspot after contract');
     assert.equal(await page.locator('#xiaochuTalkBtn > img').isVisible(), false, 'contracted Xiaochu is not physically standing in the room');
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
@@ -1399,9 +1399,7 @@ async function testDesktopHome(browser) {
     assert.equal(await page.locator('#characterDetailOverlay').isVisible(), false);
     await page.waitForTimeout(650);
     if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-contracted-${width}.png`) });
-    await page.click('#xiaochuTalkBtn b');
-    assert.equal(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), 'dialogue');
-    await page.evaluate(async () => (await import('./js/story.js')).closeDialogue());
+    assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), false);
     await page.evaluate(async () => {
       const { gameState, RESONANCE_STATES } = await import('./js/state.js');
       gameState.resonanceState.xiaochu = RESONANCE_STATES.FOLLOWING;

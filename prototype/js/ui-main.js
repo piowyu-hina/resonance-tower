@@ -538,7 +538,8 @@ export function renderPrepView() {
   const contractedXiaochu = gameState.resonanceState.xiaochu === RESONANCE_STATES.CONTRACTED;
   const xiaochuTalk = document.getElementById('xiaochuTalkBtn');
   xiaochuTalk.classList.toggle('soulConversation', contractedXiaochu);
-  xiaochuTalk.hidden = !followingXiaochu && !contractedXiaochu;
+  // Keep the required pre-contract conversation; daily talks have no home hotspot.
+  xiaochuTalk.hidden = !followingXiaochu;
   xiaochuTalk.disabled = storyLocked;
   xiaochuTalk.classList.toggle('storyRequired', followingXiaochu);
   document.getElementById('xiaochuTalkHint').textContent = t(contractedXiaochu ? XIAOCHU_DAILY_TALKS[gameState.xiaochuDailyTalkIndex].titleKey : gameState.xiaochuStoryChapter > 0 ? 'home.xiaochuReady' : 'home.xiaochuWelcome');
