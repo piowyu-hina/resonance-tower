@@ -1233,6 +1233,55 @@ async function testMerchantShop(browser) {
   }
 }
 
+async function testDesktopHome(browser) {
+  for (const width of [1024, 1440, 1920]) {
+    const page = await openView(browser, 'home');
+    await page.setViewportSize({ width, height: 1080 });
+    await page.evaluate(async () => {
+      document.querySelector('[data-debug-action="xiaochu-ready"]').click();
+      const { gameState, RESONANCE_STATES } = await import('./js/state.js');
+      gameState.resonanceState.xiaochu = RESONANCE_STATES.OATH_READY;
+      (await import('./js/ui-main.js')).render();
+    });
+    await page.waitForTimeout(650);
+    for (const id of ['homeGrowthBtn', 'travelJournalBtn', 'contractFacilityBtn']) {
+      const target = page.locator(`#${id}`);
+      assert.equal(await target.isVisible(), true);
+      const layout = await target.evaluate(el => {
+        const scene = document.querySelector('#homeView').getBoundingClientRect();
+        const label = el.querySelector('b').getBoundingClientRect();
+        return { inside: label.left >= scene.left && label.right <= scene.right && label.bottom < scene.bottom,
+          hit: el.contains(document.elementFromPoint(label.x+label.width/2,label.y+label.height/2)),
+          blur: getComputedStyle(el).backdropFilter };
+      });
+      assert.ok(layout.inside && layout.hit, `${id}: label is inside the scene and clickable`);
+      assert.equal(layout.blur, 'none');
+    }
+    if (process.argv.includes('--home-only')) {
+      fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
+      await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-oath-${width}.png`) });
+    }
+    await page.click('#homeGrowthBtn b');
+    assert.equal(await page.locator('#homeGrowthView').isVisible(), true);
+    assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeSceneActive')), false);
+    await page.click('#homeGrowthBackBtn');
+    await page.evaluate(async () => {
+      const { gameState, RESONANCE_STATES } = await import('./js/state.js');
+      gameState.resonanceState.xiaochu = RESONANCE_STATES.FOLLOWING;
+      (await import('./js/ui-main.js')).render();
+    });
+    await page.locator('#xiaochuTalkBtn > img').evaluate(img => img.decode());
+    assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true);
+    await page.waitForTimeout(650);
+    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-following-${width}.png`) });
+    await page.locator('#xiaochuTalkBtn').focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), 'dialogue');
+    assertNoRuntimeErrors(page, 'desktop home scene');
+    await page.close();
+  }
+}
+
 async function testDesktopVillage(browser) {
   for (const width of [1024, 1440, 1920]) {
     const page = await openView(browser, 'village');
@@ -1319,6 +1368,11 @@ async function testDesktopVillage(browser) {
   prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    await testDesktopHome(browser);
+    if (process.argv.includes('--home-only')) {
+      console.log('ui-regression.test.js: desktop home assertions passed');
+      return;
+    }
     await testDesktopVillage(browser);
     if (process.argv.includes('--village-only')) {
       console.log('ui-regression.test.js: desktop village assertions passed');

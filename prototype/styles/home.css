@@ -1,0 +1,75 @@
+/* Existing interior art, desktop scene layout. Growth screens and existing
+   small-screen rules are untouched; there is no new mobile design here. */
+@media (min-width: 960px) {
+  #app.homeSceneActive {
+    position: relative;
+    width: min(1600px, calc(100vw - 48px), calc((100dvh - 48px) * 1.7768));
+    min-width: 900px;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: #28221e;
+  }
+  .homeSceneActive #header { position: absolute; z-index: 20; inset: 0 0 auto; margin: 0; padding: 12px 28px 24px; border: 0; background: linear-gradient(#1f1a18b8, transparent); pointer-events: none; }
+  .homeSceneActive #header button { pointer-events: auto; }
+  .homeSceneActive .brandCopy b { font-size: 16px; }
+  .homeSceneActive .brandCopy small { font-size: 9px !important; }
+  .homeSceneActive #bagBtn, .homeSceneActive #debugToggleBtn { border: 0; background: transparent; box-shadow: none; color: #e8d5b7; font-weight: 400; }
+  .homeSceneActive #bagBtn:hover:not(:disabled), .homeSceneActive #debugToggleBtn:hover { background: #ffefd71a; }
+  .homeSceneActive #debugToggleBtn { font-size: 12px; margin-left: 12px; }
+  .homeSceneActive #debugPanel { position: absolute; z-index: 21; top: 72px; left: 18px; right: 18px; margin: 0; }
+  .homeSceneActive #prepView { padding: 0; margin: 0; border: 0; background: none; }
+  .homeSceneActive #homeView {
+    padding: 0;
+    min-height: 0;
+    aspect-ratio: 1672 / 941;
+    border: 0;
+    border-radius: 0;
+    background: linear-gradient(180deg, #20180f0d 70%, #20180f40), url('../assets/backgrounds/wuming_home.png') center / 100% 100% no-repeat;
+    box-shadow: none;
+  }
+  .homeSceneActive .homeTopbar { position: absolute; z-index: 2; top: 88px; left: 3.5%; display: flex; align-items: start; flex-direction: column; gap: 14px; padding: 0; margin: 0; border: 0; pointer-events: none; }
+  .homeSceneActive #homeBackBtn { pointer-events: auto; padding: 5px 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; color: #ddc6a2; font-size: 15px; text-shadow: 0 2px 5px #19120f; }
+  .homeSceneActive #homeBackBtn:hover:not(:disabled) { color: #fff2da; }
+  .homeSceneActive #homeView .prepHeading { font-family: Georgia, 'Noto Serif TC', serif; font-size: 34px; color: #fff0d4; letter-spacing: .2em; text-shadow: 0 2px 8px #25170e; }
+  .homeSceneActive #homeView .prepMsg { display: none; }
+  .homeSceneActive #homeMenu { display: block; position: absolute; inset: 0; }
+  .homeSceneActive #homeMenu[hidden] { display: none; }
+  .homeSceneActive #homeMenu .homeFacilityBtn {
+    position: absolute !important;
+    display: block;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 20%;
+    background: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+    overflow: visible;
+    transform: none;
+    animation: none;
+  }
+  .homeSceneActive #homeMenu .homeFacilityBtn[hidden] { display: none; }
+  .homeSceneActive #homeGrowthBtn { left: 16%; top: 34%; width: 20%; height: 49%; }
+  .homeSceneActive #xiaochuTalkBtn { left: 37%; top: 20%; width: 25%; height: 65%; }
+  .homeSceneActive #travelJournalBtn { left: 77%; top: 69%; width: 21%; height: 25%; }
+  .homeSceneActive #contractFacilityBtn { left: 63%; top: 25%; width: 13%; height: 45%; }
+  .homeSceneActive #homeMenu .homeFacilityBtn > img { position: absolute; inset: 0; width: 100%; height: 93%; max-width: none; max-height: none; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 8px 14px #160c084d); }
+  .homeSceneActive #travelJournalBtn > img, .homeSceneActive #contractFacilityBtn > img { display: none; }
+  .homeSceneActive #homeMenu .homeFacilityBtn > span:not(.homeGuideHina) { position: absolute; top: 94%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 290px; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
+  .homeSceneActive #homeMenu #travelJournalBtn > span:not(.homeGuideHina) { top: 52%; }
+  .homeSceneActive #homeMenu .homeFacilityBtn b { position: relative; pointer-events: auto; padding: 6px 14px 13px; font-family: Georgia, 'Noto Serif TC', serif; color: #fff0d9; font-size: 23px; font-weight: 600; letter-spacing: .12em; text-shadow: 0 2px 3px #21160f, 0 0 9px #21160f; }
+  .homeSceneActive #homeMenu .homeFacilityBtn b::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 44px; height: 1px; background: linear-gradient(90deg, transparent, #f6cf8c 25%, #f6cf8c 75%, transparent); transition: width .2s; }
+  .homeSceneActive #homeMenu .homeFacilityBtn small { font-size: 14px; color: #f4dfbc; line-height: 1.5; max-width: 280px; padding: 3px 12px; text-align: center; text-shadow: 0 1px 4px #21160f, 0 0 8px #21160f; background: radial-gradient(ellipse, #30271eb0, transparent 75%); opacity: 0; transition: opacity .18s; }
+  .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible):not(:disabled) small { opacity: 1; }
+  .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible, .storyRequired) b::after { width: 72px; }
+  .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible, .storyRequired) b { color: #ffe1a3; }
+  .homeSceneActive #homeMenu .homeFacilityBtn:focus-visible { outline: 2px dashed #eac78a; outline-offset: 5px; }
+  .homeSceneActive #homeMenu .homeFacilityBtn:disabled { opacity: .45; cursor: default; }
+  .homeSceneActive #homeMenu .homeFacilityBtn.storyFocusTarget { opacity: 1; }
+  .homeSceneActive #homeMenu .homeGuideHina { top: auto; bottom: 16%; right: -70px; width: 180px; height: 218px; }
+  @media (prefers-reduced-motion: reduce) {
+    .homeSceneActive #homeMenu .homeFacilityBtn b::after, .homeSceneActive #homeMenu .homeFacilityBtn small { transition: none; }
+  }
+}
