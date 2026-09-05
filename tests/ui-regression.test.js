@@ -22,10 +22,10 @@ global.document = { getElementById: () => null, addEventListener: () => {}, disp
 const { DIALOGUE_DEFS, JOURNAL_PAGES } = await import('../prototype/js/story.js');
 const { characterPortraitPath, characterBattlePortraitPath, characterFullArtPath } = await import('../prototype/js/state.js');
 for (const getPath of [characterPortraitPath, characterBattlePortraitPath]) {
-  assert.equal(getPath('xiaochu'), 'assets/characters/xiaochu_battle_chibi.png');
+  assert.equal(getPath('xiaochu'), 'assets/characters/xiaochu.png');
   assert.ok(fs.existsSync(path.join(prototypeDir, getPath('xiaochu'))));
 }
-assert.equal(characterFullArtPath('xiaochu'), 'assets/characters/xiaochu_full_2.png');
+assert.equal(characterFullArtPath('xiaochu'), 'assets/characters/xiaochu_full.png');
 assert.ok(fs.existsSync(path.join(prototypeDir, characterFullArtPath('xiaochu'))));
 const lineCount = scriptId => DIALOGUE_DEFS[scriptId].length;
 const approvedEncounter = fs.readFileSync(path.resolve(__dirname, '../story/xiaochu-first-encounter.md'), 'utf8')
@@ -875,6 +875,7 @@ async function testCombatAndGrowthAudit(browser) {
     const bars = await page.evaluate(async () => {
       const { gameState, characterActionInterval } = await import('./js/state.js');
       const combat = await import('./js/combat.js');
+      const { render } = await import('./js/ui-main.js');
       gameState.party = ['xiaochu'];
       gameState.unlockedChars.add('xiaochu');
       (await import('./js/debug.js')).debugStartBossFight();
@@ -887,7 +888,7 @@ async function testCombatAndGrowthAudit(browser) {
       c.actionCountdown = c.actionCycleMs / 2;
       c.manualActionCd = 0;
       combat.useCharacterAction(c.id);
-      (await import('./js/ui-main.js')).render();
+      render(); // Keep timer setup and measurement in one synchronous turn.
       const refs = gameState.charEls.xiaochu;
       const result = { cooldown: c.manualActionCd, fill: refs.manualActionButton.querySelector('.itemCdOverlay').style.height,
         actionFill: refs.atkBar.style.width };
@@ -901,7 +902,7 @@ async function testCombatAndGrowthAudit(browser) {
       c.counterUntil = 10000;
       c.sleepUntilAction = true;
       c.charmedUntilAction = true;
-      (await import('./js/ui-main.js')).render();
+      render();
       result.statuses = [...document.querySelectorAll('#partySide .statusBadge')].map(el => el.dataset.statusId);
       gameState.phase = 'prepFloor';
       gameState.partyLocked = false;
@@ -956,7 +957,7 @@ async function testSoftBattleArt(browser) {
       (await import('./js/ui-main.js')).render();
     });
     const art = page.locator('#partySide .portrait > img');
-    assert.equal(await art.getAttribute('src'), 'assets/characters/xiaochu_battle_chibi.png');
+    assert.equal(await art.getAttribute('src'), 'assets/characters/xiaochu.png');
     const metrics = await art.evaluate(async img => {
       await img.decode();
       const css = getComputedStyle(img);
@@ -1009,7 +1010,7 @@ async function testXiaochuDaily(browser) {
   await page.click('#debugToggleBtn');
   await page.click('[data-debug-action="xiaochu-daily"]');
   await page.click('#debugToggleBtn');
-  assert.equal(await page.locator('#xiaochuTalkBtn img').getAttribute('src'), 'assets/characters/xiaochu_full_2.png');
+  assert.equal(await page.locator('#xiaochuTalkBtn img').getAttribute('src'), 'assets/characters/xiaochu_full.png');
   const button = page.locator('#xiaochuTalkBtn');
   assert.equal(await button.isVisible(), true);
   assert.equal(await button.isEnabled(), true);
@@ -1067,12 +1068,65 @@ async function testXiaochuDaily(browser) {
   await page.close();
 }
 
+async function testWumingSkills(browser) {
+  for (const width of [1440, 390]) {
+    const page = await openView(browser, 'village');
+    await page.setViewportSize({ width, height: 1000 });
+    await page.evaluate(async () => {
+      const { setCharacterDetailOpen } = await import('./js/ui-character.js');
+      setCharacterDetailOpen(true, 'wuming');
+    });
+    for (const name of ['試探刺擊', '穩住腳步', '抓到空隙了！', '我還能撐住']) {
+      assert.equal(await page.locator('.growthCard b').filter({ hasText: name }).count(), 1);
+    }
+    for (const id of ['skill1', 'skill2', 'skill3', 'action']) {
+      const img = page.locator(`.growthCard img[src="assets/skills/wuming_${id}.png"]`);
+      await img.evaluate(el => el.decode());
+      assert.ok(await img.evaluate(el => el.naturalWidth > 0));
+    }
+    if (process.argv.includes('--wuming-only')) {
+      fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
+      await page.locator('.growthCard[data-line="action"]').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(350);
+      await page.screenshot({ path: path.resolve(__dirname, `../test-results/wuming-skills-${width}.png`) });
+    }
+    const state = await page.evaluate(async () => {
+      const { setCharacterDetailOpen } = await import('./js/ui-character.js');
+      setCharacterDetailOpen(false);
+      const { gameState } = await import('./js/state.js');
+      const { CHAR_DEFS } = await import('./js/constants.js');
+      const { performSkill, useCharacterAction } = await import('./js/combat.js');
+      (await import('./js/debug.js')).debugStartBossFight();
+      const c = gameState.roster.find(c => c.id === 'wuming');
+      c.curHp = 1;
+      c.actionCountdown = 99999;
+      gameState.monsters.forEach(m => { m.actionCountdown = 99999; });
+      performSkill(c, CHAR_DEFS.wuming.skills[1], 1, gameState.monsters[0]);
+      c.openingUntil = 10000;
+      useCharacterAction('wuming');
+      (await import('./js/ui-combat-effects.js')).flushCombat();
+      (await import('./js/ui-main.js')).render();
+      return { hp: c.curHp, statuses: [...document.querySelectorAll('#partySide .statusName')].map(el => el.textContent) };
+    });
+    assert.ok(state.hp > 1);
+    for (const label of ['靈巧閃避', '破綻就緒', '撐住']) assert.ok(state.statuses.includes(label));
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    assertNoRuntimeErrors(page, 'Wuming skill UI');
+    await page.close();
+  }
+}
+
 (async () => {
   const server = await startServer();
   const { port } = server.address();
   prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    await testWumingSkills(browser);
+    if (process.argv.includes('--wuming-only')) {
+      console.log('ui-regression.test.js: Wuming skill UI assertions passed');
+      return;
+    }
     await testXiaochuDaily(browser);
     if (process.argv.includes('--daily-only')) {
       console.log('ui-regression.test.js: Xiaochu daily assertions passed');

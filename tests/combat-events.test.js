@@ -124,10 +124,15 @@ const { destroyRuinsSpike } = await import('../prototype/js/ruins.js');
   assert.ok(reflectionEvents.some(event => event.type === 'ruinsShieldPulse'));
 
   const hpBeforeHeavyHit = wuming.curHp;
+  wuming.evasionUntil = 4000;
+  wuming.evasionChance = 1;
+  wuming.resolveUntil = 4000;
+  wuming.resolveReduction = .6;
   boss.actionCountdown = 0;
   tickRuinsLord(boss);
   const heavyEvents = drainCombatEvents();
   assert.ok(wuming.curHp < hpBeforeHeavyHit, 'the heavy strike should deal ordinary combat damage');
+  assert.equal(wuming.openingUntil || 0, 0, 'unavoidable ruins attacks never grant an evasion opening');
   assert.ok(heavyEvents.some(event => event.type === 'skillCast' && event.skill.name === '重擊'));
 }
 

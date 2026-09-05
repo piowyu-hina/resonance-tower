@@ -17,6 +17,7 @@ import {
 import { OVERLAY_CLOSERS, closeOtherOverlays, overlayUiState } from './ui-overlays.js';
 import { emitCombatEvent } from './combat-events.js';
 import { clearGuardState, grantGuard, consumeGuard, tickGuardState } from './guard.js';
+import { clearSurvivalState, tickSurvivalState, tryEvade, resolveDamage } from './wuming-combat.js';
 import { clearGooArena, gooTick } from './goo.js';
 import { tickShopIdle, addInventoryItem } from './shop.js';
 import { startCharacterEncounter, startChapter1DefeatSequence, tryXiaochuTravelStory } from './story.js';
@@ -224,7 +225,7 @@ export function guardEnemyDamage(target, incomingDamage) {
     emitCombatEvent({ type: 'shieldBlock', targetKind: 'char', targetId: target.id });
     emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: target.id, text: `格擋 ${result.prevented}`, cls: 'buff' });
   }
-  return result.damage;
+  return resolveDamage(target, result.damage);
 }
 
 function damageCharacterFromRuinsLord(boss, target, damage, label) {
@@ -378,7 +379,7 @@ export function performMonsterSkill(m) {
 
   const targetsParty = skill.target === 'randomParty';
   const targetKind = targetsParty ? 'char' : 'monster';
-  if (targetsParty && target.dodgeUntil > 0) {
+  if (targetsParty && !m.storyBoss && tryEvade(target)) {
     log(`${m.name} 使用【${skill.name}】，但被 ${CHAR_DEFS[target.id].name} 閃避了！`, 'party');
     emitCombatEvent({ type: 'popup', targetKind, targetId: target.id, text: 'MISS', cls: 'buff' });
     m.skillCd = skill.cd * 1000;
@@ -448,9 +449,14 @@ export function performSkill(c, skill, idx, target) {
   // for offensive skills, the caster (or healed ally) for everything else -
   // not always on the caster like before.
   const lineScaleForThisSkill = skillLineScale(c, idx); // 1x unleveled, up to 2x maxed (see 經驗書)
-  if (skill.type === 'damage' || skill.type === 'counterSlash') {
+  if (skill.type === 'damage' || skill.type === 'counterSlash' || skill.type === 'openingStrike') {
     const counterReady = skill.type === 'counterSlash' && c.counterUntil > 0;
-    const mult = counterReady ? skill.counterMult : skill.mult;
+    const openingReady = skill.type === 'openingStrike' && c.openingUntil > 0;
+    const mult = openingReady ? skill.openingMult : counterReady ? skill.counterMult : skill.mult;
+    if (openingReady) {
+      c.openingUntil = 0;
+      emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: '抓到空隙！', cls: 'buff' });
+    }
     if (counterReady) c.counterUntil = 0;
     const slashBoost = skill.slash && c.slashBoostUntil > 0 ? 1 + c.slashBoostPct : 1;
     if (skill.slash) { c.slashBoostUntil = 0; c.slashBoostPct = 0; }
@@ -462,6 +468,12 @@ export function performSkill(c, skill, idx, target) {
     emitCombatEvent({ type: 'popup', targetKind: 'monster', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
     emitCombatEvent({ type: 'flash', targetKind: 'monster', targetId: target.id });
     applyRuinsLordReflection(target, c, dmg);
+  } else if (skill.type === 'evasionSelf') {
+    c.evasionChance = Math.min(.75, skill.chance * lineScaleForThisSkill);
+    c.evasionUntil = skill.duration * 1000;
+    log(`${name} 使用【${skill.name}】，準備閃身躲避`, 'party');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: '閃避提升', cls: 'buff' });
   } else if (skill.type === 'guardSelf') {
     grantGuard(c, skill.reduction * lineScaleForThisSkill, skill.duration);
     log(`${name} 使用【${skill.name}】，準備格擋下一擊`, 'party');
@@ -640,6 +652,7 @@ export function endRun() {
   clearGooArena();
   gameState.roster.forEach(c => {
     clearGuardState(c);
+    clearSurvivalState(c);
     c.curHp = c.maxHp; // resting before the next expedition - both paths heal
     c.alive = true;
     c.skillCds = [0, 0, 0];
@@ -695,6 +708,15 @@ export function useCharacterAction(characterId) {
     log(`${def.name} 發動【${action.name}】！`, 'party');
     emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: characterId, text: 'RANDOM', cls: 'buff' });
     performSkill(c, skill, skillIndex, target);
+  } else if (action.type === 'healAndResolve') {
+    const scale = lineScale(c, 'action');
+    const heal = Math.min(c.maxHp - c.curHp, Math.round(c.maxHp * action.pct * scale));
+    c.curHp += heal;
+    c.resolveReduction = Math.min(.6, action.reduction * scale);
+    c.resolveUntil = action.duration * 1000;
+    log(`${def.name} 發動【${action.name}】，恢復 ${heal} 生命並暫時減傷`, 'party');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill: action });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: '+' + heal, cls: 'heal' });
   } else if (action.type === 'guardAndSlash') {
     const scale = lineScale(c, 'action');
     grantGuard(c, action.reduction * scale, action.duration);
@@ -759,6 +781,7 @@ export function tickCharacters(alive) {
   alive.forEach(c => {
     if (!c.alive) return;
     tickGuardState(c, MASTER_TICK_MS);
+    tickSurvivalState(c, MASTER_TICK_MS);
     const skills = CHAR_DEFS[c.id].skills;
     c.skillCds = c.skillCds.map(cd => Math.max(0, cd - MASTER_TICK_MS));
     c.manualActionCd = Math.max(0, c.manualActionCd - MASTER_TICK_MS);
@@ -809,6 +832,8 @@ export function tickCharacters(alive) {
     }
     const counterIdx = skills.findIndex((skill, i) => skill.type === 'counterSlash' && c.counterUntil > 0 && c.skillCds[i] <= 0);
     if (counterIdx >= 0) usedIdx = counterIdx;
+    const openingIdx = skills.findIndex((skill, i) => skill.type === 'openingStrike' && c.openingUntil > 0 && c.skillCds[i] <= 0);
+    if (openingIdx >= 0) usedIdx = openingIdx;
     if (usedIdx >= 0) {
       performSkill(c, skills[usedIdx], usedIdx, target);
     } else {
@@ -864,8 +889,8 @@ export function tickMonsters() {
     if (useSkill && performMonsterSkill(m)) return;
 
     const target = stillAlive[Math.floor(Math.random() * stillAlive.length)];
-    if (target.dodgeUntil > 0) {
-      log(`${m.name} 攻擊 ${CHAR_DEFS[target.id].name}，但被隱身閃避了！`, 'party');
+    if (tryEvade(target)) {
+      log(`${m.name} 攻擊 ${CHAR_DEFS[target.id].name}，但被閃避了！`, 'party');
       emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: target.id, text: 'MISS', cls: 'buff' });
       return;
     }

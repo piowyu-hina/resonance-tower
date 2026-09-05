@@ -225,13 +225,14 @@ export const CHAR_DEFS = {
     baseHp: 32, baseAtk: 7, baseDef: 1,
     atkInterval: 1800, // middle of the pack pace - generalist, not a speedster
     action: {
-      name: '臨機應變', icon: '≫', img: 'wuming_action', cooldown: 18,
-      type: 'randomSkill', desc: '隨機立即施放自身 3 個技能之一；被抽中的技能會正常進入冷卻。',
+      name: '我還能撐住', icon: '💚', img: 'wuming_action', cooldown: 18,
+      type: 'healAndResolve', pct: 0.15, reduction: 0.3, duration: 4,
+      desc: '恢復自身 15% 最大生命，4 秒內受到的敵方直接傷害減少 30%；不含反傷與事件傷害，不會復活或免死',
     },
     skills: [
-      { name: '重擊', icon: '💢', img: 'wuming_skill1', cd: 4,  type: 'damage',    mult: 2.3, desc: '造成 2.3 倍攻擊力傷害' },
-      { name: '小回復', icon: '💧', img: 'wuming_skill2', cd: 8,  type: 'healSelf', pct: 0.15, desc: '恢復自身 15% 最大生命值' },
-      { name: '加速', icon: '⏱️', img: 'wuming_skill3', cd: 10, type: 'hasteSelf', mult: 0.6, duration: 5, desc: '接下來 5 秒內攻速提升 40%' },
+      { name: '試探刺擊', icon: '🗡️', img: 'wuming_skill1', cd: 4, type: 'damage', mult: 2, desc: '向前刺擊，造成 2 倍攻擊力的單體傷害' },
+      { name: '穩住腳步', icon: '💨', img: 'wuming_skill2', cd: 8, type: 'evasionSelf', chance: 0.5, duration: 4, desc: '4 秒內有 50% 機率閃避敵方普攻與一般技能；成功後獲得 10 秒破綻就緒，不疊加。遺跡之主攻擊及首領場地機制不適用' },
+      { name: '抓到空隙了！', icon: '🗡️', img: 'wuming_skill3', cd: 10, type: 'openingStrike', mult: 2, openingMult: 3.2, desc: '造成 2 倍攻擊力傷害；消耗破綻就緒時提升為 3.2 倍，就緒且冷卻完成時優先施放' },
     ],
   },
   xiaochu: {
@@ -287,7 +288,7 @@ export const ROSTER_CHAR_IDS = Object.keys(CHAR_DEFS).filter(id => !CHAR_DEFS[id
 // unlock data stay on CHAR_DEFS.
 export const SKIN_DEFS = {
   wuming_default: { characterId: 'wuming', name: '原始外觀', portrait: 'wuming', fullArt: 'wuming_full' },
-  xiaochu_default: { characterId: 'xiaochu', name: '原始外觀', portrait: 'xiaochu_battle_chibi', battlePortrait: 'xiaochu_battle_chibi', fullArt: 'xiaochu_full_2' },
+  xiaochu_default: { characterId: 'xiaochu', name: '原始外觀', portrait: 'xiaochu', battlePortrait: 'xiaochu', fullArt: 'xiaochu_full' },
   fengzi_default: { characterId: 'fengzi', name: '原始外觀', portrait: 'fengzi', fullArt: 'fengzi_full' },
 };
 

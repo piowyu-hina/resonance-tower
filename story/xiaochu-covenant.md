@@ -17,7 +17,7 @@
 - 新增五段完整正文的唯一資料來源：[xiaochu-story.js](../prototype/js/xiaochu-story.js)。`speaker` 是發言者，`text` 是遊戲顯示原文；`thought` 標示心中的聲音。
 - 初遇維持 [xiaochu-first-encounter.md](xiaochu-first-encounter.md) 已確認文字。
 - 家中場景使用現有 `wuming_home.png`，探索使用現有森林背景。
-- 小初對話與契約成立使用 `xiaochu_full_2.png` 全身立繪；頭像與戰鬥使用 `xiaochu_battle_chibi.png` Q 版圖，兩種用途分開保留，沒有程式去背。
+- 小初對話與契約成立使用 `xiaochu_full.png` 全身立繪；頭像與戰鬥使用 `xiaochu.png` Q 版圖，兩種用途分開保留，沒有程式去背。
 
 ## Debug 與存檔
 

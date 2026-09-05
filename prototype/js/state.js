@@ -5,6 +5,7 @@ import {
 } from './constants.js';
 import { queueDialogue } from './story.js';
 import { clearGuardState } from './guard.js';
+import { clearSurvivalState } from './wuming-combat.js';
 import { render } from './ui-main.js';
 import { consumeInventoryItem } from './shop.js';
 
@@ -117,6 +118,7 @@ export function initGame() {
   gameState.roster = ROSTER_CHAR_IDS.map(id => {
     const c = { id, level: 1, xp: 0, alive: true, skillCds: [0, 0, 0], manualActionCd: 0, actionCountdown: 0, hasteMult: 1, hasteUntil: 0, dodgeUntil: 0, slowMult: 1, slowUntil: 0, sleepUntilAction: false, charmedUntilAction: false, loadout: { activeItemId: null }, lineLevels: { atk: 0, def: 0, speed: 0, skill0: 0, skill1: 0, skill2: 0, action: 0 } };
     clearGuardState(c);
+    clearSurvivalState(c);
     recomputeStats(c);
     c.curHp = c.maxHp;
     return c;
@@ -149,6 +151,9 @@ export function initGame() {
 // back to the emoji if the file is missing, same onerror pattern as
 // everywhere else.
 export const STATUS_DEFS = [
+  { id: 'evasion', icon: '💨', shortLabel: '閃', label: '靈巧閃避', tone: 'good', desc: '有機率閃避敵方普攻與一般技能，成功後破綻就緒；不適用遺跡之主與場地機制', isActive: c => c.evasionUntil > 0, remaining: c => c.evasionUntil },
+  { id: 'opening', icon: '🗡️', shortLabel: '隙', label: '破綻就緒', tone: 'good', desc: '下一次「抓到空隙了！」傷害提高；使用後消耗，不疊加', isActive: c => c.openingUntil > 0, remaining: c => c.openingUntil },
+  { id: 'resolve', icon: '💚', shortLabel: '撐', label: '撐住', tone: 'good', desc: '暫時降低敵方直接傷害；不含反傷與事件傷害，不會免死', isActive: c => c.resolveUntil > 0, remaining: c => c.resolveUntil },
   { id: 'guard', icon: '🛡️', img: 'def_up', label: '舉盾', tone: 'good', desc: '下一次敵方直接傷害降低，成功格擋後反擊就緒；反傷與事件傷害不觸發', isActive: c => c.guardUntil > 0, remaining: c => c.guardUntil },
   { id: 'counterReady', icon: '⚔️', shortLabel: '反', label: '反擊就緒', tone: 'good', desc: '下一次「換我了！」獲得強化，使用後消耗；不疊加次數', isActive: c => c.counterUntil > 0, remaining: c => c.counterUntil },
   { id: 'slashReady', icon: '🔥', shortLabel: '斬', label: '斬擊強化', tone: 'good', desc: '下一次踏步斬或換我了！傷害提升，普通攻擊不消耗', isActive: c => c.slashBoostUntil > 0, remaining: c => c.slashBoostUntil },
@@ -424,10 +429,7 @@ export function speedLineIntervalMult(c) {
 }
 
 // same halving treatment for 專屬操作's own cooldown, via its 'action' line.
-// Applies regardless of what the action's type does (currently only
-// randomSkill exists, which has no magnitude of its own to scale - its
-// picked skill's damage/heal/etc is already covered by that skill's own
-// line), so "cast it more often" is the one upgrade that always applies.
+// Applies to every action type; each action handles its own magnitude scaling.
 export function actionLineCooldownMult(c) { return 1 - 0.5 * (lineLevel(c, 'action') / STAT_LINE_MAX); }
 
 // Shared by combat scheduling and its UI: never calculate bars from base
