@@ -1246,6 +1246,7 @@ async function testDesktopHome(browser) {
       (await import('./js/ui-main.js')).render();
     });
     await page.waitForTimeout(650);
+    assert.equal(await page.locator('#homeView .homeTopbar .prepHeading').isVisible(), false, 'room scene needs no floating title');
     for (const id of ['homeGrowthBtn', 'travelJournalBtn', 'contractFacilityBtn']) {
       const target = page.locator(`#${id}`);
       assert.equal(await target.isVisible(), true);

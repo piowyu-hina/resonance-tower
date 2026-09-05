@@ -2,6 +2,8 @@
 
 ## 2026-09-06 cultivation update (current)
 
+The desktop room omits the floating top-left "家" title; the door return and all facility hotspots remain visible and interactive.
+
 The user replaced wuming_home.png with a seated Wuming and a complete right-hand door. The growth hotspot now covers Wuming, the village return covers the door, and the journal hotspot aligns with the new table book. The original button IDs, story locks and guide targets remain intact. The new background is user-provided; no art was generated or edited in this implementation.
 
 Desktop cultivation uses home-growth.css: warm brown/gold full-art roster, larger typography and icons, and a two-column detail surface with uncropped full art on the left and existing upgrade controls on the right. The art stays visible while long details scroll. No bottom fade. Home-only classes keep expedition details independent. Full-art paths follow equipped skins; skill mechanics, costs, repeat-upgrade handling, locks and plot are unchanged. Asset and entry stylesheet URLs are versioned for the new image/layout.
