@@ -102,7 +102,7 @@ export function initDebugTools() {
     openContractPanel();
   }
   if (requestedView === 'dialogue' || requestedView === 'dialogue-next') {
-    queueDialogue('xiaochu_first_possession');
+    queueDialogue('xiaochu_encounter');
     if (requestedView === 'dialogue-next') {
       setTimeout(() => document.getElementById('dialogueOverlay').click(), 420);
     }
@@ -164,13 +164,15 @@ export function runDebugAction(action) {
     showBossIntro(() => {});
   } else if (action === 'journal-preview') {
     openTravelJournal({ preview: true });
+  } else if (action === 'xiaochu-preview') {
+    queueDialogue('xiaochu_encounter');
   } else if (action === 'xiaochu-story') {
     setChapter1State(CHAPTER1_STATES.COMPLETE);
     closeOtherOverlays(null);
     gameState.activeOverlay = null;
     gameState.unlockedChars.delete('xiaochu');
     clearResonanceState('xiaochu');
-    gameState.slimeKillCount = 49;
+    gameState.agentKillCount = 49;
     overlayUiState.prepLocation = 'expedition';
     setPhase(PHASES.COMBAT, { force: true });
     gameState.partyLocked = true;

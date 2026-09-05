@@ -37,10 +37,8 @@ export function buildUI() {
       overlayUiState.prepLocation = 'home';
       overlayUiState.homeMode = 'menu';
       render();
-      queueDialogue('xiaochu_home_search', () => {
-        setResonanceState('xiaochu', RESONANCE_STATES.BOOK_PENDING);
-        render();
-      });
+      setResonanceState('xiaochu', RESONANCE_STATES.FOLLOWING, { force: true });
+      render();
       return;
     }
     if (contractStoryLocked()) return;

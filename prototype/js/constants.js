@@ -240,7 +240,7 @@ export const CHAR_DEFS = {
     // 達到隱藏條件後直接播放契約短篇，對話結束即締約解鎖。
     unlock: {
       type: 'resonanceContract',
-      trigger: { type: 'killCount', monster: 'slime', count: 50 },
+      trigger: { type: 'agentKillCount', count: 50 },
       encounterDialogue: 'xiaochu_encounter',
     },
     baseHp: 40, baseAtk: 6, baseDef: 3,

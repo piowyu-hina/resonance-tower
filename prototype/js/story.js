@@ -113,114 +113,100 @@ export const DIALOGUE_DEFS = {
     { speaker: 'narrator', text: '他把手記放在桌上，拿起出門用的劍。' },
   ],
   xiaochu_encounter: [
-    { speaker: 'xiaochu_orb', text: '哇，好厲害！' },
-    { speaker: 'wuming', text: '誰、誰在說話？' },
-    { speaker: 'xiaochu_orb', text: '是我啦！' },
-    { speaker: 'wuming', text: '靈魂球在說話！' },
-    { speaker: 'xiaochu_orb', text: '什麼靈魂球？我是小初啦！' },
-    { speaker: 'wuming', text: '那麼...小初小姐？' },
-    { speaker: 'xiaochu_orb', text: '嗯！' },
-    { speaker: 'wuming', text: '妳怎麼會出現在這裡？' },
-    { speaker: 'xiaochu_orb', text: '不知道！' },
-    { speaker: 'xiaochu_orb', text: '不過，看你打怪好有趣！我可以跟著你嗎？' },
-    { speaker: 'wuming', text: '嗯...好啊。' },
-    { speaker: 'xiaochu_orb', text: '太好了！那你繼續吧，我還想看！' },
-  ],
-  xiaochu_village: [
-    { speaker: 'xiaochu_orb', text: '哇，好漂亮的村莊！那邊還有商店耶！' },
-    { speaker: 'narrator', text: '小初興奮地飛到商店前。' },
-    { speaker: 'xiaochu_orb', text: '哈囉！' },
-    { speaker: 'xiaochu_orb', text: '我要這個！' },
-    { speaker: 'narrator', text: '商人沒有任何反應。' },
-    { speaker: 'xiaochu_orb', text: '...他聽不見我嗎？' },
-    { speaker: 'wuming', text: '看來...他好像也看不到妳。' },
-    { speaker: 'xiaochu_orb', text: '原來...除了你，這裡沒有人聽得見我啊。' },
-    { speaker: 'wuming', text: '對了，我們先回家吧。' },
-    { speaker: 'wuming', text: '我記得有一本書，好像提過這種情況。' },
-    { speaker: 'xiaochu_orb', text: '嗯...' },
-  ],
-  xiaochu_home_search: [
-    { speaker: 'wuming', text: '我記得...應該放在這裡才對。' },
-    { speaker: 'wuming', text: '找到了！' },
-  ],
-  xiaochu_after_book: [
-    { speaker: 'wuming', text: '這和我們的情況...好像有點像。' },
-    { speaker: 'xiaochu_orb', text: '...' },
-    { speaker: 'xiaochu_orb', text: '我不喜歡這個故事的結局。' },
-    { speaker: 'wuming', text: '嗯...' },
-    { speaker: 'xiaochu_orb', text: '不過...你說的「像」，是指你也會一個人對著空氣說話嗎？' },
-    { speaker: 'wuming', text: '...我是說，書裡那個會變成不同模樣的人。' },
-    { speaker: 'xiaochu_orb', text: '所以，只要念出書裡的話，我就可以使用你的身體嗎？' },
-    { speaker: 'wuming', text: '我不知道。' },
-    { speaker: 'wuming', text: '妳想試試看嗎？' },
-    { speaker: 'xiaochu_orb', text: '嗯！想要！' },
-    { speaker: 'xiaochu_orb', text: '不過...如果害你也被追殺，怎麼辦？' },
-    { speaker: 'wuming', text: '那就一起想辦法吧。' },
-    { speaker: 'wuming', text: '至少，我不想因為害怕，就假裝沒有聽見妳。' },
-    { speaker: 'xiaochu_orb', text: '那...嗯...跟我求婚吧！' },
-    { speaker: 'wuming', text: '不是求婚吧！' },
-  ],
-  xiaochu_oath: [
-    { speaker: 'wuming', text: '小初。' },
-    { speaker: 'xiaochu_orb', text: '嗯...' },
-    { speaker: 'wuming', text: '我在此立誓。' },
-    { speaker: 'wuming', text: '從今以後，無論生老病死，我都將與妳共同進退。' },
-    { speaker: 'wuming', text: '只要妳仍願意與我同行，我便不讓妳獨自走完這段路。' },
-    { speaker: 'xiaochu_orb', text: '那我也立誓！' },
-    { speaker: 'xiaochu_orb', text: '從今以後，不管發生什麼事，我都會和你共同進退。' },
-    { speaker: 'xiaochu_orb', text: '你願意把身體借給我的時候，我一定會好好珍惜；你不願意的時候，我絕不勉強！' },
-  ],
-  xiaochu_contract_prepare: [
-    { speaker: 'wuming', text: '那...我要開始囉。' },
-    { speaker: 'xiaochu_orb', text: '嗯...我準備好了！' },
-  ],
-  xiaochu_first_possession: [
-    { speaker: 'xiaochu', text: '哇！我有人類的模樣了！' },
-    { speaker: 'xiaochu', text: '而且...我好像變得跟你差不多大了！' },
-    { speaker: 'xiaochu', text: '這就是我的模樣嗎？好可愛！' },
-    { speaker: 'wuming', text: '哈哈哈...成功了呢。' },
-    { speaker: 'wuming', text: '不過，要怎麼把身體借給妳？' },
-    { speaker: 'narrator', text: '締結誓約後，小初腦中忽然浮現出某種方法。' },
-    { speaker: 'xiaochu', text: '奇怪...我好像知道該怎麼做。' },
-    { speaker: 'xiaochu', text: '我試試看！' },
-    { speaker: 'wuming', text: '等——' },
-    { speaker: 'xiaochu_kiss', text: '小初親吻了無名。光芒閃過，兩人的位置交換了。' },
-    { speaker: 'xiaochu', text: '哇！是盾牌！還有劍！' },
-    { speaker: 'xiaochu', text: '真的出現了！' },
-    { speaker: 'narrator', text: '小初興奮地揮動手中的劍。' },
-    { speaker: 'xiaochu', text: '我現在就想出去冒險！' },
-    { speaker: 'wuming', text: '等一下！我變成靈魂了！' },
-    { speaker: 'wuming', text: '要怎麼變回去？' },
-    { speaker: 'xiaochu', text: '嗯...跟我剛才一樣，不就好了嗎？' },
-    { speaker: 'wuming', text: '還、還要再親一次嗎...' },
-    { speaker: 'wuming', text: '我覺得好害羞...' },
-    { speaker: 'xiaochu', text: '這有什麼好害羞的？我們都結婚了。' },
-    { speaker: 'wuming', text: '才沒有結婚...' },
-    { speaker: 'xiaochu', text: '真是的，過來吧。' },
-    { speaker: 'xiaochu_kiss', text: '小初再次親吻無名。光芒散去後，兩人恢復了原本的狀態。' },
-    { speaker: 'wuming', text: '哇，變回來了！' },
-    { speaker: 'xiaochu', text: '是吧！' },
-    { speaker: 'xiaochu', text: '說好了喔！之後一定要讓我去冒險！' },
-    { speaker: 'wuming', text: '嗯。下一次，我們一起去吧。' },
+    {"speaker":"narrator","text":"無名清掉眼前最後一隻怪物，放下劍，喘了口氣。"},
+    {"speaker":"narrator","text":"草叢忽然晃動。一隻史萊姆從裡面跳了出來。"},
+    {"speaker":"xiaochu_voice","text":"右邊！牠要跳過去了！"},
+    {"speaker":"narrator","text":"無名下意識往旁邊閃。史萊姆擦過他的身側，落在地上。"},
+    {"speaker":"wuming","text":"誰……？"},
+    {"speaker":"xiaochu_voice","text":"先別看這邊！牠轉過來了！"},
+    {"speaker":"narrator","text":"史萊姆縮起身體。"},
+    {"speaker":"xiaochu_voice","text":"就是現在，揮劍！"},
+    {"speaker":"narrator","text":"無名揮下劍。史萊姆卻突然彈起，撞進他的懷裡。"},
+    {"speaker":"wuming","text":"嗚哇！"},
+    {"speaker":"narrator","text":"無名跌坐在地。史萊姆落下後，再次朝他跳來。"},
+    {"speaker":"narrator","text":"這次無名沒有急著揮劍。他側身躲過撞擊，趁史萊姆落地時補上一劍。"},
+    {"speaker":"narrator","text":"四周安靜下來。"},
+    {"speaker":"wuming","text":"……剛才是誰叫我揮劍的？"},
+    {"speaker":"xiaochu_voice","text":"……"},
+    {"speaker":"wuming","text":"我有聽到喔。"},
+    {"speaker":"xiaochu_voice","text":"你聽得到？"},
+    {"speaker":"narrator","text":"無名轉過頭。一名披著紅色斗篷的金髮少女站在樹旁，睜大眼睛望著他。"},
+    {"speaker":"wuming","text":"妳喊那麼大聲。"},
+    {"speaker":"xiaochu_unknown","text":"不是，我是說……"},
+    {"speaker":"narrator","text":"少女往前走了兩步。"},
+    {"speaker":"xiaochu_unknown","text":"你真的聽得到我？"},
+    {"speaker":"wuming","text":"……聽得到啊。"},
+    {"speaker":"xiaochu_unknown","text":"也看得到？"},
+    {"speaker":"wuming","text":"嗯。"},
+    {"speaker":"narrator","text":"少女張了張嘴，卻沒有立刻說話。"},
+    {"speaker":"wuming","text":"怎麼了？"},
+    {"speaker":"xiaochu_unknown","text":"沒、沒什麼！"},
+    {"speaker":"narrator","text":"她低頭看見無名仍坐在地上。"},
+    {"speaker":"xiaochu_unknown","text":"啊……你還好嗎？"},
+    {"speaker":"wuming","text":"剛才那一下有點痛。"},
+    {"speaker":"xiaochu_unknown","text":"對不起。"},
+    {"speaker":"wuming","text":"妳不是說那時候可以揮劍嗎？"},
+    {"speaker":"xiaochu_unknown","text":"我以為來得及……"},
+    {"speaker":"wuming","text":"牠縮起來的時候，通常還會再跳一次。"},
+    {"speaker":"xiaochu_unknown","text":"……原來是這樣。"},
+    {"speaker":"wuming","text":"妳以前打過史萊姆嗎？"},
+    {"speaker":"narrator","text":"少女移開視線。"},
+    {"speaker":"xiaochu_unknown","text":"沒有。"},
+    {"speaker":"wuming","text":"一次都沒有？"},
+    {"speaker":"xiaochu_unknown","text":"……一次都沒有。"},
+    {"speaker":"wuming","text":"那妳剛才怎麼喊得那麼有把握？"},
+    {"speaker":"xiaochu_unknown","text":"我有練過劍啊！只是……"},
+    {"speaker":"narrator","text":"她的聲音小了下去。"},
+    {"speaker":"xiaochu_unknown","text":"練習的時候，不會有東西突然撞過來。"},
+    {"speaker":"narrator","text":"無名扶著膝蓋站起身，拍掉衣服上的泥土。"},
+    {"speaker":"wuming","text":"不過，第一次有幫上忙。"},
+    {"speaker":"xiaochu_unknown","text":"第一次？"},
+    {"speaker":"wuming","text":"妳叫我閃開的時候。"},
+    {"speaker":"xiaochu_unknown","text":"……嗯。"},
+    {"speaker":"narrator","text":"少女終於露出一點笑容。"},
+    {"speaker":"xiaochu_unknown","text":"下次我會看準一點。"},
+    {"speaker":"wuming","text":"還有下次啊？"},
+    {"speaker":"xiaochu_unknown","text":"啊，不是！我是說，如果你不介意的話……"},
+    {"speaker":"narrator","text":"她看了看無名，又看向他手中的劍。"},
+    {"speaker":"xiaochu_unknown","text":"我可以跟著你嗎？"},
+    {"speaker":"wuming","text":"妳也要走這條路？"},
+    {"speaker":"xiaochu_unknown","text":"都可以。"},
+    {"speaker":"wuming","text":"都可以？"},
+    {"speaker":"xiaochu_unknown","text":"我只是……想找個人說說話。"},
+    {"speaker":"narrator","text":"無名看著她，想起女神說過的那些孩子。"},
+    {"speaker":"wuming","text":"……妳一直都在這裡嗎？"},
+    {"speaker":"xiaochu_unknown","text":"有一陣子了。"},
+    {"speaker":"wuming","text":"都沒有人看得到妳？"},
+    {"speaker":"narrator","text":"少女搖了搖頭。"},
+    {"speaker":"xiaochu_unknown","text":"你是第一個停下來回答我的人。"},
+    {"speaker":"narrator","text":"無名把劍收好。"},
+    {"speaker":"wuming","text":"那就一起走吧。"},
+    {"speaker":"xiaochu_unknown","text":"真的？"},
+    {"speaker":"wuming","text":"嗯。不過妳先不要叫我揮劍。"},
+    {"speaker":"xiaochu_unknown","text":"……知道了。"},
+    {"speaker":"narrator","text":"兩人走了幾步，少女忽然追到他身旁。"},
+    {"speaker":"xiaochu","text":"對了，我叫小初！"},
+    {"speaker":"wuming","text":"我叫無名。"},
+    {"speaker":"xiaochu","text":"無名……"},
+    {"speaker":"xiaochu","text":"剛才撞到的地方，真的沒事嗎？"},
+    {"speaker":"wuming","text":"妳現在才擔心啊？"},
+    {"speaker":"xiaochu","text":"我剛才也有擔心！"},
   ],
 };
 
 export const DIALOGUE_PRESENTATION = {
+  xiaochu_encounter: { backdrop: 'forest' },
   chapter1_goddess: {
     intro: 'heavenArrival',
     outro: 'heavenDeparture',
     backdrop: 'heaven',
   },
-  xiaochu_oath: {
-    outro: 'contractFormed',
-    partner: 'xiaochu',
-  },
 };
 
 export const STORY_SPEAKERS = {
   goddess: { name: '女神', art: 'assets/story/goddess.png', goddess: true },
-  xiaochu_orb: { name: '小初', art: 'assets/story/xiaochu_resonance_orb.png', orb: true },
-  xiaochu_kiss: { name: '', art: 'assets/story/xiaochu_kiss.png', scene: true },
+  xiaochu_voice: { name: '？？？', narration: true },
+  xiaochu_unknown: { name: '？？？', art: 'assets/characters/xiaochu_full.png' },
   narrator: { name: '', narration: true },
 };
 
@@ -280,6 +266,7 @@ export function startDialogue(scriptId, onDone) {
   const presentation = DIALOGUE_PRESENTATION[scriptId];
   const overlay = document.getElementById('dialogueOverlay');
   overlay.classList.toggle('heavenDialogue', presentation?.backdrop === 'heaven');
+  overlay.classList.toggle('forestDialogue', presentation?.backdrop === 'forest');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
   if (presentation && presentation.intro === 'soulResonance') startSoulResonance();
@@ -555,10 +542,8 @@ export function closeTravelJournal(finished = false) {
   overlay.setAttribute('aria-hidden', 'true');
   if (gameState.activeOverlay === 'journal') gameState.activeOverlay = null;
   if (!storyState.journalPreview && gameState.resonanceState.xiaochu === RESONANCE_STATES.BOOK_READING && finished) {
-    queueDialogue('xiaochu_after_book', () => {
-      setResonanceState('xiaochu', RESONANCE_STATES.OATH_READY);
-      render();
-    });
+    setResonanceState('xiaochu', RESONANCE_STATES.FOLLOWING, { force: true });
+    render();
   }
   if (!storyState.journalPreview && gameState.chapter1State === CHAPTER1_STATES.JOURNAL_READING && finished) {
     queueDialogue('chapter1_after_book', () => {
@@ -668,7 +653,7 @@ export function openContractPanel() {
 export function beginContractPreparation() {
   if (gameState.resonanceState.xiaochu === RESONANCE_STATES.CONTRACTED) return openContractPanel();
   if (gameState.resonanceState.xiaochu !== RESONANCE_STATES.OATH_READY) return;
-  queueDialogue('xiaochu_contract_prepare', openContractPanel);
+  // A new contract chapter has not been written; do not replay the retired script.
 }
 
 export function closeContractPanel() {
@@ -679,16 +664,8 @@ export function closeContractPanel() {
 }
 
 export function confirmXiaochuContract() {
-  if (gameState.resonanceState.xiaochu !== RESONANCE_STATES.OATH_READY) return;
+  // Retained UI scaffold only. No automatic contract after the new encounter.
   closeContractPanel();
-  setResonanceState('xiaochu', RESONANCE_STATES.CONTRACTING);
-  queueDialogue('xiaochu_oath', () => {
-    queueDialogue('xiaochu_first_possession', () => {
-      setResonanceState('xiaochu', RESONANCE_STATES.CONTRACTED);
-      unlockChar('xiaochu');
-      render();
-    });
-  });
 }
 
 export function advanceDialogue() {
@@ -751,6 +728,7 @@ export function closeDialogue() {
   document.getElementById('dialogueModal').classList.remove('presentationHidden');
   const overlay = document.getElementById('dialogueOverlay');
   overlay.classList.remove('heavenDialogue');
+  overlay.classList.remove('forestDialogue');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
   if (gameState.activeOverlay === 'dialogue') gameState.activeOverlay = null;
@@ -768,7 +746,7 @@ export function closeDialogue() {
 export function previewContract(characterId) {
   if (characterId !== 'xiaochu') return;
   if (gameState.activeOverlay === 'dialogue') closeDialogue();
-  queueDialogue('xiaochu_oath', () => queueDialogue('xiaochu_first_possession'));
+  queueDialogue('xiaochu_encounter');
 }
 
 export function runContractPreviewFromUrl() {

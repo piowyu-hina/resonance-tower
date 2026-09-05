@@ -497,6 +497,7 @@ export function onMonsterDefeated(m) {
   if (!m.alive) return;
   m.alive = false;
   m.hp = 0;
+  if (gameState.chapter1State === CHAPTER1_STATES.COMPLETE && !m.isSummoned) gameState.agentKillCount++;
   emitCombatEvent({ type: 'monsterDefeated', monsterId: m.id, maxHp: m.maxHp });
 
   const alive = activeAliveMembers();

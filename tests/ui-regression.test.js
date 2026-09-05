@@ -21,6 +21,11 @@ global.window = { location: { search: '' } };
 global.document = { getElementById: () => null, addEventListener: () => {}, dispatchEvent: () => {}, documentElement: {} };
 const { DIALOGUE_DEFS, JOURNAL_PAGES } = await import('../prototype/js/story.js');
 const lineCount = scriptId => DIALOGUE_DEFS[scriptId].length;
+const approvedEncounter = fs.readFileSync(path.resolve(__dirname, '../story/xiaochu-first-encounter.md'), 'utf8')
+  .split('## 劇情正文')[1].trim().split(/\r?\n/).filter(line => line.trim())
+  .map(line => line.startsWith('（') ? line.slice(1, -1) : line.replace(/^\*\*.+?：\*\*\s*/, ''));
+assert.deepEqual(DIALOGUE_DEFS.xiaochu_encounter.map(line => line.text), approvedEncounter);
+assert.deepEqual(Object.keys(DIALOGUE_DEFS).filter(id => id.startsWith('xiaochu_')), ['xiaochu_encounter']);
 
 // Same idea as lineCount above: count index.html's own <link rel="stylesheet">
 // tags instead of hardcoding how many exist, so adding a new split stylesheet
@@ -286,6 +291,11 @@ async function testBossTransition(browser) {
 
 async function testSameSpeakerDialogue(browser) {
   const page = await openView(browser, 'dialogue');
+  await page.evaluate(async () => {
+    const story = await import('./js/story.js');
+    story.storyState.dialogueLineIndex = story.DIALOGUE_DEFS.xiaochu_encounter.findIndex(line => line.speaker === 'xiaochu' && line.text === '無名……');
+    story.renderDialogueLine();
+  });
   await page.waitForTimeout(650);
   const before = await page.evaluate(() => {
     const image = document.getElementById('dialoguePortraitImg');
@@ -362,6 +372,16 @@ async function testXiaochuEncounterFlow(browser) {
     }
   };
 
+  await page.evaluate(() => document.querySelector('[data-debug-action="xiaochu-preview"]').click());
+  for (let index = 0; index < DIALOGUE_DEFS.xiaochu_encounter.length; index++) {
+    assert.equal(await page.textContent('#dialogueText'), DIALOGUE_DEFS.xiaochu_encounter[index].text);
+    const speaker = DIALOGUE_DEFS.xiaochu_encounter[index].speaker;
+    if (speaker.startsWith('xiaochu_')) assert.equal(await page.textContent('#dialogueSpeakerName'), '？？？');
+    if (speaker === 'xiaochu') assert.equal(await page.textContent('#dialogueSpeakerName'), '小初');
+    await advanceDialogue(1);
+  }
+  assert.equal(await xiaochuState(), undefined, 'preview must not grant progression');
+
   // Stage 1: jungle encounter (killCount trigger -> 'encountering' -> 'following').
   await page.evaluate(() => document.querySelector('[data-debug-action="xiaochu-story"]').click());
   await waitForOverlay('dialogue');
@@ -369,51 +389,14 @@ async function testXiaochuEncounterFlow(browser) {
   await advanceDialogue(lineCount('xiaochu_encounter'));
   assert.equal(await xiaochuState(), 'following');
 
-  // Stage 2: retreat -> village-return dialogue -> 'goHome'.
+  assert.equal(await isUnlocked(), false);
   await click('retreatBtn');
-  await waitForOverlay('dialogue');
-  assert.equal(await xiaochuState(), 'villageReturn');
-  await advanceDialogue(lineCount('xiaochu_village'));
-  assert.equal(await xiaochuState(), 'goHome');
-
-  // Stage 3: clicking home while 'goHome' plays the book-searching beat -> 'bookPending'.
+  assert.equal(await xiaochuState(), 'following');
+  assert.notEqual(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), 'dialogue');
   await click('homeLocationBtn');
-  await waitForOverlay('dialogue');
-  await advanceDialogue(lineCount('xiaochu_home_search'));
-  assert.equal(await xiaochuState(), 'bookPending');
-
-  // Stage 4: read the journal cover to cover -> 'bookReading' -> 'oathReady'.
-  // Each page turn disables #journalNextBtn for the ~1.1s leaf-turn animation
-  // (see story.js's advanceTravelJournal) before re-enabling it, so clicks
-  // must wait for that instead of firing back to back.
-  await click('travelJournalBtn');
-  assert.equal(await xiaochuState(), 'bookReading');
-  for (let i = 0; i < JOURNAL_PAGES.length; i++) {
-    await page.waitForFunction(() => !document.getElementById('journalNextBtn').disabled, null, { timeout: 3000 });
-    await click('journalNextBtn'); // last iteration lands on the final page and closes (finished)
-  }
-  await waitForOverlay('dialogue');
-  await advanceDialogue(lineCount('xiaochu_after_book'));
-  assert.equal(await xiaochuState(), 'oathReady');
-
-  // Stage 5: covenant ritual -> oath -> first possession -> 'contracted'.
-  await click('contractFacilityBtn');
-  await waitForOverlay('dialogue');
-  await advanceDialogue(lineCount('xiaochu_contract_prepare'));
-  await waitForOverlay('contract');
-  await click('xiaochuSoulBtn');
-  await click('contractConfirmBtn');
-  await waitForOverlay('dialogue');
-  assert.equal(await xiaochuState(), 'contracting');
-  await advanceDialogue(lineCount('xiaochu_oath')); // last line hands off to the contractFormed outro
-  await click('contractFormed');
-  await page.keyboard.press('Enter');
-  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialoguePhase), 'outro');
-  await page.waitForFunction(() => window.__debugHooks.storyState.dialogueScriptId === 'xiaochu_first_possession');
-  await advanceDialogue(lineCount('xiaochu_first_possession')); // includes both xiaochu_kiss lines
-
-  assert.equal(await xiaochuState(), 'contracted');
-  assert.equal(await isUnlocked(), true);
+  assert.equal(await xiaochuState(), 'following');
+  assert.notEqual(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), 'dialogue');
+  assert.equal(await isUnlocked(), false);
   assertNoRuntimeErrors(page, 'xiaochu encounter flow');
   await page.close();
 }

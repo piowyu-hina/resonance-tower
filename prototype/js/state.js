@@ -50,6 +50,7 @@ export const gameState = {
   runId: 0,
   chapter1State: 'forest',
   journalReading: { chapterId: 'shapeshifter', pages: {} },
+  agentKillCount: 0,
   expeditionMode: 'forest',
   ruinsKillCount: 0,
   partyLocked: false, // once true (first "開始出擊" of a run), party can't change until endRun()
@@ -119,6 +120,7 @@ export function initGame() {
   gameState.party = ['wuming'];
   gameState.floor = 1;
   gameState.chapter1State = CHAPTER1_STATES.FOREST;
+  gameState.agentKillCount = 0;
   gameState.journalReading = { chapterId: 'shapeshifter', pages: {} };
   gameState.expeditionMode = 'forest';
   gameState.ruinsKillCount = 0;
@@ -304,12 +306,14 @@ export function unlockReqText(id) {
 
 // --- 共鳴契約條件 helpers (see design.md「契約角色與解鎖」) ---
 export function conditionMet(cond) {
+  if (cond.type === 'agentKillCount') return gameState.agentKillCount >= cond.count;
   if (cond.type === 'killCount' && cond.monster === 'slime') return gameState.slimeKillCount >= cond.count;
   if (cond.type === 'potionCount') return gameState.potionUseCount >= cond.count;
   return false;
 }
 
 export function conditionProgressText(cond) {
+  if (cond.type === 'agentKillCount') return `成為代理人後擊殺 ${cond.count} 隻怪物（目前 ${Math.min(gameState.agentKillCount, cond.count)}/${cond.count}）`;
   if (cond.type === 'killCount') return `擊殺 ${cond.count} 隻史萊姆（目前 ${Math.min(gameState.slimeKillCount, cond.count)}/${cond.count}）`;
   if (cond.type === 'potionCount') return `累計使用 ${cond.count} 瓶藥水（目前 ${Math.min(gameState.potionUseCount, cond.count)}/${cond.count}）`;
   return '';
@@ -329,12 +333,7 @@ export function checkResonanceTriggers() {
 }
 
 export function startPendingVillageContracts() {
-  if (gameState.resonanceState.xiaochu !== RS.FOLLOWING) return;
-  setResonanceState('xiaochu', RS.VILLAGE_RETURN);
-  queueDialogue('xiaochu_village', () => {
-    setResonanceState('xiaochu', RS.GO_HOME);
-    render();
-  });
+  // The new encounter ends with companionship. Later chapters are not written yet.
 }
 
 export function contractStoryLocked() {

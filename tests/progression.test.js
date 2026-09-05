@@ -4,7 +4,7 @@ global.window = { location: { search: '' } };
 global.document = { getElementById: () => null, addEventListener: () => {}, dispatchEvent: () => {}, documentElement: {} };
 
 const { INVENTORY_SLOT_COUNT } = await import('../prototype/js/constants.js');
-const { gameState } = await import('../prototype/js/state.js');
+const { gameState, conditionMet, checkResonanceTriggers } = await import('../prototype/js/state.js');
 const { endRun } = await import('../prototype/js/combat.js');
 const { addInventoryItem } = await import('../prototype/js/shop.js');
 
@@ -24,3 +24,10 @@ assert.equal(Object.keys(gameState.runItemGains).length, 0);
 assert.equal(gameState.phase, 'prepFloor');
 
 console.log('progression.test.js: all assertions passed');
+gameState.slimeKillCount = 999;
+gameState.agentKillCount = 49;
+assert.equal(conditionMet({ type: 'agentKillCount', count: 50 }), false);
+gameState.agentKillCount = 50;
+assert.equal(conditionMet({ type: 'agentKillCount', count: 50 }), true);
+gameState.chapter1State = 'forest';
+assert.equal(checkResonanceTriggers(), false, 'old pre-agent kills never trigger the new encounter');

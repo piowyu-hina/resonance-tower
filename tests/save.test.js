@@ -41,6 +41,10 @@ assert.equal(normalized.equippedSkinByCharacter.xiaochu, 'xiaochu_default');
 
 assert.throws(() => normalizeSaveData({ version: 1 }), /不支援的存檔格式/);
 assert.deepEqual(normalized.journalReading, { chapterId: 'shapeshifter', pages: {} });
+assert.equal(normalized.agentKillCount, 0);
+const migrated = normalizeSaveData({ format: 'resonance-tower-save', version: 1, progression: { chapter1State: 'complete', agentKillCount: 23, resonanceState: { xiaochu: 'goHome' } } });
+assert.equal(migrated.agentKillCount, 23);
+assert.equal(migrated.resonanceState.xiaochu, 'following');
 const reading = progression => normalizeSaveData({ format: 'resonance-tower-save', version: 1, progression }).journalReading;
 assert.deepEqual(reading({ journalReading: { chapterId: 'shapeshifter', pages: { shapeshifter: 2 } } }), { chapterId: 'shapeshifter', pages: { shapeshifter: 2 } });
 assert.deepEqual(reading({ journalReading: { chapterId: 'unknown', pages: { shapeshifter: 999, unknown: 4 } } }), { chapterId: 'shapeshifter', pages: { shapeshifter: 3 } });

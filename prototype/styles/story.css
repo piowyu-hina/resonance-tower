@@ -15,6 +15,7 @@
   transition: opacity .18s ease-out, visibility 0s linear .2s;
 }
 #dialogueOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; cursor: pointer; transition-delay: 0s; }
+#dialogueOverlay.forestDialogue { background: linear-gradient(#07100d88, #07100ddd), url('../assets/backgrounds/slime_forest_battle.png') center / cover no-repeat; backdrop-filter: none; }
 #dialogueOverlay.heavenDialogue {
   background:
     linear-gradient(rgba(246,250,255,.13), rgba(255,249,235,.24)),
