@@ -1511,7 +1511,8 @@ async function testExpeditionDeparture(browser) {
     const entrance = await page.locator('#regionView').boundingBox();
     await page.locator('#forestRegionBtn b').click();
     const preparation = await page.locator('#expeditionView').boundingBox();
-    for (const key of ['x', 'y', 'width']) assert.ok(Math.abs(entrance[key] - preparation[key]) < 1, `background ${key} stays fixed on entering preparation`);
+    for (const key of ['x', 'y', 'width']) assert.ok(Math.abs(entrance[key] - preparation[key]) < 1, `scene frame ${key} stays aligned on entering preparation`);
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-staging\.png/, 'preparation uses its own background, not an enlarged entrance');
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       gameState.unlockedChars.add('xiaochu');
