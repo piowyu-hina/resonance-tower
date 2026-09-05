@@ -299,6 +299,10 @@ export function renderCharacterDetail(characterId) {
     profile.className = 'homeProfilePanel';
     profile.setAttribute('role', 'tabpanel');
     profile.setAttribute('aria-labelledby', 'homeTab-profile');
+    const introductionHeading = document.createElement('h3');
+    introductionHeading.className = 'homeProfileHeading';
+    introductionHeading.textContent = '角色介紹';
+    profile.appendChild(introductionHeading);
     for (const selector of ['.detailCharacterDescription', '.detailSectionHeading', '.skinPicker']) {
       profile.appendChild(content.querySelector(selector));
     }

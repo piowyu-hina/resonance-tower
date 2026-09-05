@@ -2,6 +2,8 @@
 
 ## 2026-09-06 cultivation update (current)
 
+Finishing adjustments: book counts align to the right of cultivation; the character page introduces its description with the heading "角色介紹". Existing tab behavior and upgrade placement are unchanged.
+
 Settled layout: character switching, identity/name, level and full art are grouped on the left. The right side starts with the fixed cultivation/character tabs. Book resources belong inside cultivation only; the character page groups introduction and skin thumbnails without the collection-count metadata. Portrait geometry stays unchanged across tabs, and the pinned upgrade workspace is retained. Unit and desktop home checks pass, including identity placement, resource visibility, keyboard tabs, equipping and short-window action visibility. No gameplay or user artwork changes.
 
 Latest layout: right-side tabs "培養 / 角色" replace the split introduction and appearance mode. Opening defaults to cultivation with the pinned upgrade workspace. The character tab contains introduction and skin selection, while the left full art stays visible and stationary. Equipping preserves the character tab; switching back retains the selected growth line. Tabs expose tablist/tab/tabpanel semantics, selected state and ArrowLeft/ArrowRight/Home/End navigation. Removed the previous appearance disclosure and its state/styles. Unit and home UI tests pass, including tab/equip round trips and pinned controls at 720/900px heights. This supersedes the previous profile iterations below.
