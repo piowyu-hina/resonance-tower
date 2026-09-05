@@ -271,8 +271,6 @@ export function renderExpeditionSelectedSummary() {
     return;
   }
   const def = CHAR_DEFS[character.id];
-  const hasPotion = gameState.inventory.some(entry => entry?.qty > 0 && ITEM_DEFS[entry.itemId]?.combatAction);
-  const hasCharm = Boolean(character.loadout.activeItemId) || gameState.inventory.some(entry => entry?.qty > 0 && ITEM_DEFS[entry.itemId]?.equipSlot === 'charm');
   const selectedIdentity = `
     <div class="expeditionSelectedIdentity${gameState.phase === PHASES.PREP_BOSS ? ' bossSelectedIdentity' : ''}">
       <img src="${characterPortraitPath(character.id)}" alt="${def.name}">
@@ -283,9 +281,8 @@ export function renderExpeditionSelectedSummary() {
     <div class="expeditionLoadoutBlock">
       <div class="expeditionStepLabel"><span>3</span>${t('loadout.equipment')}</div>
       <div class="expeditionLoadout">
-        <div${hasPotion ? '' : ' hidden'}><small>${t('loadout.potion')}</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
-        <div${hasCharm ? '' : ' hidden'}><small>${t('loadout.charm')}</small><div class="quickSlot activeQuickSlot"></div></div>
-        ${!hasPotion && !hasCharm ? `<p class="expeditionNoItems">${t('loadout.noItems')}</p>` : ''}
+        <div><small>${t(gameState.equippedCombatItemId ? 'loadout.potion' : 'loadout.noItems')}</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
+        <div><small>${t('loadout.charm')}</small><div class="quickSlot activeQuickSlot"></div></div>
       </div>
       <div class="expeditionTechniquePreview">
         ${[...def.skills, def.action].map(skill => `<span tabindex="0" role="img" aria-label="${skill.name}：${skill.desc}"><img src="assets/skills/${skill.img}.png" alt=""></span>`).join('')}

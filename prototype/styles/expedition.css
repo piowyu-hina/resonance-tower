@@ -1,10 +1,8 @@
 /* Desktop departure scene. Existing preparation controls remain the source of truth. */
 .expeditionHero { display: none; }
 .expeditionTechniquePreview { display: none; }
-.expeditionLoadout > div[hidden] { display: none !important; }
-.expeditionNoItems { margin: 0; padding: 16px 0; color: #d8c8ab; font-size: 16px; }
 @media (min-width: 960px) {
-  #app.expeditionSceneActive { position: relative; width: min(1600px, calc(100vw - 48px)); min-width: 900px; padding: 0; border: 1px solid #b99c6940; border-radius: 14px; background: #25231e; box-shadow: 0 24px 70px #0007; }
+  #app.expeditionSceneActive { position: relative; width: min(1600px, calc(100vw - 48px), calc((100dvh - 48px) * 1.7768)); min-width: 960px; padding: 0; border: 0; border-radius: 12px; background: #25231e; box-shadow: 0 24px 70px #0007; }
   .expeditionSceneActive #header { position: absolute; z-index: 5; inset: 0 0 auto; margin: 0; padding: 14px 28px; border: 0; background: linear-gradient(#171710b8, transparent); pointer-events: none; }
   .expeditionSceneActive #header button { pointer-events: auto; }
   .expeditionSceneActive .brandCopy b { color: #f5e7ca; font-size: 16px; }
@@ -78,5 +76,8 @@
   #expeditionView .expeditionTechniquePreview > span:last-child { margin-left: 8px; border-color: #e2c183a0; }
   #expeditionView .expeditionTechniquePreview img { width: 100%; height: 100%; object-fit: contain; }
   #expeditionView .expeditionTechniquePreview > span:is(:hover, :focus-visible) { outline: 2px solid #e5c68e; outline-offset: 3px; }
-  .expeditionSceneActive #expeditionView { background-size: 100% 100%, 100% 100%, contain; background-repeat: no-repeat; background-position: center; background-color: #1b211c; }
+  /* Same width and top anchor as the entrance: only the controls change. */
+  .expeditionSceneActive #expeditionView { background-size: 100% 100%, 100% 100%, 100% auto; background-repeat: no-repeat; background-position: center top; background-color: #1b211c; }
+  .expeditionSceneActive #expeditionView.surfaceEntering, .regionSceneActive #regionView.surfaceEntering { animation: none; }
+  #expeditionView .expeditionLoadout small { max-width: 6em; }
 }

@@ -1506,8 +1506,12 @@ async function testDesktopVillage(browser) {
 
 async function testExpeditionDeparture(browser) {
   for (const width of [1024, 1440]) {
-    const page = await openView(browser, 'expedition');
+    const page = await openView(browser, 'regions');
     await page.setViewportSize({ width, height: width === 1024 ? 720 : 1000 });
+    const entrance = await page.locator('#regionView').boundingBox();
+    await page.locator('#forestRegionBtn b').click();
+    const preparation = await page.locator('#expeditionView').boundingBox();
+    for (const key of ['x', 'y', 'width']) assert.ok(Math.abs(entrance[key] - preparation[key]) < 1, `background ${key} stays fixed on entering preparation`);
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       gameState.unlockedChars.add('xiaochu');
@@ -1527,9 +1531,9 @@ async function testExpeditionDeparture(browser) {
       gameState.roster.find(c => c.id === 'xiaochu').loadout.activeItemId = null;
       (await import('./js/ui-main.js')).render();
     });
-    assert.equal(await page.locator('.expeditionNoItems').textContent(), '不攜帶道具');
-    assert.equal(await page.locator('#expeditionSelectedSummary .combatItemQuickSlot').isVisible(), false);
-    assert.equal(await page.locator('#expeditionSelectedSummary .activeQuickSlot').isVisible(), false);
+    assert.equal(await page.locator('.expeditionLoadout > div').first().locator('small').textContent(), '不攜帶道具');
+    assert.equal(await page.locator('#expeditionSelectedSummary .combatItemQuickSlot').isVisible(), true);
+    assert.equal(await page.locator('#expeditionSelectedSummary .activeQuickSlot').isVisible(), true);
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       const { ITEM_DEFS } = await import('./js/constants.js');
