@@ -22,12 +22,34 @@ const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const report = [];
 try {
   for (const width of (process.argv.includes('--sheets-only') ? [] : [1440, 390])) {
-    for (const view of (process.argv.includes('--xiaochu-story-only') ? ['followup-home', 'followup-talk', 'followup-reveal'] : process.argv.includes('--xiaochu-only') ? ['xiaochu-unknown', 'xiaochu-named'] : process.argv.includes('--slime-only') ? ['slime-enter', 'slime-crouch', 'slime-wuming', 'slime-hit', 'slime-strike'] : process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
+    for (const view of (process.argv.includes('--skills-only') ? ['audit-guard', 'audit-counter', 'audit-action', 'audit-readiness'] : process.argv.includes('--xiaochu-story-only') ? ['followup-home', 'followup-talk', 'followup-reveal'] : process.argv.includes('--xiaochu-only') ? ['xiaochu-unknown', 'xiaochu-named'] : process.argv.includes('--slime-only') ? ['slime-enter', 'slime-crouch', 'slime-wuming', 'slime-hit', 'slime-strike'] : process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
       const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1000 } });
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
       await page.goto(`http://127.0.0.1:${server.address().port}/?debug&view=${view === 'detail' ? 'growth' : view}`, { waitUntil: 'load' });
       if (view === 'detail') await page.locator('.homeGrowthCard').first().click();
+      if (view.startsWith('audit-')) {
+        await page.evaluate(async view => {
+          const { gameState } = await import('./js/state.js');
+          gameState.unlockedChars.add('xiaochu');
+          gameState.party = ['xiaochu'];
+          gameState.inventory = [{ itemId: 'skillBook', qty: 20 }];
+          const c = gameState.roster.find(c => c.id === 'xiaochu');
+          if (view === 'audit-readiness') {
+            (await import('./js/debug.js')).debugStartBossFight();
+            c.actionCountdown = 99999;
+            c.counterUntil = 10000;
+            c.slashBoostUntil = 8000;
+            c.guardUntil = 8000;
+            gameState.monsters.forEach(m => { m.actionCountdown = 99999; });
+            (await import('./js/ui-main.js')).render();
+          } else {
+            (await import('./js/ui-character.js')).setCharacterDetailOpen(true, 'xiaochu');
+            document.querySelector(`.growthCard[data-line="${{ 'audit-guard': 'skill1', 'audit-counter': 'skill2', 'audit-action': 'action' }[view]}"]`).click();
+            document.querySelector('.growthInspector').scrollIntoView({ block: 'end' });
+          }
+        }, view);
+      }
       if (view.startsWith('followup-')) {
         await page.evaluate(async view => {
           document.querySelector('[data-debug-action="xiaochu-ready"]').click();

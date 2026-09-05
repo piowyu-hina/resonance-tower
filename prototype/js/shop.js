@@ -157,7 +157,7 @@ export function applyCombatItemEffect(effect, target) {
 export function canUseCombatItem(itemId) {
   const item = ITEM_DEFS[itemId];
   if (gameState.equippedCombatItemId !== itemId) return false;
-  if (gameState.phase !== PHASES.COMBAT || !item || !item.combatAction) return false;
+  if (gameState.phase !== PHASES.COMBAT || ['dialogue', 'event'].includes(gameState.activeOverlay) || !item || !item.combatAction) return false;
   if ((gameState.combatItemCooldowns[itemId] || 0) > 0) return false;
   if (inventoryItemCount(itemId) <= 0) return false;
   return combatItemTargets(item.combatAction).length > 0;

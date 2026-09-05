@@ -1,5 +1,5 @@
 import { CHAR_DEFS, localizedItemDef, ITEM_DEFS } from './constants.js';
-import { gameState, calcDef, xpToNext, PHASES, isPrepPhase, characterPortraitPath } from './state.js';
+import { gameState, calcDef, xpToNext, PHASES, isPrepPhase, characterPortraitPath, characterActionCooldown } from './state.js';
 import { t, formatLocaleNumber } from './i18n.js';
 import { closeOtherOverlays } from './ui-overlays.js';
 import { render } from './ui-main.js';
@@ -26,16 +26,17 @@ export function skillTooltipHTML(skill) {
   `;
 }
 
-export function characterActionTooltipHTML(action) {
+export function characterActionTooltipHTML(action, character = null) {
+  const cooldown = character ? characterActionCooldown(character) / 1000 : action.cooldown;
   return `
     <div class="ttName">${action.name}</div>
-    <div class="ttStat">手動操作・冷卻 ${action.cooldown} 秒</div>
-    <div class="ttStat">${action.desc}</div>
+    <div class="ttStat">手動操作・冷卻 ${cooldown.toFixed(1)} 秒</div>
+    <div class="ttStat">基礎效果：${action.desc}</div>
   `;
 }
 
-export function attachCharacterActionTooltip(el, action) {
-  el.addEventListener('mouseenter', e => showTooltipContent(characterActionTooltipHTML(action), e));
+export function attachCharacterActionTooltip(el, action, character = null) {
+  el.addEventListener('mouseenter', e => showTooltipContent(characterActionTooltipHTML(action, character), e));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }
@@ -111,11 +112,23 @@ export function attachSkillTooltip(el, skill) {
 }
 
 export function attachStatusTooltip(el, status, character) {
-  el.addEventListener('mouseenter', e => {
+  const show = e => {
     const missingImage = el.querySelector('.statusIcon').classList.contains('missing');
     const remainingMs = status.remaining ? status.remaining(character) : 0;
     showTooltipContent(statusTooltipHTML(status, missingImage, remainingMs), e);
+  };
+  const showAtBadge = () => {
+    const rect = el.getBoundingClientRect();
+    show({ clientX: rect.left, clientY: rect.top });
+  };
+  el.addEventListener('mouseenter', show);
+  el.addEventListener('focus', showAtBadge);
+  el.addEventListener('click', showAtBadge);
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showAtBadge(); }
+    if (e.key === 'Escape') { e.stopPropagation(); hideTooltip(); }
   });
+  el.addEventListener('blur', hideTooltip);
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }

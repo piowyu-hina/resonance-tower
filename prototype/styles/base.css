@@ -494,6 +494,10 @@ img {
 .statusBadge .statusName { display: none; }
 .statusBadge .statusIcon { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
 .statusBadge .statusIcon img { width: 100%; height: 100%; object-fit: contain; }
+.statusBadge .statusGlyph { font-size: 13px; font-weight: 700; color: #ffe0a0; }
+.statusBadge[data-status-id="counterReady"] { border-color: #b69752; background: #332d21; }
+.statusBadge[data-status-id="slashReady"] { border-color: #b76d50; background: #352420; }
+.statusBadge:focus-visible { outline: 2px solid #ffe0a0; outline-offset: 2px; }
 .statusBadge .statusIcon.missing { border: 1px dashed #a96565; border-radius: 3px; background: rgba(120,40,40,0.12); }
 .statusBadge .statusTime { display: none; }
 .statusMore {

@@ -860,6 +860,81 @@ async function testEventInteractions(browser) {
   await waitForEventToFinish(page, 'aqueduct puzzle');
 }
 
+async function testCombatAndGrowthAudit(browser) {
+  for (const width of [1440, 390]) {
+    const page = await openView(browser, 'village');
+    await page.setViewportSize({ width, height: 1000 });
+    const bars = await page.evaluate(async () => {
+      const { gameState, characterActionInterval } = await import('./js/state.js');
+      const combat = await import('./js/combat.js');
+      gameState.party = ['xiaochu'];
+      gameState.unlockedChars.add('xiaochu');
+      (await import('./js/debug.js')).debugStartBossFight();
+      const c = gameState.roster.find(c => c.id === 'xiaochu');
+      c.lineLevels.speed = 100;
+      c.lineLevels.action = 100;
+      c.hasteMult = .5;
+      c.hasteUntil = 8000;
+      c.actionCycleMs = characterActionInterval(c);
+      c.actionCountdown = c.actionCycleMs / 2;
+      c.manualActionCd = 0;
+      combat.useCharacterAction(c.id);
+      (await import('./js/ui-main.js')).render();
+      const refs = gameState.charEls.xiaochu;
+      const result = { cooldown: c.manualActionCd, fill: refs.manualActionButton.querySelector('.itemCdOverlay').style.height,
+        actionFill: refs.atkBar.style.width };
+      gameState.activeOverlay = 'dialogue';
+      c.manualActionCd = 0;
+      result.blockedDuringDialogue = !combat.canUseCharacterAction(c.id);
+      gameState.activeOverlay = null;
+      gameState.party = ['wuming'];
+      result.blockedOffParty = !combat.canUseCharacterAction(c.id);
+      gameState.party = ['xiaochu'];
+      c.counterUntil = 10000;
+      c.sleepUntilAction = true;
+      c.charmedUntilAction = true;
+      (await import('./js/ui-main.js')).render();
+      result.statuses = [...document.querySelectorAll('#partySide .statusBadge')].map(el => el.dataset.statusId);
+      gameState.phase = 'prepFloor';
+      gameState.partyLocked = false;
+      gameState.inventory = [{ itemId: 'skillBook', qty: 20 }];
+      (await import('./js/ui-character.js')).setCharacterDetailOpen(true, c.id);
+      return result;
+    });
+    assert.equal(bars.cooldown, 8000);
+    assert.equal(bars.fill, '100%');
+    assert.equal(bars.actionFill, '50%');
+    assert.equal(bars.blockedDuringDialogue, true);
+    assert.equal(bars.blockedOffParty, true);
+    assert.deepEqual(bars.statuses.slice(0, 2), ['sleep', 'charm']);
+
+    await page.click('.growthCard[data-line="skill1"]');
+    assert.match(await page.locator('.growthSkillDescription').textContent(), /成功格擋/);
+    const values = await page.locator('.growthCompare strong').allTextContents();
+    assert.notEqual(values[0], values[1], 'adjacent guard levels display their fractional difference');
+    const before = await page.evaluate(async () => (await import('./js/state.js')).gameState.roster.find(c => c.id === 'xiaochu').lineLevels.skill1);
+    await page.locator('#growthUpgradeBtn').focus();
+    await page.keyboard.press('Enter');
+    const after = await page.evaluate(async () => (await import('./js/state.js')).gameState.roster.find(c => c.id === 'xiaochu').lineLevels.skill1);
+    assert.equal(after, before + 1, 'keyboard upgrade works once');
+    assert.equal(await page.locator('#growthUpgradeBtn').evaluate(el => el === document.activeElement), true, 'keyboard focus survives upgrade rerender');
+    // Close the panel while holding: no background resource consumption.
+    await page.locator('#growthUpgradeBtn').scrollIntoViewIfNeeded();
+    const closeButton = await page.locator('#characterDetailCloseBtn').boundingBox();
+    assert.ok(closeButton.y >= 0 && closeButton.y + closeButton.height <= 1000, 'close button remains on screen after scrolling to upgrades');
+    const button = await page.locator('#growthUpgradeBtn').boundingBox();
+    await page.mouse.move(button.x + button.width / 2, button.y + button.height / 2);
+    await page.mouse.down();
+    await page.evaluate(async () => (await import('./js/ui-character.js')).setCharacterDetailOpen(false));
+    await page.mouse.up();
+    const stoppedAt = await page.evaluate(async () => (await import('./js/state.js')).gameState.roster.find(c => c.id === 'xiaochu').lineLevels.skill1);
+    await page.waitForTimeout(250);
+    assert.equal(await page.evaluate(async () => (await import('./js/state.js')).gameState.roster.find(c => c.id === 'xiaochu').lineLevels.skill1), stoppedAt);
+    assertNoRuntimeErrors(page, 'combat and growth audit');
+    await page.close();
+  }
+}
+
 async function testSoftBattleArt(browser) {
   for (const width of [1440, 390]) {
     const page = await openView(browser, 'village');
@@ -932,6 +1007,7 @@ async function testSoftBattleArt(browser) {
       console.log('ui-regression.test.js: Xiaochu encounter-to-covenant assertions passed');
       return;
     }
+    await testCombatAndGrowthAudit(browser);
     await testSoftBattleArt(browser);
     if (process.argv.includes('--battle-art-only')) {
       console.log('ui-regression.test.js: soft battle art assertions passed');

@@ -219,7 +219,7 @@
 }
 #characterDetailOverlay.open #characterDetailModal { opacity: 1; transform: translateY(0) scale(1); }
 #characterDetailModal img { -webkit-user-drag: none; user-drag: none; }
-#characterDetailCloseBtn { position: absolute; z-index: 2; top: 8px; right: 8px; width: 30px; height: 30px; border: 1px solid #666; border-radius: 5px; background: #383d44; color: #ddd; font-size: 20px; cursor: pointer; }
+#characterDetailCloseBtn { position: sticky; z-index: 2; top: 0; display: block; margin: -8px -8px -28px auto; width: 36px; height: 36px; border: 1px solid #666; border-radius: 5px; background: #383d44; color: #ddd; font-size: 20px; cursor: pointer; }
 #characterDetailContent { display: grid; grid-template-columns: minmax(270px, 0.84fr) minmax(430px, 1.5fr); gap: 22px; }
 .detailPortraitColumn { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .detailArtFrame { position: relative; isolation: isolate; min-height: 510px; display: flex; align-items: center; justify-content: center; border: 1px solid color-mix(in srgb, var(--rarity-color, #59616c) 62%, #30343a); border-radius: 14px; background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--rarity-color, #59616c) 22%, #303640), #1b1e23 64%); overflow: hidden; box-shadow: inset 0 0 52px rgba(0,0,0,.3), 0 12px 30px rgba(0,0,0,.22); }
@@ -273,6 +273,8 @@
 .growthInspectorHead span { grid-column: 1 / -1; color: #8e96a0; font-size: 11px; }
 .growthInspectorHead h3 { margin: 0; color: #fff; font-size: 17px; }
 .growthInspectorHead b { color: #d7ae4d; font-size: 13px; }
+.growthSkillDescription { margin: 12px 0; color: #ced3da; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+.growthSkillDescription > span { display: block; margin-bottom: 3px; color: #a9b2be; font-size: 12px; }
 .growthCompare { display: grid; grid-template-columns: 1fr 22px 1fr; align-items: center; gap: 5px; margin: 10px 0; }
 .growthCompare > div { padding: 8px 9px; border-radius: 6px; background: #16191d; }
 .growthCompare small { display: block; margin-bottom: 3px; color: #7f8791; font-size: 10px; }

@@ -199,6 +199,7 @@ export function runDebugAction(action) {
     gameState.party.forEach(id => {
       const character = gameState.roster.find(member => member.id === id);
       character.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(character);
+      character.actionCycleMs = character.actionCountdown;
     });
     log('開發工具：下一波怪物清空後將觸發小初相遇', 'warn');
   } else if (action === 'ruins-event') {
@@ -249,6 +250,7 @@ export function debugOpenRuinsEvent() {
   gameState.party.forEach(id => {
     const character = gameState.roster.find(member => member.id === id);
     character.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(character);
+    character.actionCycleMs = character.actionCountdown;
   });
   flushCombat();
   startEventById('ruins-entrance', resultAction => {
@@ -292,6 +294,7 @@ export function debugStartBossFight() {
   gameState.party.forEach(id => {
     const character = gameState.roster.find(member => member.id === id);
     character.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(character);
+    character.actionCycleMs = character.actionCountdown;
   });
   log('開發工具：直接進入史萊姆王戰', 'warn');
 }

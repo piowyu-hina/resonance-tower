@@ -9,7 +9,7 @@ import {
 } from './constants.js';
 import {
   gameState, PHASES, STATUS_DEFS, setPhase, log, aliveMonsters, activeAliveMembers, calcDef, calcAtk,
-  rollDamage, skillLineScale, lineScale, speedLineIntervalMult, actionLineCooldownMult, addXp,
+  rollDamage, skillLineScale, lineScale, characterActionInterval, characterActionCooldown, addXp,
   goldForKill, xpPoolForFloor, checkThresholdUnlocks, checkResonanceTriggers, isCharUnlocked,
   startPendingVillageContracts,
   CHAPTER1_STATES, setChapter1State,
@@ -645,6 +645,7 @@ export function endRun() {
     c.skillCds = [0, 0, 0];
     c.manualActionCd = 0;
     c.actionCountdown = 0;
+    c.actionCycleMs = 0;
     c.hasteMult = 1;
     c.hasteUntil = 0;
     c.dodgeUntil = 0;
@@ -673,7 +674,7 @@ export function grantHaste(target, mult, durationSeconds) {
 export function canUseCharacterAction(characterId) {
   const c = gameState.roster.find(member => member.id === characterId);
   const action = CHAR_DEFS[characterId] && CHAR_DEFS[characterId].action;
-  return gameState.phase === PHASES.COMBAT && !!c && c.alive && !!action && !isCharacterActionLocked(c) && c.manualActionCd <= 0 && aliveMonsters().length > 0;
+  return gameState.phase === PHASES.COMBAT && !['dialogue', 'event'].includes(gameState.activeOverlay) && gameState.party.includes(characterId) && !!c && c.alive && !!action && !isCharacterActionLocked(c) && c.manualActionCd <= 0 && aliveMonsters().length > 0;
 }
 
 export function isCharacterActionLocked(character) {
@@ -685,7 +686,7 @@ export function useCharacterAction(characterId) {
   const c = gameState.roster.find(member => member.id === characterId);
   const def = CHAR_DEFS[characterId];
   const action = def.action;
-  c.manualActionCd = action.cooldown * 1000 * actionLineCooldownMult(c);
+  c.manualActionCd = characterActionCooldown(c);
   if (action.type === 'randomSkill') {
     const skillIndex = Math.floor(Math.random() * def.skills.length);
     const skill = def.skills[skillIndex];
@@ -783,7 +784,8 @@ export function tickCharacters(alive) {
 
     c.actionCountdown -= MASTER_TICK_MS;
     if (c.actionCountdown > 0) return; // not this character's turn yet
-    c.actionCountdown += CHAR_DEFS[c.id].atkInterval * (c.hasteMult || 1) * (c.slowMult || 1) * speedLineIntervalMult(c);
+    c.actionCycleMs = characterActionInterval(c);
+    c.actionCountdown += c.actionCycleMs;
 
     if (c.sleepUntilAction) {
       c.sleepUntilAction = false;

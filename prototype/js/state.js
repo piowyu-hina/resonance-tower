@@ -148,8 +148,8 @@ export function initGame() {
 // everywhere else.
 export const STATUS_DEFS = [
   { id: 'guard', icon: '🛡️', img: 'def_up', label: '舉盾', tone: 'good', desc: '下一次敵方直接傷害降低，成功格擋後反擊就緒；反傷與事件傷害不觸發', isActive: c => c.guardUntil > 0, remaining: c => c.guardUntil },
-  { id: 'counterReady', icon: '⚔️', img: 'atk_up', label: '反擊就緒', tone: 'good', desc: '下一次「換我了！」獲得強化，使用後消耗；不疊加次數', isActive: c => c.counterUntil > 0, remaining: c => c.counterUntil },
-  { id: 'slashReady', icon: '🔥', img: 'atk_up', label: '斬擊強化', tone: 'good', desc: '下一次踏步斬或換我了！傷害提升，普通攻擊不消耗', isActive: c => c.slashBoostUntil > 0, remaining: c => c.slashBoostUntil },
+  { id: 'counterReady', icon: '⚔️', shortLabel: '反', label: '反擊就緒', tone: 'good', desc: '下一次「換我了！」獲得強化，使用後消耗；不疊加次數', isActive: c => c.counterUntil > 0, remaining: c => c.counterUntil },
+  { id: 'slashReady', icon: '🔥', shortLabel: '斬', label: '斬擊強化', tone: 'good', desc: '下一次踏步斬或換我了！傷害提升，普通攻擊不消耗', isActive: c => c.slashBoostUntil > 0, remaining: c => c.slashBoostUntil },
   { id: 'sleep', icon: '💤', img: 'sleep', label: '睡眠', tone: 'bad', desc: '下一次行動會用來醒來，該次行動被跳過', blocksCharacterAction: true, isActive: c => c.sleepUntilAction },
   { id: 'charm', icon: '💕', img: 'charming', label: '魅惑', tone: 'bad', desc: '下一次行動會改為攻擊友軍（沒有友軍時攻擊自己）', blocksCharacterAction: true, isActive: c => c.charmedUntilAction },
   { id: 'slow', icon: '🐌', img: 'speed_down', label: '降攻速', tone: 'bad', desc: '攻速倒數條累積速度變慢', isActive: c => c.slowUntil > 0, remaining: c => c.slowUntil },
@@ -157,6 +157,12 @@ export const STATUS_DEFS = [
   { id: 'dodge', icon: '👤', img: 'hide', label: '隱身', tone: 'good', desc: '持續期間閃避敵方所有攻擊', isActive: c => c.dodgeUntil > 0, remaining: c => c.dodgeUntil },
   { id: 'defenseUp', icon: '🔷', img: 'def_up', label: '防禦提升', tone: 'good', desc: '隊伍防禦力提升，減少受到的傷害', isActive: () => gameState.partyDefense.until > 0, remaining: () => gameState.partyDefense.until },
 ];
+
+export function activeCharacterStatuses(c) {
+  return STATUS_DEFS.filter(status => status.isActive(c)).sort((a, b) =>
+    Number(!!b.blocksCharacterAction) - Number(!!a.blocksCharacterAction) ||
+    Number(b.tone === 'bad') - Number(a.tone === 'bad'));
+}
 
 export function setPhase(nextPhase, { force = false } = {}) {
   if (!Object.values(PHASES).includes(nextPhase)) throw new Error(`Unknown game phase: ${nextPhase}`);
@@ -421,6 +427,16 @@ export function speedLineIntervalMult(c) {
 // picked skill's damage/heal/etc is already covered by that skill's own
 // line), so "cast it more often" is the one upgrade that always applies.
 export function actionLineCooldownMult(c) { return 1 - 0.5 * (lineLevel(c, 'action') / STAT_LINE_MAX); }
+
+// Shared by combat scheduling and its UI: never calculate bars from base
+// values after upgrades, equipment or temporary speed effects are applied.
+export function characterActionInterval(c) {
+  return CHAR_DEFS[c.id].atkInterval * (c.hasteMult || 1) * (c.slowMult || 1) * speedLineIntervalMult(c);
+}
+
+export function characterActionCooldown(c) {
+  return (CHAR_DEFS[c.id].action?.cooldown || 0) * 1000 * actionLineCooldownMult(c);
+}
 
 export function skillLineKey(skillIndex) { return `skill${skillIndex}`; }
 export function skillLineScale(c, skillIndex) { return lineScale(c, skillLineKey(skillIndex)); }

@@ -1,8 +1,10 @@
 import { CHAR_DEFS, RARITY_DEFS, regionName, localizedRegionDef, MOBS_PER_FLOOR, SOLO_PARTY_LIMIT, GOO_SKILL_CD_MS, ITEM_DEFS, RUINS_KILL_TARGET } from './constants.js';
 import {
-  gameState, PHASES, STATUS_DEFS, isPrepPhase, isCombatSurfacePhase, contractStoryLocked, isCharUnlocked,
+  gameState, PHASES, isPrepPhase, isCombatSurfacePhase, contractStoryLocked, isCharUnlocked,
   characterPortraitPath, characterBattlePortraitPath, characterSkins, equippedSkin, unlockReqText, aliveMonsters,
   RESONANCE_STATES, setResonanceState, CHAPTER1_STATES,
+  characterActionInterval, characterActionCooldown,
+  activeCharacterStatuses,
 } from './state.js';
 import { t, formatLocaleNumber } from './i18n.js';
 import {
@@ -327,7 +329,7 @@ export function buildCombatActionBar() {
     if (action) {
       gameState.charEls[id].manualActionButton = group.querySelector('.charActionButton');
       gameState.charEls[id].manualActionButton.addEventListener('click', () => { useCharacterAction(id); flushCombat(); });
-      attachCharacterActionTooltip(gameState.charEls[id].manualActionButton, action);
+      attachCharacterActionTooltip(gameState.charEls[id].manualActionButton, action, gameState.roster.find(c => c.id === id));
     }
     gameState.charEls[id].activeQuickSlot = group.querySelector('.activeQuickSlot');
     attachActiveRelicTooltip(gameState.charEls[id].activeQuickSlot, gameState.roster.find(c => c.id === id));
@@ -335,7 +337,7 @@ export function buildCombatActionBar() {
 }
 
 export function renderCharacterStatuses(c, container) {
-  const active = STATUS_DEFS.filter(status => status.isActive(c));
+  const active = activeCharacterStatuses(c);
   const visible = active.slice(0, 4);
   const activeIds = new Set(visible.map(status => status.id));
 
@@ -351,13 +353,18 @@ export function renderCharacterStatuses(c, container) {
       badge = document.createElement('span');
       badge.className = `statusBadge ${status.tone}`;
       badge.dataset.statusId = status.id;
+      badge.tabIndex = 0;
+      badge.setAttribute('role', 'button');
       badge.innerHTML = `
         <span class="statusIcon"></span>
         <span class="statusName">${status.label}</span>
         <span class="statusTime"></span>
       `;
       const iconEl = badge.querySelector('.statusIcon');
-      if (status.img) {
+      if (status.shortLabel) {
+        iconEl.textContent = status.shortLabel;
+        iconEl.classList.add('statusGlyph');
+      } else if (status.img) {
         const img = document.createElement('img');
         img.alt = '';
         img.addEventListener('error', () => {
@@ -374,6 +381,7 @@ export function renderCharacterStatuses(c, container) {
 
     badge.className = `statusBadge ${status.tone}`;
     const remainingMs = status.remaining ? status.remaining(c) : 0;
+    badge.setAttribute('aria-label', `${status.label}：${status.desc}${remainingMs > 0 ? `，剩餘 ${Math.ceil(remainingMs / 1000)} 秒` : ''}`);
     badge.querySelector('.statusTime').textContent = remainingMs > 0 ? `${Math.ceil(remainingMs / 1000)}s` : '';
     container.appendChild(badge);
   });
@@ -385,7 +393,7 @@ export function renderCharacterStatuses(c, container) {
       moreBadge = document.createElement('span');
       moreBadge.className = 'statusMore';
       moreBadge.addEventListener('mouseenter', event => {
-        const hiddenNow = STATUS_DEFS.filter(status => status.isActive(c)).slice(4);
+        const hiddenNow = activeCharacterStatuses(c).slice(4);
         showTooltipContent(`
           <div class="ttName">其他狀態</div>
           ${hiddenNow.map(status => `<div class="ttStat">${status.label}：${status.desc}</div>`).join('')}
@@ -740,8 +748,8 @@ export function renderCombatView() {
     renderActiveRelicSlot(refs.activeQuickSlot, c);
     const action = CHAR_DEFS[id].action;
     if (action && refs.manualActionButton) {
-      const cooldownMax = action.cooldown * 1000;
-      refs.manualActionButton.querySelector('.itemCdOverlay').style.height = `${Math.round((c.manualActionCd / cooldownMax) * 100)}%`;
+      const cooldownMax = characterActionCooldown(c);
+      refs.manualActionButton.querySelector('.itemCdOverlay').style.height = `${clampPct(c.manualActionCd, cooldownMax)}%`;
       refs.manualActionButton.querySelector('.itemCdText').textContent = c.manualActionCd > 0 ? Math.ceil(c.manualActionCd / 1000) : '';
       const usable = canUseCharacterAction(id);
       refs.manualActionButton.classList.toggle('disabled', !usable);
@@ -753,7 +761,7 @@ export function renderCombatView() {
       const pct = cd > 0 ? Math.round((cd / (s.cd * 1000)) * 100) : 0;
       refs.skillIcons[i].style.height = pct + '%';
     });
-    const atkPct = Math.round((1 - c.actionCountdown / CHAR_DEFS[id].atkInterval) * 100);
+    const atkPct = Math.round((1 - c.actionCountdown / (c.actionCycleMs || characterActionInterval(c))) * 100);
     refs.atkBar.style.width = Math.max(0, Math.min(100, atkPct)) + '%';
   });
 

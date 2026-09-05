@@ -9,8 +9,12 @@ import { hideTooltip, inventoryItemCount } from './ui-loadout.js';
 import { flushCombat } from './ui-combat-effects.js';
 import { toggleParty } from './combat.js';
 import { render } from './ui-main.js';
+import { attachHoldRepeat } from './ui-press.js';
+export { attachHoldRepeat } from './ui-press.js';
+let disposeGrowthHold = null;
 
 export function setCharacterDetailOpen(open, characterId = null) {
+  if (!open) { disposeGrowthHold?.(); disposeGrowthHold = null; }
   if (open) closeOtherOverlays('characterDetail');
   gameState.activeOverlay = open ? 'characterDetail' : (gameState.activeOverlay === 'characterDetail' ? null : gameState.activeOverlay);
   const overlay = document.getElementById('characterDetailOverlay');
@@ -98,23 +102,6 @@ export function lineBadgeHTML(c, lineKey) {
 
 // press = 1 level, holding repeats `tick()` until released/it returns false.
 // `tick` should perform one level-up attempt and return whether to continue.
-export function attachHoldRepeat(el, tick, onStop) {
-  const REPEAT_MS = 90;
-  let timer = null;
-  const stop = () => {
-    if (timer) clearInterval(timer);
-    timer = null;
-    if (onStop) onStop();
-  };
-  const step = () => { if (!tick()) stop(); };
-  el.addEventListener('pointerdown', e => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    step();
-    if (!timer) timer = setInterval(step, REPEAT_MS);
-  });
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt => el.addEventListener(evt, stop));
-}
 
 let selectedGrowthLine = 'atk';
 
@@ -145,13 +132,13 @@ export function growthLineValue(c, lineKey, level) {
       return `${cooldownText} · +${(def.action.atkPct * scale * 100).toFixed(1)}% 攻擊 / +${(def.action.defAmount * scale).toFixed(1)} 防禦`;
     }
     if (def.action.type === 'guardAndSlash') {
-      return `${cooldownText} · 格擋減傷 ${(Math.min(.85, def.action.reduction * scale) * 100).toFixed(0)}% / 下次斬擊 +${(def.action.slashPct * scale * 100).toFixed(0)}%`;
+      return `${cooldownText} · 格擋減傷 ${(Math.min(.85, def.action.reduction * scale) * 100).toFixed(1)}% / 下次斬擊 +${(def.action.slashPct * scale * 100).toFixed(1)}%`;
     }
     return cooldownText;
   }
   const skill = def.skills[Number(lineKey.replace('skill', ''))];
   if (skill.type === 'damage') return `${(skill.mult * scale).toFixed(2)} 倍傷害`;
-  if (skill.type === 'guardSelf') return `單次減傷 ${(Math.min(.85, skill.reduction * scale) * 100).toFixed(0)}%（上限 85%）`;
+  if (skill.type === 'guardSelf') return `單次減傷 ${(Math.min(.85, skill.reduction * scale) * 100).toFixed(1)}%（上限 85%）`;
   if (skill.type === 'counterSlash') return `${(skill.mult * scale).toFixed(2)} 倍 / 反擊 ${(skill.counterMult * scale).toFixed(2)} 倍傷害`;
   if (skill.type === 'healSelf' || skill.type === 'healAlly') return `${(skill.pct * scale * 100).toFixed(1)}% 最大生命`;
   if (skill.type === 'buffAtk') return `+${(skill.pct * scale * 100).toFixed(1)}% 攻擊`;
@@ -212,6 +199,8 @@ export function updateGrowthPanelLive(c, lineKey) {
 }
 
 export function renderCharacterDetail(characterId) {
+  disposeGrowthHold?.();
+  disposeGrowthHold = null;
   const c = gameState.roster.find(member => member.id === characterId);
   const def = CHAR_DEFS[characterId];
   if (!c || !def) return;
@@ -223,6 +212,7 @@ export function renderCharacterDetail(characterId) {
   if (selectedGrowthLine === 'action' && !def.action) selectedGrowthLine = 'atk';
   const activeLine = selectedGrowthLine;
   const activeMeta = growthLineMeta(characterId, activeLine);
+  const activeSkill = activeLine === 'action' ? def.action : def.skills[Number(activeLine.replace('skill', ''))];
   const activeLevel = lineLevel(c, activeLine);
   const activeBookId = lineBookId(activeLine);
   const activeBookCount = inventoryItemCount(activeBookId);
@@ -266,6 +256,7 @@ export function renderCharacterDetail(characterId) {
       </div>
       <div class="growthInspector">
         <div class="growthInspectorHead"><span>${activeMeta.kind}</span><h3>${activeMeta.name}</h3><b>Lv.${activeLevel}</b></div>
+        ${activeSkill ? `<p class="growthSkillDescription"><span>基礎效果</span>${activeSkill.desc}</p>` : ''}
         <div class="growthCompare"><div><small>目前</small><strong>${growthLineValue(c, activeLine, activeLevel)}</strong></div><span>→</span><div><small>${activeMaxed ? '已達上限' : '下一級'}</small><strong>${growthLineValue(c, activeLine, Math.min(STAT_LINE_MAX, activeLevel + 1))}</strong></div></div>
         <div class="growthUpgradeRow"><span class="growthCost"><img src="assets/item/${ITEM_DEFS[activeBookId].img}.png" alt="">${ITEM_DEFS[activeBookId].name} ×1</span><button id="growthUpgradeBtn" type="button"${activeMaxed || activeBookCount <= 0 ? ' disabled' : ''}>${activeMaxed ? '已滿級' : activeBookCount <= 0 ? '書本不足' : '升級'}</button></div>
       </div>
@@ -293,11 +284,20 @@ export function renderCharacterDetail(characterId) {
   });
 
   const upgradeBtn = document.getElementById('growthUpgradeBtn');
-  attachHoldRepeat(upgradeBtn, () => {
-    if (!useExpBookOnLine(characterId, selectedGrowthLine)) return false;
-    updateGrowthPanelLive(c, selectedGrowthLine); // patch numbers in place each tick, not just at the end - see design.md
-    return lineLevel(c, selectedGrowthLine) < STAT_LINE_MAX && inventoryItemCount(lineBookId(selectedGrowthLine)) > 0;
-  }, () => { renderCharacterDetail(characterId); render(); });
+  disposeGrowthHold = attachHoldRepeat(upgradeBtn, () => {
+    if (gameState.activeOverlay !== 'characterDetail' || !useExpBookOnLine(characterId, activeLine)) return false;
+    updateGrowthPanelLive(c, activeLine);
+    return lineLevel(c, activeLine) < STAT_LINE_MAX && inventoryItemCount(lineBookId(activeLine)) > 0;
+  }, () => {
+    const restoreFocus = document.activeElement === upgradeBtn;
+    renderCharacterDetail(characterId);
+    render();
+    if (restoreFocus) {
+      const nextButton = document.getElementById('growthUpgradeBtn');
+      const target = nextButton.disabled ? document.querySelector(`.growthCard[data-line="${activeLine}"]`) : nextButton;
+      target?.focus({ preventScroll: true });
+    }
+  });
 
   const selectBtn = document.getElementById('characterDetailSelectBtn');
   const isWuming = characterId === 'wuming';

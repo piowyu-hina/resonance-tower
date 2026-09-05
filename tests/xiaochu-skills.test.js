@@ -102,7 +102,7 @@ try {
   assert.equal(c.manualActionCd, 8000);
   assert.match(growthLineValue(c, 'skill1', 100), /85%/);
   assert.match(growthLineValue(c, 'skill2', 100), /7.00/);
-  assert.match(growthLineValue(c, 'action', 100), /100%/);
+  assert.match(growthLineValue(c, 'action', 100), /100.0%/);
   assert.equal(guardEnemyDamage(c, 0), 0);
   assert.equal(c.guardUntil, 8000, 'zero damage does not spend guard');
   tickGuardState(c, 8000);

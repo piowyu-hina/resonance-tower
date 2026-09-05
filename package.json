@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "npm run test:unit && npm run test:ui",
-    "test:unit": "node tests/state.test.js && node tests/progression.test.js && node tests/i18n.test.js && node tests/save.test.js && node tests/combat-timeout.test.js && node tests/combat-events.test.js && node tests/xiaochu-skills.test.js",
+    "test:unit": "node tests/state.test.js && node tests/progression.test.js && node tests/i18n.test.js && node tests/save.test.js && node tests/combat-timeout.test.js && node tests/combat-events.test.js && node tests/xiaochu-skills.test.js && node tests/ui-press.test.js",
     "test:ui": "node tests/ui-regression.test.js"
   },
   "devDependencies": {
