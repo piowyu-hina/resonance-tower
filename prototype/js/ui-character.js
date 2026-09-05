@@ -302,6 +302,8 @@ export function renderCharacterDetail(characterId) {
     for (const selector of ['.detailCharacterDescription', '.detailSectionHeading', '.skinPicker']) {
       profile.appendChild(content.querySelector(selector));
     }
+    profile.querySelector('.detailSectionHeading small').remove();
+    content.querySelector('.detailArtFrame').before(content.querySelector('.detailIdentity'));
     const info = content.querySelector('.detailInfo');
     const inspector = content.querySelector('.growthInspector');
     const choices = document.createElement('div');
@@ -321,14 +323,14 @@ export function renderCharacterDetail(characterId) {
     growth.className = 'homeGrowthPanel';
     growth.setAttribute('role', 'tabpanel');
     growth.setAttribute('aria-labelledby', 'homeTab-growth');
-    growth.append(choices, inspector);
+    growth.append(content.querySelector('.growthWallet'), choices, inspector);
     info.append(growth, profile);
     const tabs = document.createElement('div');
     tabs.className = 'homeDetailTabs';
     tabs.setAttribute('role', 'tablist');
     tabs.setAttribute('aria-label', '角色資訊');
     tabs.innerHTML = '<button type="button" role="tab" id="homeTab-growth" aria-controls="homeGrowthPanel" data-home-tab="growth">培養</button><button type="button" role="tab" id="homeTab-profile" aria-controls="homeProfilePanel" data-home-tab="profile">角色</button>';
-    info.querySelector('.detailTitleRow').appendChild(tabs);
+    info.querySelector('.detailTitleRow').replaceWith(tabs);
     const selectTab = (tab, focus = false) => {
       homeDetailTab = tab;
       growth.hidden = tab !== 'growth';

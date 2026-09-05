@@ -1298,9 +1298,13 @@ async function testDesktopHome(browser) {
       if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-pinned-${width}-${height}.png`) });
     }
     assert.equal(await page.locator('#homeTab-growth').getAttribute('aria-selected'), 'true');
+    assert.equal(await page.locator('.detailPortraitColumn #characterDetailName').textContent(), '無名');
+    assert.equal(await page.locator('#homeGrowthPanel .growthWallet').isVisible(), true);
     const upgradeBeforeAppearance = await page.locator('#growthUpgradeBtn').boundingBox();
     const artBeforeTab = await page.locator('.detailArtFrame').boundingBox();
     await page.locator('#homeTab-profile').click();
+    assert.equal(await page.locator('.growthWallet').isVisible(), false, 'book resources belong only to cultivation');
+    assert.equal(await page.locator('#homeProfilePanel .detailSectionHeading small').count(), 0, 'appearance collection count is omitted');
     assert.equal(await page.locator('.skinPicker').isVisible(), true);
     assert.equal(await page.locator('.detailCharacterDescription').isVisible(), true);
     assert.equal(await page.locator('#growthUpgradeBtn').isVisible(), false);
