@@ -110,6 +110,7 @@ export default {
   'loadout.currentPossession': 'Currently Possessed',
   'loadout.equipment': 'Expedition Loadout',
   'loadout.potion': 'Potion',
+  'loadout.noItems': 'No items carried',
   'loadout.charm': 'Charm',
   'loadout.potionSlot': 'Potion Slot',
   'loadout.charmSlot': 'Charm Slot',

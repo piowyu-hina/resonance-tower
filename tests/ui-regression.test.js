@@ -1520,6 +1520,22 @@ async function testExpeditionDeparture(browser) {
     assert.equal(await xiaochu.getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('#expeditionHeroPortrait').getAttribute('src'), 'assets/characters/xiaochu_full.png');
     assert.equal(await page.locator('.expeditionTechniquePreview img').count(), 4);
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      gameState.inventory = [];
+      gameState.equippedCombatItemId = null;
+      gameState.roster.find(c => c.id === 'xiaochu').loadout.activeItemId = null;
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.equal(await page.locator('.expeditionNoItems').textContent(), '不攜帶道具');
+    assert.equal(await page.locator('#expeditionSelectedSummary .combatItemQuickSlot').isVisible(), false);
+    assert.equal(await page.locator('#expeditionSelectedSummary .activeQuickSlot').isVisible(), false);
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const { ITEM_DEFS } = await import('./js/constants.js');
+      gameState.inventory = [{ itemId: 'potion', qty: 2 }, { itemId: Object.keys(ITEM_DEFS).find(id => ITEM_DEFS[id].equipSlot === 'charm'), qty: 1 }];
+      (await import('./js/ui-main.js')).render();
+    });
     await page.locator('.expeditionTechniquePreview > span').first().focus();
     assert.equal(await page.locator('#tooltip').isVisible(), true);
     await page.locator('#expeditionSelectedSummary .combatItemQuickSlot').click();

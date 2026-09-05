@@ -1,6 +1,8 @@
 /* Desktop departure scene. Existing preparation controls remain the source of truth. */
 .expeditionHero { display: none; }
 .expeditionTechniquePreview { display: none; }
+.expeditionLoadout > div[hidden] { display: none !important; }
+.expeditionNoItems { margin: 0; padding: 16px 0; color: #d8c8ab; font-size: 16px; }
 @media (min-width: 960px) {
   #app.expeditionSceneActive { position: relative; width: min(1600px, calc(100vw - 48px)); min-width: 900px; padding: 0; border: 1px solid #b99c6940; border-radius: 14px; background: #25231e; box-shadow: 0 24px 70px #0007; }
   .expeditionSceneActive #header { position: absolute; z-index: 5; inset: 0 0 auto; margin: 0; padding: 14px 28px; border: 0; background: linear-gradient(#171710b8, transparent); pointer-events: none; }
@@ -17,7 +19,7 @@
   #expeditionView .homeTopbar > div { margin-top: 9px; max-width: 51%; }
   #app #expeditionView #prepHeading { color: #ffedcd; font: 600 clamp(24px, 2.4vw, 36px)/1.3 Georgia, 'Noto Serif TC', serif; letter-spacing: .12em; text-shadow: 0 3px 12px #0008; }
   #app #expeditionView #prepMsg { margin-top: 10px; color: #dbcdb7; font-size: 14px; line-height: 1.7; font-style: normal; }
-  #expeditionView .expeditionHero { position: absolute; display: block; left: 4%; width: 48%; top: 204px; bottom: 160px; pointer-events: none; }
+  #expeditionView .expeditionHero { position: absolute; display: block; left: 1%; width: 54%; top: 184px; bottom: 128px; pointer-events: none; }
   #expeditionHeroPortrait { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 14px 22px #050a0780); }
   #expeditionView.noDeployment #expeditionHeroPortrait { opacity: .35; filter: saturate(.35) drop-shadow(0 10px 20px #0008); }
   #expeditionView > .expeditionStepLabel { position: absolute; left: 59%; top: 138px; margin: 0; font-size: 14px; color: #d1b786; letter-spacing: .15em; }
@@ -76,4 +78,5 @@
   #expeditionView .expeditionTechniquePreview > span:last-child { margin-left: 8px; border-color: #e2c183a0; }
   #expeditionView .expeditionTechniquePreview img { width: 100%; height: 100%; object-fit: contain; }
   #expeditionView .expeditionTechniquePreview > span:is(:hover, :focus-visible) { outline: 2px solid #e5c68e; outline-offset: 3px; }
+  .expeditionSceneActive #expeditionView { background-size: 100% 100%, 100% 100%, contain; background-repeat: no-repeat; background-position: center; background-color: #1b211c; }
 }
