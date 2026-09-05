@@ -442,13 +442,15 @@ img {
 }
 #bagBtn img { width: 29px; height: 29px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.38)); }
 .charCard.down { opacity: 0.4; }
-/* Keep the illustration's sides intact; dissolve only its flat lower edge
-   into the portrait background. Apply the mask to art, never HP/status UI. */
+/* Fit the entire illustration inside the inner portrait frame; dissolve its
+   lower edge without masking HP/status UI or letting hair spill outside. */
 .charCard .portrait > img.softBattleArt {
   flex: 0 0 auto;
-  width: auto;
-  max-width: none;
-  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
   border-radius: 0;
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 80%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 0%, #000 80%, transparent 100%);

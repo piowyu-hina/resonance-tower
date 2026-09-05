@@ -878,12 +878,19 @@ async function testSoftBattleArt(browser) {
       await img.decode();
       const css = getComputedStyle(img);
       const rect = img.getBoundingClientRect();
+      const frame = img.parentElement;
+      const bounds = frame.getBoundingClientRect();
       return { ratio: rect.width / rect.height, naturalRatio: img.naturalWidth / img.naturalHeight,
+        inside: rect.left >= bounds.left + frame.clientLeft - .5 &&
+          rect.right <= bounds.left + frame.clientLeft + frame.clientWidth + .5 &&
+          rect.top >= bounds.top + frame.clientTop - .5 &&
+          rect.bottom <= bounds.top + frame.clientTop + frame.clientHeight + .5,
         mask: css.maskImage, radius: css.borderRadius,
         frameOverflow: getComputedStyle(img.parentElement).overflowX,
         frameMask: getComputedStyle(img.parentElement).maskImage };
     });
     near(metrics.ratio, metrics.naturalRatio, 'battle art retains its proportions');
+    assert.equal(metrics.inside, true, 'the complete image must stay inside the inner portrait frame');
     assert.match(metrics.mask, /linear-gradient/);
     assert.match(metrics.mask, /80%/);
     assert.equal(metrics.radius, '0px');
