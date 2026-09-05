@@ -576,6 +576,7 @@ export function renderPrepView() {
   const followingXiaochu = gameState.resonanceState.xiaochu === RESONANCE_STATES.FOLLOWING;
   const contractedXiaochu = gameState.resonanceState.xiaochu === RESONANCE_STATES.CONTRACTED;
   const xiaochuTalk = document.getElementById('xiaochuTalkBtn');
+  xiaochuTalk.classList.toggle('soulConversation', contractedXiaochu);
   xiaochuTalk.hidden = !followingXiaochu && !contractedXiaochu;
   xiaochuTalk.disabled = storyLocked;
   xiaochuTalk.classList.toggle('storyRequired', followingXiaochu);

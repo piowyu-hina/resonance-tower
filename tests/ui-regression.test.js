@@ -1265,12 +1265,26 @@ async function testDesktopHome(browser) {
     assert.equal(await page.locator('#homeGrowthView').isVisible(), true);
     assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeSceneActive')), false);
     await page.click('#homeGrowthBackBtn');
+    assert.equal(await page.locator('#homeGrowthBtn > img').count(), 0, 'no resident guide portrait');
+    await page.evaluate(async () => {
+      const { gameState, RESONANCE_STATES } = await import('./js/state.js');
+      gameState.resonanceState.xiaochu = RESONANCE_STATES.CONTRACTED;
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true);
+    assert.equal(await page.locator('#xiaochuTalkBtn > img').isVisible(), false, 'contracted Xiaochu is not physically standing in the room');
+    await page.waitForTimeout(650);
+    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-contracted-${width}.png`) });
+    await page.click('#xiaochuTalkBtn b');
+    assert.equal(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), 'dialogue');
+    await page.evaluate(async () => (await import('./js/story.js')).closeDialogue());
     await page.evaluate(async () => {
       const { gameState, RESONANCE_STATES } = await import('./js/state.js');
       gameState.resonanceState.xiaochu = RESONANCE_STATES.FOLLOWING;
       (await import('./js/ui-main.js')).render();
     });
     await page.locator('#xiaochuTalkBtn > img').evaluate(img => img.decode());
+    assert.equal(await page.locator('#xiaochuTalkBtn > img').isVisible(), true, 'following Xiaochu remains visible');
     assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true);
     await page.waitForTimeout(650);
     if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-following-${width}.png`) });
