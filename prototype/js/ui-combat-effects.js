@@ -194,6 +194,7 @@ export function updateMonsterSkillIcons(m) {
     <img src="assets/skills/${m.skill.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
     <span class="fallback">${m.skill.icon}</span>
     <div class="cdOverlay"></div>
+    <span class="skillCdText"></span>
   `;
   container.appendChild(el);
   attachSkillTooltip(el, m.skill);
@@ -207,6 +208,7 @@ export function updateMonsterSkillIcons(m) {
       <img src="assets/skills/${m.skill2.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
       <span class="fallback">${m.skill2.icon}</span>
       <div class="cdOverlay"></div>
+      <span class="skillCdText"></span>
     `;
     container.appendChild(el2);
     attachSkillTooltip(el2, m.skill2);
@@ -221,6 +223,7 @@ export function updateMonsterSkillIcons(m) {
       <img src="assets/skills/${m.skill3.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
       <span class="fallback">${m.skill3.icon}</span>
       <div class="cdOverlay"></div>
+      <span class="skillCdText"></span>
     `;
     container.appendChild(el3);
     attachSkillTooltip(el3, m.skill3);

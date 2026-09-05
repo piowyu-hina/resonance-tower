@@ -26,16 +26,28 @@ export function spawnGoo(batch, index) {
     <img src="assets/skills/floor1/slime_boss_skill3_effect.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
     <span class="fallback">🔵</span>
   `;
-  const maxX = Math.max(0, arena.clientWidth - 34);
-  const maxY = Math.max(0, arena.clientHeight - 34);
-  const slotWidth = arena.clientWidth / GOO_BATCH_SIZE;
-  const slotStart = slotWidth * index;
-  const slotEnd = Math.max(slotStart, slotWidth * (index + 1) - 34);
-  el.style.left = Math.round(Math.min(maxX, slotStart + Math.random() * (slotEnd - slotStart))) + 'px';
-  el.style.top = Math.round(Math.random() * maxY) + 'px';
   arena.appendChild(el);
+  // Use rendered dimensions so enlarged desktop targets stay inside the arena,
+  // including the pulse animation's extra footprint.
+  const margin = 4;
+  const maxX = Math.max(margin, arena.clientWidth - el.offsetWidth - margin);
+  const maxY = Math.max(margin, arena.clientHeight - el.offsetHeight - margin);
+  const slotWidth = arena.clientWidth / GOO_BATCH_SIZE;
+  const slotStart = slotWidth * index + margin;
+  const slotEnd = Math.max(slotStart, slotWidth * (index + 1) - el.offsetWidth - margin);
+  el.style.left = Math.round(Math.min(maxX, slotStart + Math.random() * (slotEnd - slotStart))) + 'px';
+  el.style.top = Math.round(margin + Math.random() * (maxY - margin)) + 'px';
   const goo = { el, batch, msLeft: GOO_LIFESPAN_MS, spawnTime: performance.now() };
   el.addEventListener('click', () => popGoo(goo));
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-label', `擊破黏液 ${index + 1}`);
+  el.tabIndex = 0;
+  el.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      popGoo(goo);
+    }
+  });
   gameState.activeGoos.push(goo);
 }
 

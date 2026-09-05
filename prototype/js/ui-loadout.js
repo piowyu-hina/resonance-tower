@@ -36,6 +36,11 @@ export function characterActionTooltipHTML(action, character = null) {
 }
 
 export function attachCharacterActionTooltip(el, action, character = null) {
+  el.addEventListener('focus', () => {
+    const rect = el.getBoundingClientRect();
+    showTooltipContent(characterActionTooltipHTML(action, character), { clientX: rect.left, clientY: rect.bottom });
+  });
+  el.addEventListener('blur', hideTooltip);
   el.addEventListener('mouseenter', e => showTooltipContent(characterActionTooltipHTML(action, character), e));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
@@ -106,6 +111,14 @@ export function attachMonsterTooltip(el, m) {
 }
 
 export function attachSkillTooltip(el, skill) {
+  el.tabIndex = 0;
+  if (!el.hasAttribute('role')) el.setAttribute('role', 'img');
+  if (!el.hasAttribute('aria-label')) el.setAttribute('aria-label', skill.name);
+  el.addEventListener('focus', () => {
+    const rect = el.getBoundingClientRect();
+    showTooltipContent(skillTooltipHTML(skill), { clientX: rect.left, clientY: rect.bottom });
+  });
+  el.addEventListener('blur', hideTooltip);
   el.addEventListener('mouseenter', (e) => showTooltipContent(skillTooltipHTML(skill), e));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
@@ -298,11 +311,6 @@ export function renderExpeditionSelectedSummary() {
     const skill = action ? def.action : def.skills[index];
     if (action) attachCharacterActionTooltip(icon, skill, character);
     else attachSkillTooltip(icon, skill);
-    icon.addEventListener('focus', () => {
-      const rect = icon.getBoundingClientRect();
-      showTooltipContent(action ? characterActionTooltipHTML(skill, character) : skillTooltipHTML(skill), { clientX: rect.left, clientY: rect.bottom });
-    });
-    icon.addEventListener('blur', hideTooltip);
   });
   const combatSlot = summary.querySelector('.combatItemQuickSlot');
   combatSlot.innerHTML = loadoutItemHTML(gameState.equippedCombatItemId, '＋', t('picker.potion'));

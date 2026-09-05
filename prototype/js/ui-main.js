@@ -33,6 +33,10 @@ export function buildUI() {
   attachTextTooltip(document.getElementById('loadGameBtn'), '讀檔', '從電腦選擇進度檔案');
   buildShopUI();
   bindDialogueUI();
+  document.getElementById('combatLogToggleBtn').addEventListener('click', event => {
+    const open = document.getElementById('app').classList.toggle('combatLogOpen');
+    event.currentTarget.setAttribute('aria-expanded', String(open));
+  });
 
   document.getElementById('townShopBtn').addEventListener('click', openTownShop);
   document.getElementById('homeLocationBtn').addEventListener('click', () => {
@@ -220,6 +224,7 @@ export function buildBattleRoster() {
               <img src="assets/skills/${s.img}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
               <span class="fallback">${s.icon}</span>
               <div class="cdOverlay"></div>
+              <span class="skillCdText"></span>
             </div>
           `).join('')}
         </div>
@@ -240,6 +245,7 @@ export function buildBattleRoster() {
       atkBar: card.querySelector('.atkBar'),
       statusList: card.querySelector('.statusList'),
       skillIcons: skillIconEls.map(el => el.querySelector('.cdOverlay')),
+      skillCdTexts: skillIconEls.map(el => el.querySelector('.skillCdText')),
     };
     attachCharTooltip(portraitEl, id);
   });
@@ -254,7 +260,7 @@ export function buildCombatActionBar() {
   const barEl = document.getElementById('combatActionBar');
   const itemId = gameState.equippedCombatItemId;
   barEl.innerHTML = `
-    <span class="actionBarTitle">戰鬥操作</span>
+    <span class="actionBarTitle">${t('combat.commands')}</span>
     <button class="combatItemButton combatItemAction" type="button" aria-label="使用藥水">
       ${loadoutItemHTML(itemId, '◇', '空藥水槽')}
       <span class="itemCdOverlay"></span>
@@ -284,9 +290,10 @@ export function buildCombatActionBar() {
           <span class="itemCdOverlay"></span>
           <span class="itemCdText"></span>
           <span class="actionLockOverlay"><img src="assets/skill_lock.png" alt=""></span>
+          <span class="commandCaption"><b>${action.name}</b><small class="commandState"></small></span>
         </button>
       ` : ''}
-      <div class="quickSlot activeQuickSlot" data-slot-type="active" aria-label="護符"></div>
+      <div class="combatCharmSlot"><small>${t('combat.passiveCharm')}</small><div class="quickSlot activeQuickSlot" data-slot-type="active" aria-label="護符"></div></div>
     `;
     relicActions.appendChild(group);
     if (action) {
@@ -484,6 +491,8 @@ export function render() {
   const atRegionSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'regions';
   app.classList.toggle('regionSceneActive', atRegionSurface);
   app.classList.toggle('expeditionSceneActive', inPrep && !atVillageSurface && !atHomeSurface && !atRegionSurface);
+  // Result overlays keep the same battlefield underneath until returning home.
+  app.classList.toggle('combatSceneActive', !inPrep);
   const visibleSurface = !inPrep
     ? document.getElementById('combatView')
     : atVillageSurface
@@ -667,6 +676,7 @@ export function renderRegionContext() {
 
 export function renderCombatView() {
   const boss = gameState.monsters.find(m => m.isBoss);
+  document.getElementById('combatView').classList.toggle('bossBattle', !!boss);
   document.getElementById('bossArena').classList.toggle('active', !!boss);
 
   aliveMonsters().forEach(m => {
@@ -682,16 +692,19 @@ export function renderCombatView() {
     if (refs.skillCdOverlayEl) {
       const skillCdPct = Math.round((m.skillCd / (m.skill.cd * 1000)) * 100);
       refs.skillCdOverlayEl.style.height = Math.max(0, Math.min(100, skillCdPct)) + '%';
+      refs.skillCdOverlayEl.nextElementSibling.textContent = m.skillCd > 0 ? Math.ceil(m.skillCd / 1000) : '';
     }
     if (refs.skill2CdOverlayEl && m.skill2) {
       const skill2CdPct = Math.round((m.skill2Cd / (m.skill2.cd * 1000)) * 100);
       refs.skill2CdOverlayEl.style.height = Math.max(0, Math.min(100, skill2CdPct)) + '%';
+      refs.skill2CdOverlayEl.nextElementSibling.textContent = m.skill2Cd > 0 ? Math.ceil(m.skill2Cd / 1000) : '';
     }
     if (refs.skill3CdOverlayEl) {
       const skill3Remaining = m.storyBoss ? m.skill3Cd : gameState.gooSpawnCountdown;
       const skill3Max = m.storyBoss ? m.skill3.cd * 1000 : GOO_SKILL_CD_MS;
       const skill3CdPct = Math.round((skill3Remaining / skill3Max) * 100);
       refs.skill3CdOverlayEl.style.height = Math.max(0, Math.min(100, skill3CdPct)) + '%';
+      refs.skill3CdOverlayEl.nextElementSibling.textContent = skill3Remaining > 0 ? Math.ceil(skill3Remaining / 1000) : '';
     }
   });
 
@@ -716,11 +729,13 @@ export function renderCombatView() {
       refs.manualActionButton.classList.toggle('disabled', !usable);
       refs.manualActionButton.classList.toggle('controlLocked', isCharacterActionLocked(c));
       refs.manualActionButton.setAttribute('aria-disabled', String(!usable));
+      refs.manualActionButton.querySelector('.commandState').textContent = t(usable ? 'combat.castReady' : isCharacterActionLocked(c) ? 'combat.controlLocked' : c.manualActionCd > 0 ? 'combat.coolingDown' : 'combat.unavailable');
     }
     CHAR_DEFS[id].skills.forEach((s, i) => {
       const cd = c.skillCds[i];
       const pct = cd > 0 ? Math.round((cd / (s.cd * 1000)) * 100) : 0;
       refs.skillIcons[i].style.height = pct + '%';
+      if (refs.skillCdTexts) refs.skillCdTexts[i].textContent = cd > 0 ? Math.ceil(cd / 1000) : '';
     });
     const atkPct = Math.round((1 - c.actionCountdown / (c.actionCycleMs || characterActionInterval(c))) * 100);
     refs.atkBar.style.width = Math.max(0, Math.min(100, atkPct)) + '%';

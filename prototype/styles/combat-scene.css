@@ -1,0 +1,110 @@
+/* Shared combat controls retain their event/state contracts. Desktop art is a
+   single battlefield; mobile continues to use the existing stacked layout. */
+.commandCaption, .combatCharmSlot > small, .arenaCaption { display: none; }
+.combatCharmSlot { display: contents; }
+#combatLogToggleBtn { display: none; }
+.skillCdText { position: absolute; z-index: 2; inset: 0; display: grid; place-items: center; color: #fff8e8; font-size: 15px; font-weight: 700; text-shadow: 0 2px 3px #000, 0 0 6px #000; pointer-events: none; }
+@media (min-width: 960px) {
+  #app.combatSceneActive { position: relative; width: min(1600px, calc(100vw - 48px)); min-width: 960px; padding: 0; border: 0; border-radius: 12px; background: #19201d; box-shadow: 0 24px 70px #0008; }
+  .combatSceneActive #header { position: absolute; z-index: 20; inset: 0 0 auto; min-height: 82px; margin: 0; padding: 14px 30px; border: 0; background: linear-gradient(#101913dd, transparent); pointer-events: none; }
+  .combatSceneActive #header button { pointer-events: auto; }
+  .combatSceneActive .brandCopy b { font-size: 16px; color: #f4e3c4; }
+  .combatSceneActive .brandCopy small { font-size: 9px !important; }
+  .combatSceneActive #header .headerLeft { position: absolute; top: 86px; left: 4%; flex-direction: row; align-items: center; gap: 20px; }
+  .combatSceneActive #floorLabel { color: #fbe5b8; font: 600 23px/1.5 Georgia, 'Noto Serif TC', serif; letter-spacing: .1em; text-shadow: 0 2px 8px #000b; }
+  .combatSceneActive #goldLabel { font-size: 15px; color: #e4c58d; }
+  .combatSceneActive #bagBtn, .combatSceneActive #debugToggleBtn { background: transparent; border: 0; box-shadow: none; color: #edddbe; }
+  .combatSceneActive #debugPanel { position: absolute; z-index: 25; top: 68px; left: 18px; right: 18px; }
+  #app.combatSceneActive #combatView { position: relative; min-height: 880px; height: clamp(880px, calc(100dvh - 48px), 960px); padding: 144px 4% 168px; border: 0; border-radius: 12px; overflow: hidden; background: linear-gradient(0deg, #111b18ed, #13221b10 65%, #10211c33), url('../assets/backgrounds/slime_forest_battle.png') center / cover no-repeat; box-shadow: none; }
+  #app.combatSceneActive.ruinsActive #combatView { background: linear-gradient(0deg, #151a18f2, #17202120 65%, #111a1c50), url('../assets/backgrounds/ruins_battle.png') center / cover no-repeat; }
+  #combatView .combatColumns { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.3fr); gap: 6%; height: 100%; }
+  #combatView .battleColumn { position: static; display: flex; flex-direction: column; min-height: 0; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+  #combatView .columnHeading { min-height: 24px; padding: 0 0 8px; margin: 0 0 12px; border: 0; color: #ecdbbc; text-shadow: 0 2px 5px #000; }
+  #combatView .columnHeading span { font-size: 14px; letter-spacing: .15em; }
+  #combatView .columnHeading small { font-size: 13px; color: #c2c4ac; }
+  #combatView .partyColumn .columnHeading { max-width: 370px; align-self: center; width: 100%; }
+  #combatView #partySide { flex: 1; align-content: start; align-items: start; }
+  #combatView .charCard { display: flex; width: min(100%, 370px); min-width: 0; padding: 0; gap: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+  #combatView .charCard .portrait { position: relative; width: 100%; height: 310px; max-height: none; margin: 0 0 14px; border: 0; border-radius: 0; background: none; overflow: visible; }
+  #combatView .charCard .portrait > img, #combatView .charCard .portrait > img.softBattleArt { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; object-position: center bottom; border-radius: 0; filter: drop-shadow(0 12px 11px #02080670); }
+  #combatView .charCard .portrait::before { content: ''; position: absolute; z-index: -1; left: 22%; right: 22%; bottom: -3px; height: 20px; border-radius: 50%; background: #06110d70; filter: blur(8px); pointer-events: none; }
+  #combatView .charCard .body { position: relative; padding: 14px 18px; gap: 10px; border: 1px solid #b7a27155; border-radius: 5px; background: linear-gradient(120deg, #26332dec, #18241fea); box-shadow: 0 8px 22px #0003; }
+  #combatView .charCard .topRow .nm { font: 600 25px/1.2 Georgia, 'Noto Serif TC', serif; letter-spacing: .12em; color: #fff0d7; }
+  #combatView .charCard .topRow .lvlTag { font-size: 14px; color: #cfbea1; }
+  #combatView .row { gap: 8px; width: 100%; }
+  #combatView .barOuter { height: 9px; border: 0; border-radius: 3px; background: #091713b0; box-shadow: inset 0 1px 3px #0006; }
+  #combatView .hpBar { background: linear-gradient(90deg, #559a79, #aedb98); box-shadow: 0 0 8px #91bf7750; }
+  #combatView .atkBar { background: linear-gradient(90deg, #9b7848, #f0cf8c); }
+  #combatView .hpLabel, #combatView .atkLabel { font-size: 12px; color: #c9bfa7; }
+  #combatView .charCard .hpText, #combatView .monsterCard .hpText { font-size: 14px; color: #f4e7ce; min-width: 60px; }
+  #combatView .charCard .skills { justify-content: flex-start; gap: 12px; margin: 4px 0 0; }
+  #combatView .charCard .skillIcon { width: 58px; height: 58px; border-color: #bcaa785e; border-radius: 5px; background: #152019; }
+  #combatView .charCard .skillIcon img { object-fit: contain; }
+  #combatView .statusList { top: 0; right: 0; width: 100%; justify-content: center; gap: 5px; }
+  #combatView .statusBadge { padding: 4px; border-radius: 5px; }
+  #combatView .statusBadge .statusIcon { width: 25px; height: 25px; }
+  #combatView .statusMore { width: 31px; height: 35px; font-size: 13px; }
+  #combatView #monsterSide { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; align-items: end; gap: 16px; min-height: 0; }
+  #combatView .monsterCard { position: relative; display: flex; flex: 0 1 calc(33.333% - 11px); min-width: 0; width: auto; padding: 0 8px 12px; gap: 9px; border: 0; border-radius: 5px; background: linear-gradient(0deg, #221f1abf, transparent 58%); box-shadow: none; }
+  #combatView .monsterCard .portrait.big { width: 100%; height: 200px; border: 0; border-radius: 0; background: none; overflow: visible; }
+  #combatView .monsterCard .portrait.big > img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 10px 10px #060b0970); }
+  #combatView .monsterTopRow { align-items: baseline; gap: 5px; }
+  #combatView .monsterCard .name { color: #f8e6c9; font: 600 18px/1.3 Georgia, 'Noto Serif TC', serif; }
+  #combatView .monsterCard .monsterTopRow .lvlTag { font-size: 12px; color: #cab89f; }
+  #combatView .monsterCard .hpText { font-size: 12px; min-width: 44px; }
+  #combatView .monsterCard .hpBar { background: linear-gradient(90deg, #a1564b, #e4ac8c); box-shadow: none; }
+  #combatView .monsterCard .skills { width: 100%; justify-content: flex-start; gap: 7px; }
+  #combatView .monsterCard .skillIcon { width: 42px; height: 42px; border-color: #ae8e6155; }
+  #combatView .monsterCard.boss { flex-basis: 52%; border: 0; box-shadow: none; }
+  #combatView .monsterCard.boss:only-child { flex-basis: 66%; max-width: 440px; }
+  #combatView .monsterCard.boss .portrait.big { height: clamp(225px, calc(100dvh - 735px), 265px); }
+  #combatView .monsterCard.boss .name { color: #ffe0a6; font-size: 24px; }
+  #combatView.bossBattle .monsterCard:not(.boss) { flex-basis: calc(24% - 16px); }
+  #combatView.bossBattle .monsterCard:not(.boss) .portrait.big { height: 140px; }
+  #combatView .monsterCard.boss .skillIcon { width: 48px; height: 48px; }
+  #combatView #bossArena { --arena-height: clamp(124px, calc(100dvh - 852px), 148px); flex: 0 0 var(--arena-height); height: var(--arena-height); width: 100%; margin-top: 16px; border: 1px solid #d2ba785c; border-radius: 6px; background: linear-gradient(0deg, #1b2423e0, #1c2826a0); background-size: auto; box-shadow: inset 0 0 28px #080e0d55; }
+  #combatView #bossArena::before { display: none; }
+  #combatView .arenaCaption { position: absolute; inset: auto 12px 10px; display: flex; justify-content: space-between; gap: 12px; pointer-events: none; color: #c4b58f; opacity: .65; }
+  #combatView .arenaCaption b { font-size: 13px; font-weight: 500; }
+  #combatView .arenaCaption small { font-size: 12px; }
+  #combatView .ruinsSpikeHint { z-index: 5; font-size: 16px; }
+  #combatView .ruinsSpikeImpact { z-index: 6; font-size: 18px; }
+  #combatView .goo { width: 44px; height: 44px; }
+  #app.combatSceneActive #combatActionBar { position: absolute; z-index: 10; left: 4%; right: 4%; bottom: 24px; height: 116px; margin: 0; padding: 14px 24px; display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: 28px; border: 1px solid #d5b87850; border-radius: 6px; background: linear-gradient(110deg, #26342de8, #18241ef5); box-shadow: 0 10px 30px #0004, inset 0 1px #ffeac41a; }
+  #combatActionBar .actionBarTitle { order: 0; color: #d6c198; font: 16px Georgia, 'Noto Serif TC', serif; letter-spacing: .12em; }
+  #combatActionBar .relicActions, #combatActionBar .actionBarGroup { display: contents; }
+  #combatActionBar .charActionButton { order: 1; width: 260px; height: 86px; padding: 7px; justify-content: flex-start; gap: 15px; border: 1px solid #e2c086; border-radius: 5px; background: linear-gradient(110deg, #6b5534, #343c2b); box-shadow: 0 0 18px #d8ad5420; overflow: hidden; }
+  #combatActionBar .charActionButton > img { width: 70px; height: 70px; flex: 0 0 70px; }
+  #combatActionBar .commandCaption { position: relative; z-index: 3; display: grid; gap: 7px; text-align: left; pointer-events: none; }
+  #combatActionBar .commandCaption b { font-size: 17px; color: #ffedc9; }
+  #combatActionBar .commandCaption small { font-size: 13px; color: #e5d3ae; }
+  #combatActionBar .charActionButton .itemCdText { right: auto; width: 84px; font-size: 26px; }
+  #combatActionBar .charActionButton .actionLockOverlay { right: auto; width: 84px; }
+  #combatActionBar .combatItemAction { order: 2; width: 80px; height: 86px; flex-direction: column; gap: 5px; padding: 5px; border-color: #a895675e; border-radius: 5px; background: #1b2923; }
+  #combatActionBar .combatItemAction > img { width: 45px; height: 45px; }
+  #combatActionBar .combatItemAction .quickLabel { display: block; max-width: 100%; font-size: 12px; line-height: 1.2; }
+  #combatActionBar .combatItemAction .quickQty { font-size: 13px; top: 5px; bottom: auto; }
+  #combatActionBar .combatItemAction .itemCdText { font-size: 22px; }
+  #combatActionBar .combatCharmSlot { order: 3; display: flex; align-items: center; gap: 12px; padding-left: 26px; border-left: 1px solid #c9b47a33; }
+  #combatActionBar .combatCharmSlot > small { display: block; order: 2; font-size: 14px; color: #c7b994; }
+  #combatActionBar .activeQuickSlot { width: 58px; height: 58px; border-color: #a895675e; border-radius: 5px; background: #18261f; }
+  #combatActionBar .activeQuickSlot > img { width: 44px; height: 44px; }
+  #combatActionBar .combatItemButton.disabled { opacity: .7; box-shadow: none; }
+  #combatActionBar .combatItemButton:hover:not(.disabled) { border-color: #ffdfa0; filter: brightness(1.12); }
+  #combatActionBar .ruinsLeaveButton { order: 4; margin-left: auto; padding: 12px 16px; font-size: 14px; border-color: #c8b17b70; border-radius: 5px; }
+  #combatView .popup { z-index: 8; font-size: 28px; text-shadow: 0 2px 3px #080b09, 0 0 8px #080b09; }
+  #combatView .popup.dmg { color: #fff0dc; }
+  #combatView .popup.heal { color: #bceca0; }
+  #combatView .portrait { box-shadow: none; }
+  #combatView .portrait.hitFlash::after { display: none; }
+  #combatView .portrait.hitFlash { animation: combatImpact .3s ease-out; }
+  @keyframes combatImpact { from { filter: brightness(1.8) sepia(.25); } to { filter: none; } }
+  #combatView .guardBlockRing { inset: 15% 20%; border-radius: 50%; }
+  #combatView .popup.perfect { color: #ffe197; font-size: 30px; }
+  #combatView #bossArena:has(.goo, .ruinsSpike) .arenaCaption { opacity: .2; }
+  #app.combatSceneActive #combatLogToggleBtn { display: block; position: absolute; z-index: 21; top: 88px; right: 4%; padding: 7px 12px; border: 1px solid #c9b47a66; border-radius: 4px; background: #18241ebf; color: #e8d4af; font-size: 14px; }
+  #app.combatSceneActive #combatLogToggleBtn[aria-expanded="true"] { background: #5c4d30; color: #ffe3ae; }
+  #app.combatSceneActive:not(.combatLogOpen) #log { display: none !important; }
+  #app.combatSceneActive #log { position: absolute; z-index: 22; right: 4%; top: 130px; width: 44%; height: 240px; max-height: 30vh; margin: 0; border: 1px solid #c9b47a66; border-radius: 5px; background: #12201bf5; box-shadow: 0 12px 32px #0008; }
+  #app.combatSceneActive #log .logLine { font-size: 13px; line-height: 1.65; }
+}

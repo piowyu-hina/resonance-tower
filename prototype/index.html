@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="styles/home-growth.css?v=20260906-character10">
 <link rel="stylesheet" href="styles/scene-interactions.css?v=20260906-2">
 <link rel="stylesheet" href="styles/expedition.css?v=20260906-motion6">
+<link rel="stylesheet" href="styles/combat-scene.css?v=20260906-1">
 </head>
 <body>
 
@@ -174,6 +175,7 @@
 
   <!-- 戰鬥 UI：桌面版左右分欄，窄畫面才回到上下排列。 -->
   <div id="combatView">
+    <button id="combatLogToggleBtn" type="button" aria-controls="log" aria-expanded="false" data-i18n="combat.log">戰鬥紀錄</button>
     <div class="combatColumns">
       <section class="panel battleColumn partyColumn">
         <div class="columnHeading"><span data-i18n="combat.party">附身者</span><small data-i18n="combat.auto">自動戰鬥中</small></div>
@@ -184,7 +186,7 @@
       <section class="panel battleColumn enemyColumn">
         <div class="columnHeading"><span data-i18n="combat.monsters">魔物</span><small data-i18n="combat.regionThreat">區域威脅</small></div>
         <div id="monsterSide"></div>
-        <div id="bossArena"></div>
+        <div id="bossArena" aria-label="首領場地機制"><div class="arenaCaption"><b data-i18n="combat.arena">場地機制</b><small data-i18n="combat.arenaHint">留意出現的目標，點擊處理</small></div></div>
       </section>
     </div>
   </div>

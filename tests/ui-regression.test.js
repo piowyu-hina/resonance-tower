@@ -941,6 +941,143 @@ async function testCombatAndGrowthAudit(browser) {
   }
 }
 
+async function testCombatScene(browser) {
+  for (const width of [1440, 1280]) {
+    const page = await openView(browser, 'boss');
+    await page.setViewportSize({ width, height: width === 1280 ? 900 : 1000 });
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      // Park the debug scheduler while checking real DOM input and effects;
+      // unlike a dialogue overlay this does not disable combat controls.
+      (await import('./js/debug.js')).debugState.speedMultiplier = .001;
+      gameState.activeOverlay = 'dialogue';
+      (await import('./js/ui-main.js')).render();
+    });
+    await page.waitForTimeout(300);
+    await page.evaluate(async () => {
+      (await import('./js/state.js')).gameState.activeOverlay = null;
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.equal(await page.locator('#log').isVisible(), false, 'battle log starts folded');
+    await page.locator('#combatLogToggleBtn').click();
+    assert.equal(await page.locator('#log').isVisible(), true);
+    assert.equal(await page.locator('#combatLogToggleBtn').getAttribute('aria-expanded'), 'true');
+    await page.locator('#combatLogToggleBtn').click();
+    const geometry = async () => page.evaluate(() => {
+      const rect = selector => document.querySelector(selector).getBoundingClientRect();
+      const commands = rect('#combatActionBar');
+      const player = rect('#partySide .charCard');
+      const arena = rect('#bossArena');
+      const cards = [...document.querySelectorAll('#monsterSide .monsterCard')].map(el => el.getBoundingClientRect());
+      const enemies = rect('#monsterSide');
+      const enemyHeading = rect('.enemyColumn .columnHeading');
+      return { controlsVisible: commands.bottom <= innerHeight,
+        playerClear: player.bottom < commands.top,
+        arenaClear: arena.bottom < commands.top,
+        enemiesClear: cards.every(card => card.top >= enemyHeading.bottom && card.bottom < arena.top),
+        enemiesFit: cards.every(card => card.left >= enemies.left - 1 && card.right <= enemies.right + 1),
+        noHorizontalScroll: document.documentElement.scrollWidth <= innerWidth };
+    });
+    assert.deepEqual(await geometry(), { controlsVisible: true, playerClear: true, arenaClear: true, enemiesClear: true, enemiesFit: true, noHorizontalScroll: true });
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const c = gameState.roster.find(c => c.id === gameState.party[0]);
+      c.skillCds[0] = 2300;
+      gameState.monsters[0].skillCd = 3200;
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.equal(await page.locator('#partySide .skillCdText').first().textContent(), '3');
+    assert.equal(await page.locator('#monsterSide .skillCdText').first().textContent(), '4');
+    await page.locator('#partySide .skillIcon').first().focus();
+    assert.equal(await page.locator('#tooltip').isVisible(), true, 'automatic skills support keyboard tooltips');
+    await page.locator('#combatLogToggleBtn').focus();
+    await page.evaluate(async () => {
+      (await import('./js/goo.js')).spawnGooBatch();
+    });
+    assert.ok(await page.locator('#bossArena .goo').count() > 0);
+    assert.equal(await page.locator('#bossArena').evaluate(arena => [...arena.querySelectorAll('.goo')].every(el =>
+      el.offsetWidth >= 44 && el.offsetLeft >= 0 && el.offsetTop >= 0 &&
+      el.offsetLeft + el.offsetWidth <= arena.clientWidth && el.offsetTop + el.offsetHeight <= arena.clientHeight)), true);
+    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-slime.png'), fullPage: true });
+    await page.locator('#bossArena .goo').first().press('Enter');
+    while (await page.locator('#bossArena .goo').count()) {
+      // Pulsing targets intentionally never become "stable" for locator.click.
+      const target = await page.locator('#bossArena .goo').first().boundingBox();
+      await page.mouse.click(target.x + target.width / 2, target.y + target.height / 2);
+    }
+    assert.equal(await page.evaluate(async () => (await import('./js/state.js')).gameState.activeGooBatch), null, 'enlarged targets still complete the mechanic');
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const { bossSummonTick } = await import('./js/combat.js');
+      const boss = gameState.monsters[0];
+      for (let i = 0; i < 2; i++) {
+        boss.summonOpeningMs = 0;
+        boss.skill2Cd = 0;
+        bossSummonTick(boss);
+        (await import('./js/ui-combat-effects.js')).flushCombat();
+      }
+    });
+    assert.equal(await page.locator('#monsterSide .monsterCard').count(), 3);
+    assert.equal((await geometry()).enemiesFit, true, 'boss plus two summons fit the battlefield');
+    assert.equal((await geometry()).enemiesClear, true, 'summons do not push boss skills into the arena');
+    if (width === 1440) {
+      await page.waitForTimeout(700);
+      await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-summons.png'), fullPage: true });
+    }
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const { spawnWave, makeMob } = await import('./js/combat.js');
+      gameState.mobsCleared = 0;
+      spawnWave();
+      while (gameState.monsters.length < 3) gameState.monsters.push(makeMob());
+      (await import('./js/ui-combat-effects.js')).flushCombat();
+    });
+    assert.equal(await page.locator('#bossArena').isVisible(), false);
+    assert.equal((await geometry()).enemiesFit, true);
+    await page.locator('#monsterSide img').evaluateAll(images => Promise.all(images.map(img => img.decode())));
+    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-mobs.png'), fullPage: true });
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      gameState.unlockedChars.add('xiaochu');
+      gameState.party = ['xiaochu'];
+      const ui = await import('./js/ui-main.js');
+      ui.buildBattleRoster();
+      ui.render();
+    });
+    await page.locator('#partySide .portrait > img').evaluate(img => img.decode());
+    assert.equal(await page.locator('#partySide .portrait > img').getAttribute('src'), 'assets/characters/xiaochu.png');
+    await page.locator('.charActionButton').click();
+    assert.equal(await page.locator('.charActionButton').getAttribute('aria-disabled'), 'true');
+    assert.equal(await page.locator('.commandState').textContent(), '冷卻中');
+    await page.mouse.move(10, 10);
+    await page.locator('.charActionButton').evaluate(el => el.blur());
+    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-xiaochu.png'), fullPage: true });
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      gameState.expeditionMode = 'ruins';
+      gameState.party = ['wuming'];
+      (await import('./js/ui-main.js')).buildBattleRoster();
+      (await import('./js/combat.js')).spawnRuinsLord();
+      (await import('./js/ui-combat-effects.js')).flushCombat();
+    });
+    await page.waitForTimeout(1500);
+    assert.equal(await page.locator('#monsterSide .lvlTag').textContent(), 'Lv.XXX');
+    assert.equal(await page.locator('#monsterSide .hpRow').evaluate(el => getComputedStyle(el).visibility), 'hidden');
+    assert.equal(await page.locator('#monsterSide .actionRow').isVisible(), true);
+    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-ruins.png'), fullPage: true });
+    const beforeResult = await page.locator('#combatView').boundingBox();
+    for (const phase of ['victory', 'defeat']) {
+      await page.evaluate(async phase => {
+        (await import('./js/state.js')).gameState.phase = phase;
+        (await import('./js/ui-main.js')).render();
+      }, phase);
+      assert.deepEqual(await page.locator('#combatView').boundingBox(), beforeResult, 'result overlays must not resize the battlefield');
+    }
+    assertNoRuntimeErrors(page, 'combat scene redesign');
+    await page.close();
+  }
+}
+
 async function testSoftBattleArt(browser) {
   for (const width of [1440, 390]) {
     const page = await openView(browser, 'village');
@@ -973,10 +1110,10 @@ async function testSoftBattleArt(browser) {
     });
     near(metrics.width, metrics.frameWidth, 'art viewport fills inner frame width');
     near(metrics.height, metrics.frameHeight, 'art viewport fills inner frame height');
-    assert.equal(metrics.fit, 'cover', 'enlarge art proportionally to fill the inner frame');
+    assert.equal(metrics.fit, width >= 960 ? 'contain' : 'cover', 'desktop battlefield preserves the full character silhouette');
     assert.equal(metrics.inside, true, 'art viewport must stay inside the inner portrait frame');
     assert.equal(metrics.mask, 'none', 'no bottom fade');
-    assert.equal(metrics.radius, '6px');
+    assert.equal(metrics.radius, width >= 960 ? '0px' : '6px');
     assert.equal(metrics.frameOverflow, 'visible');
     assert.equal(metrics.frameMask, 'none', 'status icons must not inherit the artwork mask');
     const feedback = await page.evaluate(async () => {
@@ -1597,6 +1734,11 @@ async function testExpeditionDeparture(browser) {
   prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    if (process.argv.includes('--combat-ui-only')) {
+      await testCombatScene(browser);
+      console.log('ui-regression.test.js: combat scene assertions passed');
+      return;
+    }
     if (process.argv.includes('--expedition-only')) {
       await testExpeditionDeparture(browser);
       console.log('ui-regression.test.js: expedition departure assertions passed');
@@ -1639,6 +1781,7 @@ async function testExpeditionDeparture(browser) {
       return;
     }
     await testCombatAndGrowthAudit(browser);
+    await testCombatScene(browser);
     await testSoftBattleArt(browser);
     if (process.argv.includes('--battle-art-only')) {
       console.log('ui-regression.test.js: soft battle art assertions passed');
