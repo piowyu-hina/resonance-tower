@@ -1,7 +1,7 @@
 import { CHAR_DEFS, RARITY_DEFS, regionName, localizedRegionDef, MOBS_PER_FLOOR, SOLO_PARTY_LIMIT, GOO_SKILL_CD_MS, ITEM_DEFS, RUINS_KILL_TARGET } from './constants.js';
 import {
   gameState, PHASES, STATUS_DEFS, isPrepPhase, isCombatSurfacePhase, contractStoryLocked, isCharUnlocked,
-  characterPortraitPath, characterBattlePortraitPath, characterSkins, equippedSkin, unlockReqText, aliveMonsters,
+  characterPortraitPath, characterSkins, equippedSkin, unlockReqText, aliveMonsters,
   RESONANCE_STATES, setResonanceState, CHAPTER1_STATES,
 } from './state.js';
 import { t, formatLocaleNumber } from './i18n.js';
@@ -231,7 +231,7 @@ export function buildBattleRoster() {
     card.className = 'charCard';
     card.innerHTML = `
       <div class="portrait">
-        <img src="${characterBattlePortraitPath(id)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <img src="${characterPortraitPath(id)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <div class="fallback" style="display:none;">${def.icon}</div>
         <div class="statusList" aria-label="目前狀態"></div>
       </div>
