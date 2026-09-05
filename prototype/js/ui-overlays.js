@@ -37,7 +37,6 @@ export const OVERLAY_CLOSERS = {
 export const overlayUiState = {
   prepLocation: 'village',
   homeMode: 'menu',
-  homeEls: {},
   lastRenderedSurface: null,
   defeatRestartTimer: null,
   defeatRestartDeadline: 0,

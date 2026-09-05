@@ -184,7 +184,7 @@ async function testJournalLayout(browser) {
 async function testMajorViewsRender(browser) {
   const views = [
     ['home', '#homeView'],
-    ['growth', '#homeGrowthView'],
+    ['growth', '#characterDetailOverlay.open'],
     ['regions', '#regionView'],
     ['expedition', '#expeditionView'],
     ['shop', '#shopOverlay.open'],
@@ -1265,13 +1265,10 @@ async function testDesktopHome(browser) {
       await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-oath-${width}.png`) });
     }
     await page.click('#homeGrowthBtn b');
-    assert.equal(await page.locator('#homeGrowthView').isVisible(), true);
-    assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeSceneActive')), false);
-    assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeGrowthActive')), true);
-    await page.locator('#homeRoster .homeGrowthPortrait img').first().evaluate(img => img.decode());
-    await page.waitForTimeout(650);
-    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-roster-${width}.png`) });
-    await page.locator('#homeRoster .homeGrowthCard:not(.charLocked)').first().click();
+    assert.equal(await page.locator('#homeGrowthView').count(), 0, 'no intermediate roster page');
+    assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeSceneActive')), true);
+    assert.equal(await page.locator('#characterDetailName').textContent(), '無名');
+    assert.equal(await page.locator('[data-home-character="xiaochu"]').isDisabled(), true);
     assert.equal(await page.locator('#characterDetailOverlay').evaluate(el => el.classList.contains('homeCharacterDetail')), true);
     await page.locator('.detailArtFrame img').evaluate(img => img.decode());
     await page.waitForTimeout(250);
@@ -1286,7 +1283,7 @@ async function testDesktopHome(browser) {
     await page.locator('.growthCard[data-line="action"]').click();
     assert.ok(await page.locator('.growthInspectorHead h3').textContent());
     await page.click('#characterDetailCloseBtn');
-    await page.click('#homeGrowthBackBtn');
+    assert.equal(await page.locator('#homeGrowthBtn').evaluate(el => el === document.activeElement), true, 'closing returns keyboard focus to room entry');
     const door = await page.locator('#homeBackBtn').evaluate(el => {
       const r = el.getBoundingClientRect();
       const scene = document.querySelector('#homeView').getBoundingClientRect();
@@ -1302,6 +1299,20 @@ async function testDesktopHome(browser) {
     });
     assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true);
     assert.equal(await page.locator('#xiaochuTalkBtn > img').isVisible(), false, 'contracted Xiaochu is not physically standing in the room');
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      gameState.unlockedChars.add('xiaochu');
+    });
+    await page.click('#homeGrowthBtn');
+    await page.click('[data-home-character="xiaochu"]');
+    assert.equal(await page.locator('#characterDetailName').textContent(), '小初');
+    assert.equal(await page.locator('[data-home-character="xiaochu"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.evaluate(() => window.__debugHooks.gameState.seenCharacterIds.has('xiaochu')), true);
+    await page.click('[data-home-character="wuming"]');
+    assert.equal(await page.locator('#characterDetailName').textContent(), '無名');
+    await page.keyboard.press('Escape');
+    await page.locator('#characterDetailOverlay').waitFor({ state: 'hidden' });
+    assert.equal(await page.locator('#characterDetailOverlay').isVisible(), false);
     await page.waitForTimeout(650);
     if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-contracted-${width}.png`) });
     await page.click('#xiaochuTalkBtn b');

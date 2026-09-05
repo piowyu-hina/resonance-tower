@@ -1,7 +1,7 @@
 import { CHAR_DEFS, RARITY_DEFS, regionName, localizedRegionDef, MOBS_PER_FLOOR, SOLO_PARTY_LIMIT, GOO_SKILL_CD_MS, ITEM_DEFS, RUINS_KILL_TARGET } from './constants.js';
 import {
   gameState, PHASES, isPrepPhase, isCombatSurfacePhase, contractStoryLocked, isCharUnlocked,
-  characterPortraitPath, characterFullArtPath, characterBattlePortraitPath, characterSkins, equippedSkin, unlockReqText, aliveMonsters,
+  characterPortraitPath, characterBattlePortraitPath, equippedSkin, unlockReqText, aliveMonsters,
   RESONANCE_STATES, setResonanceState, CHAPTER1_STATES,
   characterActionInterval, characterActionCooldown,
   activeCharacterStatuses,
@@ -56,12 +56,7 @@ export function buildUI() {
   });
   document.getElementById('homeGrowthBtn').addEventListener('click', () => {
     if (contractStoryLocked()) return;
-    overlayUiState.homeMode = 'growth';
-    render();
-  });
-  document.getElementById('homeGrowthBackBtn').addEventListener('click', () => {
-    overlayUiState.homeMode = 'menu';
-    render();
+    setCharacterDetailOpen(true, 'wuming');
   });
   document.getElementById('expeditionLocationBtn').addEventListener('click', () => {
     if (gameState.phase !== PHASES.PREP_FLOOR || gameState.partyLocked) return;
@@ -186,39 +181,6 @@ export function buildUI() {
     attachCharTooltip(card.querySelector('.portrait'), c.id);
   });
 
-  const homeRosterEl = document.getElementById('homeRoster');
-  homeRosterEl.innerHTML = '';
-  gameState.roster.forEach(c => {
-    const def = CHAR_DEFS[c.id];
-    const rarity = RARITY_DEFS[def.rarity];
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'homeGrowthCard';
-    card.style.setProperty('--rarity-color', rarity.color);
-    card.innerHTML = `
-      <span class="homeGrowthNew" hidden>NEW</span>
-      <span class="homeGrowthPortrait">
-        <img src="${characterFullArtPath(c.id)}" alt="${def.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-        <span class="fallback" style="display:none;">缺少圖片</span>
-      </span>
-      <span class="homeGrowthInfo">
-        <span class="homeGrowthMeta"><span class="rarityTag">${rarity.label}</span><span>外觀 ${characterSkins(c.id).length}</span></span>
-        <b>${def.name}</b>
-        <small>Lv.<span class="lvl"></span> · ${equippedSkin(c.id).name}</small>
-        <span class="homeGrowthSkills">${def.skills.map(s => `<img src="assets/skills/${s.img}.png" alt="" onerror="this.classList.add('missing');">`).join('')}</span>
-        <em>查看能力與技能配點</em>
-      </span>
-      <span class="homeGrowthLock">尚未締結契約</span>
-    `;
-    card.addEventListener('click', () => {
-      if (!isCharUnlocked(c.id)) return;
-      gameState.seenCharacterIds.add(c.id);
-      render();
-      setCharacterDetailOpen(true, c.id);
-    });
-    homeRosterEl.appendChild(card);
-    overlayUiState.homeEls[c.id] = { card, lvl: card.querySelector('.lvl'), portrait: card.querySelector('.homeGrowthPortrait img'), newBadge: card.querySelector('.homeGrowthNew') };
-  });
 }
 
 // battle roster: ONLY the characters currently in `party`, shown as a row
@@ -519,7 +481,6 @@ export function render() {
   app.classList.toggle('villageActive', atVillageSurface);
   const atHomeSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'home';
   app.classList.toggle('homeSceneActive', atHomeSurface && overlayUiState.homeMode === 'menu');
-  app.classList.toggle('homeGrowthActive', atHomeSurface && overlayUiState.homeMode === 'growth');
   const atRegionSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'regions';
   const visibleSurface = !inPrep
     ? document.getElementById('combatView')
@@ -560,9 +521,7 @@ export function renderPrepView() {
   document.getElementById('villageView').style.display = atVillage ? '' : 'none';
   const homeView = document.getElementById('homeView');
   homeView.style.display = atHome ? '' : 'none';
-  homeView.classList.toggle('showingGrowth', atHome && overlayUiState.homeMode === 'growth');
   document.getElementById('homeMenu').hidden = !atHome || overlayUiState.homeMode !== 'menu';
-  document.getElementById('homeGrowthView').hidden = !atHome || overlayUiState.homeMode !== 'growth';
   const storyLocked = contractStoryLocked();
   const waitingForBook = [RESONANCE_STATES.BOOK_PENDING, RESONANCE_STATES.BOOK_READING].includes(gameState.resonanceState.xiaochu);
   const chapterJournal = [CHAPTER1_STATES.JOURNAL_PENDING, CHAPTER1_STATES.JOURNAL_READING].includes(gameState.chapter1State);
@@ -628,16 +587,6 @@ export function renderPrepView() {
   document.getElementById('bagBtn').disabled = storyLocked;
   document.getElementById('regionView').style.display = atRegions ? '' : 'none';
   document.getElementById('expeditionView').style.display = (atVillage || atHome || atRegions) ? 'none' : '';
-  Object.entries(overlayUiState.homeEls).forEach(([id, refs]) => {
-    const c = gameState.roster.find(entry => entry.id === id);
-    refs.lvl.textContent = c.level;
-    refs.portrait.src = characterFullArtPath(id);
-    const unlocked = isCharUnlocked(id);
-    const isNew = unlocked && !gameState.seenCharacterIds.has(id);
-    refs.card.classList.toggle('charLocked', !unlocked);
-    refs.card.classList.toggle('newCharacter', isNew);
-    refs.newBadge.hidden = !isNew;
-  });
   if (atVillage || atHome || atRegions) return;
 
   if (gameState.phase === PHASES.PREP_FLOOR) {

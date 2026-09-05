@@ -27,7 +27,6 @@ try {
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
       await page.goto(`http://127.0.0.1:${server.address().port}/?debug&view=${view === 'detail' ? 'growth' : view}`, { waitUntil: 'load' });
-      if (view === 'detail') await page.locator('.homeGrowthCard').first().click();
       if (view.startsWith('audit-')) {
         await page.evaluate(async view => {
           const { gameState } = await import('./js/state.js');

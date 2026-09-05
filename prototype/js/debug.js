@@ -6,6 +6,7 @@ import {
 } from './state.js';
 import { openTownShop, addInventoryItem } from './shop.js';
 import { setInventoryOpen } from './ui-commerce.js';
+import { setCharacterDetailOpen } from './ui-character.js';
 import {
   showDefeatOverlay, closeOtherOverlays, showDungeonEntry, prepareDungeonCombat, activatePreparedCombat,
   showBossIntro, prepareBossCombat, overlayUiState,
@@ -75,7 +76,8 @@ export function initDebugTools() {
   }
   if (requestedView === 'growth') {
     overlayUiState.prepLocation = 'home';
-    overlayUiState.homeMode = 'growth';
+    overlayUiState.homeMode = 'menu';
+    setCharacterDetailOpen(true, 'wuming');
   }
   if (requestedView === 'regions') overlayUiState.prepLocation = 'regions';
   if (requestedView === 'expedition') overlayUiState.prepLocation = 'expedition';

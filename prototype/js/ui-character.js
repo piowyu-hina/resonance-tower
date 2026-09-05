@@ -12,8 +12,10 @@ import { render } from './ui-main.js';
 import { attachHoldRepeat } from './ui-press.js';
 export { attachHoldRepeat } from './ui-press.js';
 let disposeGrowthHold = null;
+let detailReturnFocus = null;
 
 export function setCharacterDetailOpen(open, characterId = null) {
+  if (open && gameState.activeOverlay !== 'characterDetail') detailReturnFocus = document.activeElement;
   if (!open) { disposeGrowthHold?.(); disposeGrowthHold = null; }
   if (open) closeOtherOverlays('characterDetail');
   gameState.activeOverlay = open ? 'characterDetail' : (gameState.activeOverlay === 'characterDetail' ? null : gameState.activeOverlay);
@@ -22,9 +24,16 @@ export function setCharacterDetailOpen(open, characterId = null) {
   overlay.classList.toggle('homeCharacterDetail', open && overlayUiState.prepLocation === 'home');
   overlay.setAttribute('aria-hidden', String(!open));
   hideTooltip();
-  if (!open) return;
+  if (!open) {
+    if (overlayUiState.prepLocation === 'home') render();
+    if (detailReturnFocus?.isConnected) detailReturnFocus.focus({ preventScroll: true });
+    detailReturnFocus = null;
+    return;
+  }
   if (!characterId) return;
   renderCharacterDetail(characterId);
+  if (overlayUiState.prepLocation === 'home') render();
+  document.getElementById('characterDetailCloseBtn').focus({ preventScroll: true });
 }
 
 export function attachCharacterCardPress(card, characterId) {
@@ -210,6 +219,8 @@ export function renderCharacterDetail(characterId) {
   const c = gameState.roster.find(member => member.id === characterId);
   const def = CHAR_DEFS[characterId];
   if (!c || !def) return;
+  const atHome = overlayUiState.prepLocation === 'home';
+  if (atHome && isCharUnlocked(characterId)) gameState.seenCharacterIds.add(characterId);
   const unlocked = isCharUnlocked(characterId);
   const selected = gameState.party.includes(characterId);
   const rarity = RARITY_DEFS[def.rarity];
@@ -227,6 +238,15 @@ export function renderCharacterDetail(characterId) {
   content.style.setProperty('--rarity-color', rarity.color);
   content.innerHTML = `
     <div class="detailPortraitColumn">
+      ${atHome ? `<nav class="homeCharacterPicker" aria-label="選擇培養角色">
+        <span class="homeCultivationTitle">角色培養</span>
+        <div class="homeCharacterChoices">${gameState.roster.map(member => {
+          const available = isCharUnlocked(member.id);
+          const isNew = available && !gameState.seenCharacterIds.has(member.id);
+          return `<button type="button" data-home-character="${member.id}" aria-pressed="${member.id === characterId}" ${available ? '' : 'disabled'}>
+            <span>${CHAR_DEFS[member.id].name}</span>${!available ? '<small>尚未締結契約</small>' : isNew ? '<small>NEW</small>' : ''}</button>`;
+        }).join('')}</div>
+      </nav>` : ''}
       <div class="detailArtFrame">
         <img src="${characterFullArtPath(characterId)}" alt="${def.name} 完整立繪">
         <div class="detailMissingArt">缺少目前外觀立繪</div>
@@ -270,6 +290,16 @@ export function renderCharacterDetail(characterId) {
   `;
 
   const fullArt = content.querySelector('.detailArtFrame img');
+  content.querySelectorAll('[data-home-character]').forEach(button => {
+    button.addEventListener('click', () => {
+      const nextId = button.dataset.homeCharacter;
+      if (!isCharUnlocked(nextId)) return;
+      selectedGrowthLine = 'atk';
+      renderCharacterDetail(nextId);
+      render();
+      content.querySelector(`[data-home-character="${nextId}"]`)?.focus({ preventScroll: true });
+    });
+  });
   fullArt.addEventListener('load', () => content.querySelector('.detailArtFrame').classList.add('loaded'));
   fullArt.addEventListener('error', () => {
     fullArt.remove();

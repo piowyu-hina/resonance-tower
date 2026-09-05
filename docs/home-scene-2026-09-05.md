@@ -2,6 +2,10 @@
 
 ## 2026-09-06 cultivation update (current)
 
+Latest interaction: clicking Wuming opens the cultivation detail overlay immediately over the unchanged room. The intermediate roster page and its "← 家" button are removed. A compact character picker above the full art switches between unlocked characters; locked partners cannot be selected, and unseen unlocked partners retain a NEW badge until viewed. Closing with ×, Escape or the backdrop returns to the room and restores focus to the entry. The existing ?debug&view=growth now previews this same panel. No new artwork or gameplay changes.
+
+The two-column warm detail treatment below remains; the earlier full-art roster description is superseded by this direct-entry interaction.
+
 The floating top-left "家" title and subtitle are removed from the room markup, not just hidden by desktop CSS (which previously left the title visible below 960px). The door return and all facility hotspots remain visible and interactive.
 
 The user replaced wuming_home.png with a seated Wuming and a complete right-hand door. The growth hotspot now covers Wuming, the village return covers the door, and the journal hotspot aligns with the new table book. The original button IDs, story locks and guide targets remain intact. The new background is user-provided; no art was generated or edited in this implementation.
