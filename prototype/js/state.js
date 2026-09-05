@@ -4,6 +4,7 @@ import {
   ITEM_DEFS, ROSTER_CHAR_IDS, PRE_AGENT_LEVEL_CAP,
 } from './constants.js';
 import { queueDialogue } from './story.js';
+import { clearGuardState } from './guard.js';
 import { render } from './ui-main.js';
 import { consumeInventoryItem } from './shop.js';
 
@@ -114,6 +115,7 @@ export const gameState = {
 export function initGame() {
   gameState.roster = ROSTER_CHAR_IDS.map(id => {
     const c = { id, level: 1, xp: 0, alive: true, skillCds: [0, 0, 0], manualActionCd: 0, actionCountdown: 0, hasteMult: 1, hasteUntil: 0, dodgeUntil: 0, slowMult: 1, slowUntil: 0, sleepUntilAction: false, charmedUntilAction: false, loadout: { activeItemId: null }, lineLevels: { atk: 0, def: 0, speed: 0, skill0: 0, skill1: 0, skill2: 0, action: 0 } };
+    clearGuardState(c);
     recomputeStats(c);
     c.curHp = c.maxHp;
     return c;
@@ -145,6 +147,9 @@ export function initGame() {
 // back to the emoji if the file is missing, same onerror pattern as
 // everywhere else.
 export const STATUS_DEFS = [
+  { id: 'guard', icon: '🛡️', img: 'def_up', label: '舉盾', tone: 'good', desc: '下一次敵方直接傷害降低，成功格擋後反擊就緒；反傷與事件傷害不觸發', isActive: c => c.guardUntil > 0, remaining: c => c.guardUntil },
+  { id: 'counterReady', icon: '⚔️', img: 'atk_up', label: '反擊就緒', tone: 'good', desc: '下一次「換我了！」獲得強化，使用後消耗；不疊加次數', isActive: c => c.counterUntil > 0, remaining: c => c.counterUntil },
+  { id: 'slashReady', icon: '🔥', img: 'atk_up', label: '斬擊強化', tone: 'good', desc: '下一次踏步斬或換我了！傷害提升，普通攻擊不消耗', isActive: c => c.slashBoostUntil > 0, remaining: c => c.slashBoostUntil },
   { id: 'sleep', icon: '💤', img: 'sleep', label: '睡眠', tone: 'bad', desc: '下一次行動會用來醒來，該次行動被跳過', blocksCharacterAction: true, isActive: c => c.sleepUntilAction },
   { id: 'charm', icon: '💕', img: 'charming', label: '魅惑', tone: 'bad', desc: '下一次行動會改為攻擊友軍（沒有友軍時攻擊自己）', blocksCharacterAction: true, isActive: c => c.charmedUntilAction },
   { id: 'slow', icon: '🐌', img: 'speed_down', label: '降攻速', tone: 'bad', desc: '攻速倒數條累積速度變慢', isActive: c => c.slowUntil > 0, remaining: c => c.slowUntil },

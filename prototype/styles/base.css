@@ -442,6 +442,8 @@ img {
 }
 #bagBtn img { width: 29px; height: 29px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.38)); }
 .charCard.down { opacity: 0.4; }
+.guardBlockRing { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; border: 3px solid #ffe5a0; border-radius: 8px; background: #f8d47b22; color: #ffe5a0; font-size: 42px; pointer-events: none; animation: guardBlockPulse .6s ease-out forwards; }
+@keyframes guardBlockPulse { 0% { opacity: 1; transform: scale(.93); } 35% { opacity: 1; transform: scale(1.04); box-shadow: 0 0 18px #f6d77e88; } 100% { opacity: 0; transform: scale(1.08); } }
 /* Fill only the inner portrait frame at full opacity; status UI stays outside
    the artwork viewport and no hair can spill onto the outer card. */
 .charCard .portrait > img.softBattleArt {

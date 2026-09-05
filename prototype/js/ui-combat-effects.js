@@ -84,6 +84,17 @@ function playCombatEvent(event) {
     case 'skillCast':
       showSkillCastEffect(resolvePortraitEl(event.targetKind, event.targetId), event.skill);
       break;
+    case 'shieldBlock': {
+      const portrait = resolvePortraitEl(event.targetKind, event.targetId);
+      if (!portrait) break;
+      const ring = document.createElement('div');
+      ring.className = 'guardBlockRing';
+      ring.textContent = '🛡️';
+      ring.setAttribute('aria-hidden', 'true');
+      portrait.appendChild(ring);
+      setTimeout(() => ring.remove(), 650);
+      break;
+    }
     case 'monsterDefeated': {
       // renderCombatView() only updates ALIVE monsters' cards, so without this
       // the dead one's card would just freeze on-screen at its last HP reading

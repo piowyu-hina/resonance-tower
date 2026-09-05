@@ -16,6 +16,7 @@ import {
 } from './state.js';
 import { OVERLAY_CLOSERS, closeOtherOverlays, overlayUiState } from './ui-overlays.js';
 import { emitCombatEvent } from './combat-events.js';
+import { clearGuardState, grantGuard, consumeGuard, tickGuardState } from './guard.js';
 import { clearGooArena, gooTick } from './goo.js';
 import { tickShopIdle, addInventoryItem } from './shop.js';
 import { startCharacterEncounter, startChapter1DefeatSequence, tryXiaochuTravelStory } from './story.js';
@@ -216,8 +217,18 @@ function applyRuinsLordReflection(boss, attacker, incomingDamage) {
   }
 }
 
+export function guardEnemyDamage(target, incomingDamage) {
+  const result = consumeGuard(target, incomingDamage);
+  if (result.blocked) {
+    log(`${CHAR_DEFS[target.id].name} 格擋成功，減少 ${result.prevented} 傷害！反擊就緒`, 'party');
+    emitCombatEvent({ type: 'shieldBlock', targetKind: 'char', targetId: target.id });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: target.id, text: `格擋 ${result.prevented}`, cls: 'buff' });
+  }
+  return result.damage;
+}
+
 function damageCharacterFromRuinsLord(boss, target, damage, label) {
-  const dmg = rollDamage(Math.max(1, damage - calcDef(target)));
+  const dmg = guardEnemyDamage(target, rollDamage(Math.max(1, damage - calcDef(target))));
   target.curHp -= dmg;
   log(`${boss.name} 使用【${label}】攻擊 ${CHAR_DEFS[target.id].name}，造成 ${dmg} 傷害`, 'enemy');
   emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
@@ -380,7 +391,7 @@ export function performMonsterSkill(m) {
   skill.effects.forEach(effect => {
     if (effect.type === 'damage') {
       const base = Math.max(1, m.atk * effect.mult - calcDef(target));
-      const dmg = rollDamage(base);
+      const dmg = guardEnemyDamage(target, rollDamage(base));
       target.curHp -= dmg;
       log(`${m.name} 使用【${skill.name}】攻擊 ${CHAR_DEFS[target.id].name}，造成 ${dmg} 傷害`, 'enemy');
       emitCombatEvent({ type: 'popup', targetKind, targetId: target.id, text: '-' + dmg, cls: 'dmg' });
@@ -437,14 +448,25 @@ export function performSkill(c, skill, idx, target) {
   // for offensive skills, the caster (or healed ally) for everything else -
   // not always on the caster like before.
   const lineScaleForThisSkill = skillLineScale(c, idx); // 1x unleveled, up to 2x maxed (see 經驗書)
-  if (skill.type === 'damage') {
-    const dmg = rollDamage(calcAtk(c) * skill.mult * lineScaleForThisSkill);
+  if (skill.type === 'damage' || skill.type === 'counterSlash') {
+    const counterReady = skill.type === 'counterSlash' && c.counterUntil > 0;
+    const mult = counterReady ? skill.counterMult : skill.mult;
+    if (counterReady) c.counterUntil = 0;
+    const slashBoost = skill.slash && c.slashBoostUntil > 0 ? 1 + c.slashBoostPct : 1;
+    if (skill.slash) { c.slashBoostUntil = 0; c.slashBoostPct = 0; }
+    const dmg = rollDamage(calcAtk(c) * mult * lineScaleForThisSkill * slashBoost);
+    if (counterReady) emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: '強化反擊！', cls: 'buff' });
     target.hp -= dmg;
     log(`${name} 使用【${skill.name}】攻擊 ${target.name}，造成 ${dmg} 傷害`, 'party');
     emitCombatEvent({ type: 'skillCast', targetKind: 'monster', targetId: target.id, skill });
     emitCombatEvent({ type: 'popup', targetKind: 'monster', targetId: target.id, text: '-' + dmg, cls: 'dmg' });
     emitCombatEvent({ type: 'flash', targetKind: 'monster', targetId: target.id });
     applyRuinsLordReflection(target, c, dmg);
+  } else if (skill.type === 'guardSelf') {
+    grantGuard(c, skill.reduction * lineScaleForThisSkill, skill.duration);
+    log(`${name} 使用【${skill.name}】，準備格擋下一擊`, 'party');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: '舉盾', cls: 'buff' });
   } else if (skill.type === 'healSelf') {
     const heal = Math.round(c.maxHp * skill.pct * lineScaleForThisSkill);
     c.curHp = Math.min(c.maxHp, c.curHp + heal);
@@ -617,6 +639,7 @@ export function endRun() {
   gameState.gooDebuffStacks = 0;
   clearGooArena();
   gameState.roster.forEach(c => {
+    clearGuardState(c);
     c.curHp = c.maxHp; // resting before the next expedition - both paths heal
     c.alive = true;
     c.skillCds = [0, 0, 0];
@@ -671,10 +694,16 @@ export function useCharacterAction(characterId) {
     log(`${def.name} 發動【${action.name}】！`, 'party');
     emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: characterId, text: 'RANDOM', cls: 'buff' });
     performSkill(c, skill, skillIndex, target);
+  } else if (action.type === 'guardAndSlash') {
+    const scale = lineScale(c, 'action');
+    grantGuard(c, action.reduction * scale, action.duration);
+    c.slashBoostPct = action.slashPct * scale;
+    c.slashBoostUntil = action.duration * 1000;
+    log(`${def.name} 發動【${action.name}】，立即舉盾，下一次斬擊強化！`, 'party');
+    emitCombatEvent({ type: 'skillCast', targetKind: 'char', targetId: c.id, skill: action });
+    emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: c.id, text: '全力以赴！', cls: 'buff' });
   } else if (action.type === 'selfBuffAtkDef') {
-    // 小初「全力以赴」- 見 design.md「契約角色與解鎖」。跟技能線一樣用 'action' 這條
-    // 強化線放大幅度（design.md 98：專屬操作本身有數值時比照技能線疊倍率），
-    // 冷卻縮短則走 actionLineCooldownMult，兩者是各自獨立的加成。
+    // Generic stat-buff action support; Xiaochu now uses guardAndSlash.
     const scale = lineScale(c, 'action');
     gameState.partyBuff.mult = 1 + action.atkPct * scale;
     gameState.partyBuff.until = action.duration * 1000;
@@ -728,6 +757,7 @@ export function tick() {
 export function tickCharacters(alive) {
   alive.forEach(c => {
     if (!c.alive) return;
+    tickGuardState(c, MASTER_TICK_MS);
     const skills = CHAR_DEFS[c.id].skills;
     c.skillCds = c.skillCds.map(cd => Math.max(0, cd - MASTER_TICK_MS));
     c.manualActionCd = Math.max(0, c.manualActionCd - MASTER_TICK_MS);
@@ -775,6 +805,8 @@ export function tickCharacters(alive) {
     for (let i = 0; i < skills.length; i++) {
       if (c.skillCds[i] <= 0) { usedIdx = i; break; }
     }
+    const counterIdx = skills.findIndex((skill, i) => skill.type === 'counterSlash' && c.counterUntil > 0 && c.skillCds[i] <= 0);
+    if (counterIdx >= 0) usedIdx = counterIdx;
     if (usedIdx >= 0) {
       performSkill(c, skills[usedIdx], usedIdx, target);
     } else {
@@ -836,7 +868,7 @@ export function tickMonsters() {
       return;
     }
     const baseDmg = Math.max(1, m.atk - calcDef(target));
-    const dmg = rollDamage(baseDmg);
+    const dmg = guardEnemyDamage(target, rollDamage(baseDmg));
     target.curHp -= dmg;
     log(`${m.name} 普通攻擊 ${CHAR_DEFS[target.id].name}，造成 ${dmg} 傷害`, 'enemy');
     emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: target.id, text: '-' + dmg, cls: 'dmg' });

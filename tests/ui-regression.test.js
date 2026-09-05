@@ -898,6 +898,24 @@ async function testSoftBattleArt(browser) {
     assert.equal(metrics.radius, '6px');
     assert.equal(metrics.frameOverflow, 'visible');
     assert.equal(metrics.frameMask, 'none', 'status icons must not inherit the artwork mask');
+    const feedback = await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const { useCharacterAction, guardEnemyDamage } = await import('./js/combat.js');
+      const { flushCombat } = await import('./js/ui-combat-effects.js');
+      const c = gameState.roster.find(c => c.id === 'xiaochu');
+      c.manualActionCd = 0;
+      c.sleepUntilAction = false;
+      c.charmedUntilAction = false;
+      useCharacterAction(c.id);
+      const reduced = guardEnemyDamage(c, 20);
+      flushCombat();
+      return { reduced, ring: !!document.querySelector('#partySide .guardBlockRing'),
+        statuses: [...document.querySelectorAll('#partySide .statusName')].map(el => el.textContent) };
+    });
+    assert.equal(feedback.reduced, 8);
+    assert.equal(feedback.ring, true, 'successful guard plays shield feedback');
+    assert.ok(feedback.statuses.includes('反擊就緒'));
+    assert.ok(feedback.statuses.includes('斬擊強化'));
     assertNoRuntimeErrors(page, 'soft battle art');
     await page.close();
   }

@@ -139,15 +139,20 @@ export function growthLineValue(c, lineKey, level) {
   if (lineKey === 'action') {
     const cooldownText = `${(def.action.cooldown * (1 - 0.5 * level / STAT_LINE_MAX)).toFixed(1)} 秒冷卻`;
     // most actions (e.g. 無名 randomSkill) have no magnitude of their own to
-    // scale - only cooldown moves. Actions that do (like 小初 selfBuffAtkDef)
+    // scale - only cooldown moves. Actions with a magnitude (including guards)
     // show their scaled magnitude alongside it, same as a skill line would.
     if (def.action.type === 'selfBuffAtkDef') {
       return `${cooldownText} · +${(def.action.atkPct * scale * 100).toFixed(1)}% 攻擊 / +${(def.action.defAmount * scale).toFixed(1)} 防禦`;
+    }
+    if (def.action.type === 'guardAndSlash') {
+      return `${cooldownText} · 格擋減傷 ${(Math.min(.85, def.action.reduction * scale) * 100).toFixed(0)}% / 下次斬擊 +${(def.action.slashPct * scale * 100).toFixed(0)}%`;
     }
     return cooldownText;
   }
   const skill = def.skills[Number(lineKey.replace('skill', ''))];
   if (skill.type === 'damage') return `${(skill.mult * scale).toFixed(2)} 倍傷害`;
+  if (skill.type === 'guardSelf') return `單次減傷 ${(Math.min(.85, skill.reduction * scale) * 100).toFixed(0)}%（上限 85%）`;
+  if (skill.type === 'counterSlash') return `${(skill.mult * scale).toFixed(2)} 倍 / 反擊 ${(skill.counterMult * scale).toFixed(2)} 倍傷害`;
   if (skill.type === 'healSelf' || skill.type === 'healAlly') return `${(skill.pct * scale * 100).toFixed(1)}% 最大生命`;
   if (skill.type === 'buffAtk') return `+${(skill.pct * scale * 100).toFixed(1)}% 攻擊`;
   if (skill.type === 'buffDefParty') return `+${(skill.amount * scale).toFixed(1)} 防禦`;

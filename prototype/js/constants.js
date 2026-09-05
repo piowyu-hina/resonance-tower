@@ -247,13 +247,13 @@ export const CHAR_DEFS = {
     atkInterval: 2200, // ms between this character's own actions - their "attack speed"
     action: {
       name: '全力以赴', icon: '🔥', img: 'xiaochu_action', cooldown: 16,
-      type: 'selfBuffAtkDef', atkPct: 0.15, defAmount: 2, duration: 6,
-      desc: '同時提升攻擊力 15% 與防禦力 2 點，持續 6 秒',
+      type: 'guardAndSlash', reduction: 0.6, slashPct: 0.5, duration: 8,
+      desc: '立即獲得一次 60% 減傷格擋，並使下一次斬擊傷害提升 50%；效果持續 8 秒，不疊加次數',
     },
     skills: [
-      { name: '重擊',   icon: '💥', img: 'xiaochu_skill1', cd: 4,  type: 'damage',      mult: 2.0, desc: '造成 2 倍攻擊力傷害' },
-      { name: '防禦姿態', icon: '🛡️', img: 'xiaochu_skill2', cd: 8,  type: 'buffDefParty', amount: 3, duration: 6, desc: '隊伍防禦提升 3 點，持續 6 秒' },
-      { name: '力量增幅', icon: '💪', img: 'xiaochu_skill3', cd: 12, type: 'buffAtk',     pct: 0.25, duration: 5, desc: '隊伍攻擊力提升 25%，持續 5 秒' },
+      { name: '踏步斬', icon: '⚔️', img: 'xiaochu_skill1', cd: 4, type: 'damage', mult: 2, slash: true, desc: '向前斬擊，造成 2 倍攻擊力傷害' },
+      { name: '我擋得住！', icon: '🛡️', img: 'xiaochu_skill2', cd: 8, type: 'guardSelf', reduction: 0.6, duration: 8, desc: '8 秒內下一次敵方直接傷害減少 60%；成功格擋後獲得 10 秒反擊就緒，不疊加次數' },
+      { name: '換我了！', icon: '⚔️', img: 'xiaochu_skill3', cd: 12, type: 'counterSlash', mult: 2, counterMult: 3.5, slash: true, desc: '造成 2 倍攻擊力傷害；消耗反擊就緒時提升為 3.5 倍，且就緒後優先施放' },
     ],
   },
   fengzi: {
