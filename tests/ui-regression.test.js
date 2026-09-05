@@ -1260,6 +1260,8 @@ async function testDesktopHome(browser) {
       return ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'color', 'backgroundColor', 'border', 'borderRadius', 'padding', 'letterSpacing', 'textShadow'].map(key => style[key]);
     }));
     assert.deepEqual(hintStyles[0], hintStyles[1], 'home cultivation and exit share the same visual language');
+    assert.equal(hintStyles[0][1], '23px', 'retain the original cultivation lettering');
+    assert.equal(hintStyles[0][5], 'rgba(0, 0, 0, 0)', 'scene labels have no capsule background');
     for (const id of ['homeGrowthBtn', 'travelJournalBtn', 'contractFacilityBtn']) {
       const target = page.locator(`#${id}`);
       assert.equal(await target.isVisible(), true);

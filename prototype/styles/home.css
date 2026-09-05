@@ -62,24 +62,23 @@
   .homeSceneActive #homeMenu #travelJournalBtn > span:not(.homeGuideHina) { top: 52%; }
   .homeSceneActive #homeMenu #xiaochuTalkBtn.soulConversation > span:not(.homeGuideHina) { top: 0; }
   .homeSceneActive #homeMenu #homeGrowthBtn > span:not(.homeGuideHina) { top: 100%; }
-  .homeSceneActive #homeMenu .homeFacilityBtn b { position: relative; pointer-events: auto; padding: 6px 14px 13px; font-family: Georgia, 'Noto Serif TC', serif; color: #fff0d9; font-size: 23px; font-weight: 600; letter-spacing: .12em; text-shadow: 0 2px 3px #21160f, 0 0 9px #21160f; }
+  .homeSceneActive #homeBackBtn > span,
+  .homeSceneActive #homeMenu .homeFacilityBtn b { position: relative; pointer-events: auto; padding: 6px 14px 13px; font-family: Georgia, 'Noto Serif TC', serif; color: #fff0d9; font-size: 23px; font-weight: 600; line-height: 1.5; letter-spacing: .12em; text-shadow: 0 2px 3px #21160f, 0 0 9px #21160f; }
+  .homeSceneActive #homeBackBtn > span::after,
   .homeSceneActive #homeMenu .homeFacilityBtn b::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 44px; height: 1px; background: linear-gradient(90deg, transparent, #f6cf8c 25%, #f6cf8c 75%, transparent); transition: width .2s; }
   .homeSceneActive #homeMenu .homeFacilityBtn small { font-size: 14px; color: #f4dfbc; line-height: 1.5; max-width: 280px; padding: 3px 12px; text-align: center; text-shadow: 0 1px 4px #21160f, 0 0 8px #21160f; background: radial-gradient(ellipse, #30271eb0, transparent 75%); opacity: 0; transition: opacity .18s; }
   .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible):not(:disabled) small { opacity: 1; }
+  .homeSceneActive #homeBackBtn:is(:hover, :focus-visible):not(:disabled) > span::after,
   .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible, .storyRequired) b::after { width: 72px; }
-  .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible, .storyRequired) b { color: #ffe1a3; }
-  .homeSceneActive #homeBackBtn > span,
-  .homeSceneActive #homeMenu #homeGrowthBtn b { padding: 6px 14px; border: 1px solid #d9ba7b38; border-radius: 20px; background: #251b1399; color: #dbc5a4; font-family: Georgia, 'Noto Serif TC', serif; font-size: 16px; font-weight: 500; line-height: 1.5; letter-spacing: .16em; text-shadow: 0 2px 5px #19120f; transition: background .2s, color .2s, border-color .2s; }
-  .homeSceneActive #homeMenu #homeGrowthBtn b::after { content: none; }
   .homeSceneActive #homeBackBtn:is(:hover, :focus-visible):not(:disabled) > span,
-  .homeSceneActive #homeMenu #homeGrowthBtn:is(:hover, :focus-visible):not(:disabled) b { background: #34251de6; color: #fff2da; border-color: #eac78a99; }
+  .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible, .storyRequired) b { color: #ffe1a3; }
   .homeSceneActive #homeMenu .homeFacilityBtn:focus-visible { outline: 2px dashed #eac78a; outline-offset: 5px; }
   .homeSceneActive #homeMenu .homeFacilityBtn:disabled { opacity: .45; cursor: default; }
   .homeSceneActive #homeMenu .homeFacilityBtn.storyFocusTarget { opacity: 1; }
   .homeSceneActive #homeMenu .homeGuideHina { top: auto; bottom: 16%; right: -70px; width: 180px; height: 218px; }
   .homeSceneActive #homeMenu #homeGrowthBtn .homeGuideHina { right: -65%; bottom: 40%; }
   @media (prefers-reduced-motion: reduce) {
-    .homeSceneActive #homeBackBtn > span, .homeSceneActive #homeMenu #homeGrowthBtn b { transition: none; }
+    .homeSceneActive #homeBackBtn > span::after { transition: none; }
     .homeSceneActive #homeMenu .homeFacilityBtn b::after, .homeSceneActive #homeMenu .homeFacilityBtn small { transition: none; }
   }
 }
