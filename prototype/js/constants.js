@@ -225,7 +225,7 @@ export const CHAR_DEFS = {
     baseHp: 32, baseAtk: 7, baseDef: 1,
     atkInterval: 1800, // middle of the pack pace - generalist, not a speedster
     action: {
-      name: '我還能撐住', icon: '💚', img: 'wuming_action', cooldown: 18,
+      name: '我還能撐住', icon: '💚', img: 'wuming_action_resolve_v2', cooldown: 18,
       type: 'healAndResolve', pct: 0.15, reduction: 0.3, duration: 4,
       desc: '恢復自身 15% 最大生命，4 秒內受到的敵方直接傷害減少 30%；不含反傷與事件傷害，不會復活或免死',
     },

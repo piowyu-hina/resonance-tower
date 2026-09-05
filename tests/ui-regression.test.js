@@ -1077,7 +1077,8 @@ async function testWumingSkills(browser) {
       assert.equal(await page.locator('.growthCard b').filter({ hasText: name }).count(), 1);
     }
     for (const id of ['skill1', 'skill2', 'skill3', 'action']) {
-      const img = page.locator(`.growthCard img[src="assets/skills/wuming_${id}.png"]`);
+      const basename = id === 'action' ? 'wuming_action_resolve_v2' : `wuming_${id}`;
+      const img = page.locator(`.growthCard img[src="assets/skills/${basename}.png"]`);
       await img.evaluate(el => el.decode());
       assert.ok(await img.evaluate(el => el.naturalWidth > 0));
     }
@@ -1106,6 +1107,7 @@ async function testWumingSkills(browser) {
       return { hp: c.curHp, statuses: [...document.querySelectorAll('#partySide .statusName')].map(el => el.textContent) };
     });
     assert.ok(state.hp > 1);
+    assert.equal(await page.locator('img[src="assets/skills/wuming_action_resolve_v2.png"]:visible').count(), 1, 'combat action uses the versioned resolve artwork');
     for (const label of ['靈巧閃避', '破綻就緒', '撐住']) assert.ok(state.statuses.includes(label));
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     assertNoRuntimeErrors(page, 'Wuming skill UI');
