@@ -376,7 +376,7 @@
 }
 
 @media (max-width: 800px) {
-  #eventOverlay { align-items: flex-start; padding: 8px; overflow-y: auto; }
+  #eventOverlay { align-items: flex-start; padding: 8px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #4e5853 transparent; }
   #eventModal { width: 100%; height: auto; min-height: calc(100dvh - 16px); grid-template-columns: 1fr; grid-template-rows: 190px minmax(0, 1fr); border-radius: 13px; }
   .eventSceneShade { background: linear-gradient(0deg, rgba(13, 17, 19, .78), transparent 58%), radial-gradient(circle at 50% 35%, transparent, rgba(4, 7, 8, .35)); }
   .eventSceneLabel { left: 16px; bottom: 14px; }

@@ -154,27 +154,35 @@
 .teleportBreakAura {
   left: 50%;
   top: 43%;
-  width: min(58vw,680px);
-  height: min(58vw,680px);
-  margin: calc(min(58vw,680px) / -2) 0 0 calc(min(58vw,680px) / -2);
+  width: min(72vmin,720px);
+  height: min(72vmin,720px);
+  margin: calc(min(72vmin,720px) / -2) 0 0 calc(min(72vmin,720px) / -2);
   border-radius: 50%;
-  background:
-    url('../assets/story/goddess_back.png') center / 78% no-repeat,
-    radial-gradient(circle, rgba(255,255,255,.94) 0 4%, rgba(255,221,139,.42) 18%, rgba(145,210,255,.12) 41%, transparent 68%);
+  background: radial-gradient(circle, rgba(255,255,255,.76) 0 3%, rgba(255,220,128,.38) 17%, rgba(155,205,255,.11) 42%, transparent 70%);
   opacity: 0;
-  filter: drop-shadow(0 0 35px rgba(255,220,137,.78));
+}
+.teleportBreakAura::before,
+.teleportBreakAura::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255,226,147,.54);
+  box-shadow: 0 0 18px rgba(255,214,112,.28), inset 0 0 14px rgba(255,243,208,.2);
+}
+.teleportBreakAura::before { inset: 20%; }
+.teleportBreakAura::after { inset: 29%; border-color: rgba(255,246,216,.36); }
 }
 .teleportBreakShockwave {
   left: 50%;
   top: 43%;
   right: auto;
   bottom: auto;
-  width: 120px;
-  height: 120px;
-  margin: -60px 0 0 -60px;
-  border: 2px solid rgba(255,248,218,.9);
+  width: min(12vmin,120px);
+  height: min(12vmin,120px);
+  margin: calc(min(12vmin,120px) / -2) 0 0 calc(min(12vmin,120px) / -2);
+  border: 1px solid rgba(255,226,145,.92);
   border-radius: 50%;
-  box-shadow: 0 0 20px rgba(255,223,135,.92), inset 0 0 18px rgba(255,255,255,.7);
+  box-shadow: 0 0 18px rgba(255,210,95,.72), inset 0 0 12px rgba(255,255,255,.5);
   opacity: 0;
 }
 .teleportBreakStone {
@@ -185,16 +193,16 @@
   aspect-ratio: 1;
   margin: calc(min(48vw,500px) / -2) 0 0 calc(min(48vw,500px) / -2);
   transform-origin: 50% 50%;
-  filter: drop-shadow(0 0 16px rgba(255,226,153,.86)) drop-shadow(0 18px 28px rgba(0,0,0,.72));
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
-.teleportBreakStone img { width: 100%; height: 100%; object-fit: contain; }
-.teleportBreakFragment { opacity: 0; }
-.teleportBreakFragment.fragment1 { clip-path: polygon(0 0,53% 0,49% 44%,0 37%); --break-x:-90px; --break-y:-120px; --break-r:-18deg; }
-.teleportBreakFragment.fragment2 { clip-path: polygon(53% 0,100% 0,100% 38%,49% 44%); --break-x:105px; --break-y:-102px; --break-r:22deg; }
-.teleportBreakFragment.fragment3 { clip-path: polygon(0 37%,49% 44%,46% 68%,0 77%); --break-x:-132px; --break-y:-4px; --break-r:-34deg; }
-.teleportBreakFragment.fragment4 { clip-path: polygon(49% 44%,100% 38%,100% 75%,53% 67%); --break-x:142px; --break-y:8px; --break-r:31deg; }
-.teleportBreakFragment.fragment5 { clip-path: polygon(0 77%,46% 68%,51% 100%,0 100%); --break-x:-84px; --break-y:128px; --break-r:26deg; }
-.teleportBreakFragment.fragment6 { clip-path: polygon(46% 68%,100% 75%,100% 100%,51% 100%); --break-x:96px; --break-y:138px; --break-r:-24deg; }
+.teleportBreakStone img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(255,226,153,.72)) drop-shadow(0 16px 24px rgba(0,0,0,.64));
+}
+.teleportBreakShattered { opacity: 0; }
 .teleportBreakCrack {
   position: absolute;
   left: 50%;
@@ -211,9 +219,18 @@
 .teleportBreakCrack.crack2 { transform: translate(-50%,-50%) rotate(91deg); }
 .teleportBreakCrack.crack3 { transform: translate(-50%,-50%) rotate(151deg); }
 .teleportBreakFlash {
-  background: radial-gradient(circle at 50% 43%, #fff 0 4%, rgba(255,245,204,.98) 13%, rgba(255,211,109,.58) 28%, rgba(200,230,255,.12) 52%, transparent 72%);
+  left: 50%;
+  top: 43%;
+  right: auto;
+  bottom: auto;
+  width: min(82vmin,820px);
+  height: min(82vmin,820px);
+  margin: calc(min(82vmin,820px) / -2) 0 0 calc(min(82vmin,820px) / -2);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 4%, rgba(255,245,204,.98) 13%, rgba(255,211,109,.58) 28%, rgba(200,230,255,.12) 52%, transparent 72%);
   opacity: 0;
   transform: scale(.3);
+  will-change: transform, opacity;
 }
 .teleportBreakSparks span {
   position: absolute;
@@ -237,13 +254,41 @@
 .teleportBreakSparks span:nth-child(8) { --spark-x:-218px; --spark-y:76px; --spark-r:252deg; }
 
 #teleportStoneBreak.playing .teleportBreakBackdrop { animation: teleportBreakBackdrop 2.2s ease both; }
-#teleportStoneBreak.playing .teleportBreakAura { animation: teleportBreakAura 2.2s cubic-bezier(.15,.72,.18,1) both; }
-#teleportStoneBreak.playing .teleportBreakWhole { animation: teleportStoneWhole 2.2s cubic-bezier(.2,.7,.2,1) both; }
-#teleportStoneBreak.playing .teleportBreakFragment { animation: teleportStoneFragment 2.2s cubic-bezier(.1,.7,.18,1) both; }
-#teleportStoneBreak.playing .teleportBreakShockwave { animation: teleportBreakShockwave 2.2s cubic-bezier(.05,.72,.16,1) both; }
-#teleportStoneBreak.playing .teleportBreakCrack { animation: teleportBreakCrack 2.2s ease both; }
-#teleportStoneBreak.playing .teleportBreakFlash { animation: teleportBreakFlash 2.2s ease-out both; }
-#teleportStoneBreak.playing .teleportBreakSparks span { animation: teleportBreakSpark 2.2s cubic-bezier(.08,.7,.12,1) both; }
+#teleportStoneBreak.playing .teleportBreakAura {
+  animation:
+    teleportBreakAuraMove 1.2s cubic-bezier(.12,.76,.18,1) .58s both,
+    teleportBreakAuraFade 1.2s linear .58s both;
+}
+#teleportStoneBreak.playing .teleportBreakWhole {
+  animation:
+    teleportStoneWholeSettle .7s cubic-bezier(.18,.72,.2,1) both,
+    teleportStoneWholeFade .7s linear both;
+}
+#teleportStoneBreak.playing .teleportBreakShattered {
+  animation:
+    teleportStoneShatteredMove 1.16s cubic-bezier(.12,.76,.18,1) .6s both,
+    teleportStoneShatteredFade 1.16s linear .6s both;
+}
+#teleportStoneBreak.playing .teleportBreakShockwave {
+  animation:
+    teleportBreakShockwaveMove .66s cubic-bezier(.08,.72,.12,1) .59s both,
+    teleportBreakShockwaveFade .66s linear .59s both;
+}
+#teleportStoneBreak.playing .teleportBreakCrack {
+  animation:
+    teleportBreakCrackGrow .25s linear .47s both,
+    teleportBreakCrackFade .25s linear .47s both;
+}
+#teleportStoneBreak.playing .teleportBreakFlash {
+  animation:
+    teleportBreakFlashMove .52s cubic-bezier(.1,.72,.14,1) .55s both,
+    teleportBreakFlashFade .52s linear .55s both;
+}
+#teleportStoneBreak.playing .teleportBreakSparks span {
+  animation:
+    teleportBreakSparkMove .82s cubic-bezier(.1,.72,.16,1) .6s both,
+    teleportBreakSparkFade .82s linear .6s both;
+}
 
 /* Chapter 1: shattered teleport stone -> heaven, then the return trip. */
 #heavenTransition {
@@ -266,17 +311,32 @@
   background: url('../assets/backgrounds/heaven_sanctuary.png') center / cover no-repeat;
 }
 .heavenTransitionCorridor {
-  background: url('../assets/effects/teleport_corridor.png') center / cover no-repeat;
+  overflow: hidden;
+  background: #071016 url('../assets/effects/teleport_corridor.png') center / cover no-repeat;
+}
+.heavenTransitionCorridor::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+}
+.heavenTransitionCorridor::after {
+  background:
+    radial-gradient(circle at center, rgba(255,255,255,.28) 0 8%, rgba(223,244,255,.1) 24%, transparent 58%),
+    radial-gradient(ellipse at center, transparent 40%, rgba(4,12,18,.2) 76%, rgba(2,7,11,.52) 100%);
 }
 .heavenTransitionSigil { display: grid; place-items: center; }
 .heavenTransitionSigil img {
-  width: min(54vw,620px);
+  width: min(76vmin,760px);
   aspect-ratio: 1;
+  padding: 11%;
   object-fit: contain;
   filter: drop-shadow(0 0 28px rgba(255,213,116,.9));
+  -webkit-mask-image: radial-gradient(circle, #000 0 36%, rgba(0,0,0,.9) 40%, transparent 48%);
+  mask-image: radial-gradient(circle, #000 0 36%, rgba(0,0,0,.9) 40%, transparent 48%);
 }
 .heavenTransitionVeil {
-  background: radial-gradient(circle, #fff 0 12%, rgba(255,252,238,.96) 28%, rgba(238,249,255,.2) 68%, transparent 82%);
+  background: radial-gradient(circle closest-side at center, #fff 0 12%, rgba(255,252,238,.96) 28%, rgba(238,249,255,.2) 68%, transparent 100%) center / 30% 30% no-repeat;
 }
 .heavenTransitionParticles span {
   position: absolute;
@@ -486,48 +546,67 @@
   100% { opacity:1; transform:none; filter:brightness(1); }
 }
 @keyframes teleportBreakBackdrop { 0% { opacity:0; } 18%,76% { opacity:1; } 100% { opacity:0; } }
-@keyframes teleportBreakAura {
-  0%,8% { opacity:0; transform:scale(.42) rotate(-18deg); filter:blur(8px) brightness(1.8); }
-  24% { opacity:.72; transform:scale(.82) rotate(-5deg); filter:blur(0) brightness(1.18); }
-  38% { opacity:.92; transform:scale(1) rotate(0); }
-  51% { opacity:1; transform:scale(1.32) rotate(12deg); filter:brightness(2.3); }
-  100% { opacity:0; transform:scale(2.35) rotate(38deg); filter:blur(5px) brightness(2); }
+@keyframes teleportBreakAuraMove {
+  from { transform:scale(.28); }
+  to { transform:scale(1.2); }
 }
-@keyframes teleportStoneWhole {
-  0% { opacity:0; transform:translateY(30px) scale(.46); filter:brightness(.7) blur(5px); }
-  16% { opacity:1; transform:translateY(0) scale(.92); filter:brightness(1.05) blur(0); }
-  28% { transform:translateX(-2px) scale(1); }
-  32% { transform:translateX(3px) scale(1.025); filter:brightness(1.45); }
-  37% { opacity:1; transform:translateX(-3px) scale(1.02); filter:brightness(2.4); }
-  38%,100% { opacity:0; transform:scale(1.04); }
+@keyframes teleportBreakAuraFade {
+  0% { opacity:0; }
+  10% { opacity:.82; }
+  64% { opacity:.52; }
+  100% { opacity:0; }
 }
-@keyframes teleportStoneFragment {
-  0%,37% { opacity:0; transform:translate(0,0) scale(1.02) rotate(0); filter:brightness(2.4); }
-  38% { opacity:1; }
-  53% { opacity:1; filter:brightness(1.35); }
-  100% { opacity:0; transform:translate(var(--break-x),var(--break-y)) scale(.72) rotate(var(--break-r)); filter:brightness(1) blur(1px); }
+@keyframes teleportStoneWholeSettle {
+  from { transform:translateY(22px) scale(.72); }
+  to { transform:translateY(0) scale(.95); }
 }
-@keyframes teleportBreakCrack {
-  0%,28% { opacity:0; height:20px; }
-  31% { opacity:1; height:170px; }
-  38% { opacity:1; filter:brightness(2); }
-  42%,100% { opacity:0; height:220px; }
+@keyframes teleportStoneWholeFade {
+  0% { opacity:0; }
+  14%,82% { opacity:1; }
+  100% { opacity:0; }
 }
-@keyframes teleportBreakFlash {
-  0%,32% { opacity:0; transform:scale(.18); }
-  38% { opacity:1; transform:scale(.58); }
-  48% { opacity:.92; transform:scale(1.1); }
-  72%,100% { opacity:0; transform:scale(2.25); }
+@keyframes teleportStoneShatteredMove {
+  from { transform:scale(.6) rotate(-1.5deg); }
+  to { transform:scale(1.14) rotate(0); }
 }
-@keyframes teleportBreakShockwave {
-  0%,35% { opacity:0; transform:scale(.25); }
-  39% { opacity:1; }
-  73%,100% { opacity:0; transform:scale(6.2); }
+@keyframes teleportStoneShatteredFade {
+  0% { opacity:0; }
+  9% { opacity:1; }
+  70% { opacity:1; }
+  100% { opacity:0; }
 }
-@keyframes teleportBreakSpark {
-  0%,36% { opacity:0; transform:translate(0,0) scale(.2) rotate(var(--spark-r)); }
-  41% { opacity:1; }
-  100% { opacity:0; transform:translate(var(--spark-x),var(--spark-y)) scale(1.3) rotate(var(--spark-r)); }
+@keyframes teleportBreakCrackGrow {
+  from { height:24px; }
+  to { height:205px; }
+}
+@keyframes teleportBreakCrackFade {
+  0%,72% { opacity:1; }
+  100% { opacity:0; }
+}
+@keyframes teleportBreakFlashMove {
+  from { transform:scale(.1); }
+  to { transform:scale(1.24); }
+}
+@keyframes teleportBreakFlashFade {
+  0% { opacity:0; }
+  13% { opacity:1; }
+  100% { opacity:0; }
+}
+@keyframes teleportBreakShockwaveMove {
+  from { transform:scale(.25); }
+  to { transform:scale(5.4); }
+}
+@keyframes teleportBreakShockwaveFade {
+  0% { opacity:.96; }
+  100% { opacity:0; }
+}
+@keyframes teleportBreakSparkMove {
+  from { transform:translate(0,0) scale(.2) rotate(var(--spark-r)); }
+  to { transform:translate(var(--spark-x),var(--spark-y)) scale(1.3) rotate(var(--spark-r)); }
+}
+@keyframes teleportBreakSparkFade {
+  0% { opacity:1; }
+  100% { opacity:0; }
 }
 @keyframes heavenSanctuaryArrive {
   0%,57% { opacity:0; transform:scale(1.08); filter:brightness(1.65) blur(9px); }
@@ -544,14 +623,15 @@
 @keyframes heavenSigilBurst {
   0% { opacity:0; transform:scale(.08) rotate(-48deg); filter:brightness(.5) blur(8px); }
   18% { opacity:1; transform:scale(.44) rotate(-18deg); filter:brightness(1.7) blur(0); }
-  52% { opacity:.96; transform:scale(1.03) rotate(8deg); }
-  100% { opacity:0; transform:scale(7.4) rotate(38deg); filter:brightness(2.8) blur(2px); }
+  52% { opacity:.96; transform:scale(.92) rotate(8deg); }
+  78% { opacity:.34; transform:scale(1.1) rotate(22deg); }
+  100% { opacity:0; transform:scale(1.28) rotate(38deg); filter:brightness(2.8) blur(2px); }
 }
 @keyframes heavenArrivalFlash {
-  0%,22% { opacity:0; transform:scale(.35); }
-  42% { opacity:.92; transform:scale(1.05); }
-  67% { opacity:.96; }
-  100% { opacity:0; transform:scale(2.2); }
+  0%,22% { opacity:0; background-size:30% 30%; }
+  42% { opacity:.92; background-size:86% 86%; }
+  67% { opacity:.96; background-size:158% 158%; }
+  100% { opacity:0; background-size:220% 220%; }
 }
 @keyframes heavenShardFlight {
   0% { opacity:0; transform:translate(-50%,-50%) scale(.1) rotate(0); }
@@ -569,8 +649,8 @@
   100% { opacity:0; transform:scale(.78); filter:brightness(3.4) blur(4px); }
 }
 @keyframes heavenReturnSigil {
-  0%,12% { opacity:0; transform:scale(4.8) rotate(40deg); }
-  45% { opacity:1; transform:scale(1) rotate(2deg); filter:brightness(1.5); }
+  0%,12% { opacity:0; transform:scale(1.3) rotate(40deg); }
+  45% { opacity:1; transform:scale(.92) rotate(2deg); filter:brightness(1.5); }
   76% { opacity:1; transform:scale(.72) rotate(-10deg); }
   100% { opacity:0; transform:scale(.05) rotate(-54deg); filter:brightness(3) blur(6px); }
 }
@@ -631,8 +711,8 @@
   .contractFormedStage { height: min(430px,58vh); }
   #dialogueOverlay.heavenDialogue #dialoguePortraitFrame.goddessSpeaker { width: 250px; height: min(390px,52vh); }
   #dialogueOverlay.heavenDialogue #dialoguePortraitFrame.goddessSpeaker::before { inset: -24% -38%; }
-  .teleportBreakStone { width: min(78vw,430px); margin: calc(min(78vw,430px) / -2) 0 0 calc(min(78vw,430px) / -2); }
-  .heavenTransitionSigil img { width: min(82vw,520px); }
+  .teleportBreakStone { width: min(76vmin,430px); margin: calc(min(76vmin,430px) / -2) 0 0 calc(min(76vmin,430px) / -2); }
+  .heavenTransitionSigil img { width: min(76vmin,520px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

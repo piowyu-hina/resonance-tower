@@ -87,6 +87,18 @@ const { destroyRuinsSpike } = await import('../prototype/js/ruins.js');
   boss.skill3Cd = 0;
   boss.actionCountdown = 0;
   tickRuinsLord(boss);
+  const untouchedSpikeWave = drainCombatEvents().find(event => event.type === 'ruinsSpikeRush');
+  assert.equal(untouchedSpikeWave.spikeIds.length, 4);
+  boss.pendingSpikeMs = 100;
+  tickRuinsLord(boss);
+  const fullImpactEvent = drainCombatEvents().find(event => event.type === 'ruinsSpikeImpact');
+  assert.equal(fullImpactEvent.hitCount, 4, 'all four unbroken spikes must be reported as hits');
+  assert.ok(fullImpactEvent.totalDamage > 0);
+
+  boss.skillCursor = 0;
+  boss.skill3Cd = 0;
+  boss.actionCountdown = 0;
+  tickRuinsLord(boss);
   const secondSpikeEvent = drainCombatEvents().find(event => event.type === 'ruinsSpikeRush');
   secondSpikeEvent.spikeIds.forEach(spikeId => assert.equal(destroyRuinsSpike(boss.id, spikeId), true));
   const hpBeforeClearedWave = wuming.curHp;

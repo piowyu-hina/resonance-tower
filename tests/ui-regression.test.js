@@ -470,7 +470,7 @@ async function testChapter1RuinsFlow(browser) {
   await page.locator('#bossArena .ruinsSpike').first().dispatchEvent('click');
   await page.waitForFunction(() => document.querySelectorAll('#bossArena .ruinsSpike:not(.destroyed)').length === 3);
   await page.waitForSelector('#bossArena .ruinsSpikeImpact', { timeout: 6000 });
-  assert.match(await page.locator('#bossArena .ruinsSpikeImpact').textContent(), /^1 枚岩刺命中　-\d+ HP$/);
+  assert.match(await page.locator('#bossArena .ruinsSpikeImpact').textContent(), /^3 枚岩刺命中　-\d+ HP$/);
   await page.waitForFunction(() => window.__debugHooks.storyState.dialogueScriptId === 'chapter1_defeat', null, { timeout: 7000 });
   assert.deepEqual(await page.evaluate(() => {
     const wuming = window.__debugHooks.gameState.roster.find(character => character.id === 'wuming');
@@ -483,11 +483,19 @@ async function testChapter1RuinsFlow(browser) {
     hidden: document.getElementById('teleportStoneBreak').getAttribute('aria-hidden'),
     locked: window.__debugHooks.storyState.lineEffectLocked,
     art: document.querySelector('.teleportBreakStone img').getAttribute('src'),
+    shatteredArt: document.querySelector('.teleportBreakShattered img').getAttribute('src'),
+    clippedFragments: document.querySelectorAll('.teleportBreakFragment').length,
+    flashIsRound: getComputedStyle(document.querySelector('.teleportBreakFlash')).borderRadius === '50%',
+    flashIsSquare: document.querySelector('.teleportBreakFlash').offsetWidth === document.querySelector('.teleportBreakFlash').offsetHeight,
   })), {
     playing: true,
     hidden: 'false',
     locked: true,
-    art: 'assets/story/teleport_stone.png',
+    art: 'assets/story/teleport_stone.png?v=20260905-2',
+    shatteredArt: 'assets/story/teleport_stone_shattered.png?v=20260905-2',
+    clippedFragments: 0,
+    flashIsRound: true,
+    flashIsSquare: true,
   });
   await page.waitForFunction(() => !window.__debugHooks.storyState.lineEffectLocked, null, { timeout: 3500 });
   await advanceDialogue(lineCount('chapter1_defeat') - 2);
@@ -498,12 +506,18 @@ async function testChapter1RuinsFlow(browser) {
     arrival: document.getElementById('heavenTransition').classList.contains('arrival'),
     backdrop: getComputedStyle(document.getElementById('dialogueOverlay')).backgroundImage.includes('heaven_sanctuary.png'),
     corridor: getComputedStyle(document.querySelector('.heavenTransitionCorridor')).backgroundImage.includes('teleport_corridor.png'),
+    corridorFit: getComputedStyle(document.querySelector('.heavenTransitionCorridor')).backgroundSize,
+    veilRepeat: getComputedStyle(document.querySelector('.heavenTransitionVeil')).backgroundRepeat,
+    veilTransform: getComputedStyle(document.querySelector('.heavenTransitionVeil')).transform,
   })), {
     phase: 'intro',
     playing: true,
     arrival: true,
     backdrop: true,
     corridor: true,
+    corridorFit: 'cover',
+    veilRepeat: 'no-repeat',
+    veilTransform: 'none',
   });
   await click('heavenTransition');
   assert.equal(await page.textContent('#dialogueText'), '無名在一片明亮、安靜，像天堂一樣的地方醒來。');

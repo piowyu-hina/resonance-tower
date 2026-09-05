@@ -265,15 +265,17 @@ function resolveRuinsLordSpikes(boss) {
   } else {
     log(`${remainingSpikes.length} 枚岩刺突破了防線！`, 'enemy');
     let totalDamage = 0;
-    let hitCount = 0;
+    // Every active spike reached the left edge, even if the first impact is
+    // already lethal. Keep that visual/mechanical count separate from the
+    // number of damage applications that still had a living target.
+    const hitCount = remainingSpikes.length;
     remainingSpikes.forEach(() => {
       const targets = activeAliveMembers();
       if (targets.length === 0) return;
       const target = targets[Math.floor(Math.random() * targets.length)];
       totalDamage += damageCharacterFromRuinsLord(boss, target, boss.atk * boss.skill3.mult, boss.skill3.name);
-      hitCount++;
     });
-    if (hitCount > 0) emitCombatEvent({ type: 'ruinsSpikeImpact', hitCount, totalDamage });
+    emitCombatEvent({ type: 'ruinsSpikeImpact', hitCount, totalDamage });
   }
   triggerRuinsLordDefeat(boss);
 }

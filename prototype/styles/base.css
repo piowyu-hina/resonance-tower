@@ -3,6 +3,47 @@
    instead of drifting by whatever padding/border a card happens to have. */
 *, *::before, *::after { box-sizing: border-box; }
 
+/* #app's width formula below is calc(100vw - Npx) - 100vw is defined as the
+   FULL viewport width including whatever the vertical scrollbar would take,
+   so it never actually shrinks when a scrollbar is present. Without this,
+   every time page content crosses the "needs a vertical scrollbar" height
+   threshold (very easy to trigger now with the big full-viewport story
+   sequences - boss intro, heaven transition), the scrollbar's gutter
+   appears/disappears and #app visibly jumps sideways by its width. Reserving
+   the gutter unconditionally keeps that width constant either way. */
+/* Reserving the gutter alone can leave Chrome painting that reserved-but-
+   inactive space in its own default (light) color, ignoring the track color
+   below, because no real scrollbar is being drawn there yet. `overflow-y:
+   scroll` forces an actual always-present scrollbar (not just reserved
+   space) so it's a real drawn element our track/thumb colors apply to -
+   same dark thumb/track already used on #log. `scrollbar-gutter: stable`
+   stays as a fallback for engines that don't honor overflow-y:scroll the
+   same way. */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  scrollbar-color: #4a4f58 #14161a;
+}
+html::-webkit-scrollbar { width: 8px; }
+html::-webkit-scrollbar-track { background: #14161a; }
+html::-webkit-scrollbar-thumb { background: #4a4f58; border-radius: 4px; }
+html::-webkit-scrollbar-thumb:hover { background: #5a5f68; }
+
+/* Side effect of the reservation above: every full-viewport `position:fixed;
+   inset:0` overlay (dungeon entry, boss intro, dialogue/story, defeat,
+   victory, shop, inventory, character detail...) resolves its implicit
+   width from `left:0` to `right:0` against the containing block, which the
+   reserved gutter now makes 1 scrollbar-width narrower than the real
+   viewport - leaving a visible gap of the browser's default (light)
+   scrollbar-track color down the right edge. `100vw` is defined as the true
+   viewport width regardless of gutter reservation, so give these an
+   explicit width instead of leaving it to fall out of inset:0. */
+#dungeonEntryOverlay, #inventoryOverlay, #characterDetailOverlay, #shopOverlay,
+.storyPanelOverlay, #defeatOverlay, #victoryOverlay, #bossIntroOverlay,
+#dialogueOverlay, #eventOverlay {
+  width: 100vw;
+}
+
 html, body {
   margin: 0;
   padding: 0;
