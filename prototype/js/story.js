@@ -113,18 +113,18 @@ export const DIALOGUE_DEFS = {
     { speaker: 'narrator', text: '他把手記放在桌上，拿起出門用的劍。' },
   ],
   xiaochu_encounter: [
-    {"speaker":"narrator","text":"無名清掉眼前最後一隻怪物，放下劍，喘了口氣。"},
+    {"speaker":"narrator","text":"無名清掉眼前最後一隻怪物，放下劍，喘了口氣。", wumingBeat: 'idle'},
     {"speaker":"narrator","text":"草叢忽然晃動。一隻史萊姆從裡面跳了出來。", slimeBeat: 'enter'},
     {"speaker":"xiaochu_voice","text":"右邊！牠要跳過去了！"},
-    {"speaker":"narrator","text":"無名下意識往旁邊閃。史萊姆擦過他的身側，落在地上。", slimeBeat: 'hop'},
+    {"speaker":"narrator","text":"無名下意識往旁邊閃。史萊姆擦過他的身側，落在地上。", slimeBeat: 'hop', wumingBeat: 'dodge'},
     {"speaker":"wuming","text":"誰……？"},
     {"speaker":"xiaochu_voice","text":"先別看這邊！牠轉過來了！"},
     {"speaker":"narrator","text":"史萊姆縮起身體。", slimeBeat: 'crouch'},
     {"speaker":"xiaochu_voice","text":"就是現在，揮劍！"},
-    {"speaker":"narrator","text":"無名揮下劍。史萊姆卻突然彈起，撞進他的懷裡。", slimeBeat: 'hit'},
+    {"speaker":"narrator","text":"無名揮下劍。史萊姆卻突然彈起，撞進他的懷裡。", slimeBeat: 'hit', wumingBeat: 'hit'},
     {"speaker":"wuming","text":"嗚哇！"},
     {"speaker":"narrator","text":"無名跌坐在地。史萊姆落下後，再次朝他跳來。", slimeBeat: 'hop'},
-    {"speaker":"narrator","text":"這次無名沒有急著揮劍。他側身躲過撞擊，趁史萊姆落地時補上一劍。", slimeBeat: 'defeat'},
+    {"speaker":"narrator","text":"這次無名沒有急著揮劍。他側身躲過撞擊，趁史萊姆落地時補上一劍。", slimeBeat: 'defeat', wumingBeat: 'strike'},
     {"speaker":"narrator","text":"四周安靜下來。", slimeBeat: 'gone'},
     {"speaker":"wuming","text":"……剛才是誰叫我揮劍的？"},
     {"speaker":"xiaochu_voice","text":"……"},
@@ -243,15 +243,27 @@ function resetStorySlime() {
   const actor = document.getElementById('storySlime');
   actor.hidden = true;
   actor.removeAttribute('data-beat');
+  const wuming = document.getElementById('storyWuming');
+  wuming.hidden = true;
+  wuming.removeAttribute('data-beat');
   document.getElementById('dialogueModal').classList.remove('slimeScene');
 }
 
 function renderStorySlime(line) {
   if (storyState.dialogueScriptId !== 'xiaochu_encounter') return resetStorySlime();
   const actor = document.getElementById('storySlime');
+  const wuming = document.getElementById('storyWuming');
+  if (line.wumingBeat) {
+    wuming.hidden = false;
+    wuming.querySelector('img').src = characterFullArtPath('wuming');
+    wuming.dataset.beat = line.wumingBeat;
+    document.getElementById('dialogueModal').classList.add('slimeScene');
+  }
   if (!line.slimeBeat) return;
   if (line.slimeBeat === 'gone') return resetStorySlime();
   actor.hidden = false;
+  actor.style.setProperty('--slime-contact-x', `${wuming.offsetLeft + wuming.offsetWidth * .6 - actor.offsetLeft - actor.offsetWidth / 2}px`);
+  wuming.style.setProperty('--wuming-strike-x', `${Math.max(0, actor.offsetLeft - wuming.offsetLeft - wuming.offsetWidth * 1.25)}px`);
   document.getElementById('dialogueModal').classList.add('slimeScene');
   actor.removeAttribute('data-beat');
   void actor.offsetWidth;

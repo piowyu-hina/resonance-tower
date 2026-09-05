@@ -22,7 +22,7 @@ const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const report = [];
 try {
   for (const width of (process.argv.includes('--sheets-only') ? [] : [1440, 390])) {
-    for (const view of (process.argv.includes('--slime-only') ? ['slime-enter', 'slime-crouch', 'slime-wuming'] : process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
+    for (const view of (process.argv.includes('--slime-only') ? ['slime-enter', 'slime-crouch', 'slime-wuming', 'slime-hit', 'slime-strike'] : process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
       const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1000 } });
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
@@ -38,7 +38,7 @@ try {
         await page.waitForTimeout(950);
         await page.evaluate(async view => {
           const story = await import('./js/story.js');
-          story.storyState.dialogueLineIndex = view === 'slime-crouch' ? 6 : view === 'slime-wuming' ? 4 : 1;
+          story.storyState.dialogueLineIndex = { 'slime-crouch': 6, 'slime-wuming': 4, 'slime-hit': 8, 'slime-strike': 11 }[view] ?? 1;
           story.renderDialogueLine();
         }, view);
       }

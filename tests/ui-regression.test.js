@@ -383,6 +383,13 @@ async function testXiaochuEncounterFlow(browser) {
     assert.equal(await page.textContent('#dialogueText'), DIALOGUE_DEFS.xiaochu_encounter[index].text);
     const speaker = DIALOGUE_DEFS.xiaochu_encounter[index].speaker;
     const beat = DIALOGUE_DEFS.xiaochu_encounter[index].slimeBeat;
+    assert.equal(await page.locator('#storyWuming').isVisible(), index < 12, 'Wuming stays on stage through narration and off-screen voice');
+    if (index < 12) {
+      assert.equal(await page.locator('#dialoguePortraitFrame').isVisible(), false, 'do not duplicate the on-stage Wuming portrait');
+      assert.equal(await page.locator('#storyWuming img').evaluate(img => img.complete && img.naturalWidth > 0), true);
+    }
+    const wumingBeat = DIALOGUE_DEFS.xiaochu_encounter[index].wumingBeat;
+    if (wumingBeat) assert.equal(await page.getAttribute('#storyWuming', 'data-beat'), wumingBeat);
     if (beat && beat !== 'gone') {
       assert.equal(await page.locator('#storySlime').isVisible(), true);
       assert.equal(await page.getAttribute('#storySlime', 'data-beat'), beat);
