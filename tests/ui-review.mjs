@@ -22,12 +22,24 @@ const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const report = [];
 try {
   for (const width of (process.argv.includes('--sheets-only') ? [] : [1440, 390])) {
-    for (const view of (process.argv.includes('--slime-only') ? ['slime-enter', 'slime-crouch', 'slime-wuming', 'slime-hit', 'slime-strike'] : process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
+    for (const view of (process.argv.includes('--xiaochu-only') ? ['xiaochu-unknown', 'xiaochu-named'] : process.argv.includes('--slime-only') ? ['slime-enter', 'slime-crouch', 'slime-wuming', 'slime-hit', 'slime-strike'] : process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
       const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1000 } });
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
       await page.goto(`http://127.0.0.1:${server.address().port}/?debug&view=${view === 'detail' ? 'growth' : view}`, { waitUntil: 'load' });
       if (view === 'detail') await page.locator('.homeGrowthCard').first().click();
+      if (view.startsWith('xiaochu-')) {
+        await page.evaluate(async view => {
+          const story = await import('./js/story.js');
+          story.queueDialogue('xiaochu_encounter');
+          story.storyState.dialogueLineIndex = 12;
+          story.renderDialogueLine();
+          story.storyState.dialogueLineIndex = story.DIALOGUE_DEFS.xiaochu_encounter.findIndex(line => line.speaker === (view === 'xiaochu-named' ? 'xiaochu' : 'xiaochu_unknown'));
+          story.renderDialogueLine();
+        }, view);
+        await page.locator('#dialoguePortraitImg').evaluate(img => img.decode());
+        if (!(await page.getAttribute('#dialoguePortraitImg', 'src')).endsWith('/xiaochu_full_2.png')) throw new Error('Expected new Xiaochu dialogue art');
+      }
       if (view.startsWith('slime-')) {
         await page.evaluate(async () => {
           const story = await import('./js/story.js');

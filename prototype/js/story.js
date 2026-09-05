@@ -206,7 +206,7 @@ export const DIALOGUE_PRESENTATION = {
 export const STORY_SPEAKERS = {
   goddess: { name: '女神', art: 'assets/story/goddess.png', goddess: true },
   xiaochu_voice: { name: '？？？', narration: true },
-  xiaochu_unknown: { name: '？？？', art: 'assets/characters/xiaochu_full.png' },
+  xiaochu_unknown: { name: '？？？', art: 'assets/characters/xiaochu_full_2.png' },
   narrator: { name: '', narration: true },
 };
 
@@ -440,7 +440,7 @@ export function renderDialogueLine() {
   if (speakerChanged) {
     frame.classList.remove('missing', 'orbSpeaker', 'sceneArt', 'narration', 'goddessSpeaker', 'goddessReturning');
     if (def) {
-      img.src = characterFullArtPath(line.speaker);
+      img.src = line.speaker === 'xiaochu' ? STORY_SPEAKERS.xiaochu_unknown.art : characterFullArtPath(line.speaker);
       img.alt = `${def.name} 立繪`;
       img.onerror = () => frame.classList.add('missing');
     } else if (special && special.art) {
