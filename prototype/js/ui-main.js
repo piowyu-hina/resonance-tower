@@ -482,6 +482,7 @@ export function render() {
   const atHomeSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'home';
   app.classList.toggle('homeSceneActive', atHomeSurface && overlayUiState.homeMode === 'menu');
   const atRegionSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'regions';
+  app.classList.toggle('regionSceneActive', atRegionSurface);
   const visibleSurface = !inPrep
     ? document.getElementById('combatView')
     : atVillageSurface
