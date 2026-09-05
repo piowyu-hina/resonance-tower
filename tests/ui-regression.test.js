@@ -1297,11 +1297,17 @@ async function testDesktopHome(browser) {
       assert.equal(await page.locator('#growthUpgradeBtn').isVisible(), true);
       if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-pinned-${width}-${height}.png`) });
     }
-    await page.locator('.homeCharacterProfile summary').click();
+    assert.equal(await page.locator('.detailPortraitColumn > .detailCharacterDescription').isVisible(), true, 'introduction is readable without expanding anything');
+    const upgradeBeforeAppearance = await page.locator('#growthUpgradeBtn').boundingBox();
+    await page.locator('.homeCharacterAppearance summary').click();
     assert.equal(await page.locator('.skinPicker').isVisible(), true);
+    assert.equal(await page.locator('.detailArtFrame').isVisible(), false, 'appearance selection replaces art rather than covering it');
+    assert.deepEqual(await page.locator('#growthUpgradeBtn').boundingBox(), upgradeBeforeAppearance, 'appearance does not move cultivation controls');
+    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-appearance-${width}.png`) });
     await page.locator('.skinOption').first().click();
-    assert.equal(await page.locator('.homeCharacterProfile').getAttribute('open'), '');
-    await page.locator('.homeCharacterProfile summary').click();
+    assert.equal(await page.locator('.homeCharacterAppearance').getAttribute('open'), '');
+    await page.locator('.homeCharacterAppearance summary').click();
+    assert.equal(await page.locator('.detailArtFrame').isVisible(), true);
     await page.setViewportSize({ width, height: 1080 });
     await page.click('#characterDetailCloseBtn');
     assert.equal(await page.locator('#homeGrowthBtn').evaluate(el => el === document.activeElement), true, 'closing returns keyboard focus to room entry');

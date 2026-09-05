@@ -13,10 +13,10 @@ import { attachHoldRepeat } from './ui-press.js';
 export { attachHoldRepeat } from './ui-press.js';
 let disposeGrowthHold = null;
 let detailReturnFocus = null;
-let homeProfileOpen = false;
+let homeAppearanceOpen = false;
 
 export function setCharacterDetailOpen(open, characterId = null) {
-  if (open && gameState.activeOverlay !== 'characterDetail') homeProfileOpen = false;
+  if (open && gameState.activeOverlay !== 'characterDetail') homeAppearanceOpen = false;
   if (open && gameState.activeOverlay !== 'characterDetail') detailReturnFocus = document.activeElement;
   if (!open) { disposeGrowthHold?.(); disposeGrowthHold = null; }
   if (open) closeOtherOverlays('characterDetail');
@@ -294,16 +294,18 @@ export function renderCharacterDetail(characterId) {
   if (atHome) {
     // Keep the existing growth controls/handlers, but give each area its own
     // layout so long descriptions never push the upgrade action off screen.
-    const profile = document.createElement('details');
-    profile.className = 'homeCharacterProfile';
-    profile.open = homeProfileOpen;
-    profile.innerHTML = '<summary>介紹與外觀</summary><div class="homeProfileBody"></div>';
-    const profileBody = profile.querySelector('.homeProfileBody');
-    for (const selector of ['.detailCharacterDescription', '.detailSectionHeading', '.skinPicker']) {
-      profileBody.appendChild(content.querySelector(selector));
+    const artFrame = content.querySelector('.detailArtFrame');
+    artFrame.before(content.querySelector('.detailCharacterDescription'));
+    const appearance = document.createElement('details');
+    appearance.className = 'homeCharacterAppearance';
+    appearance.open = homeAppearanceOpen;
+    appearance.innerHTML = '<summary><span>更換外觀</span><small>返回立繪</small></summary><div class="homeAppearanceBody"></div>';
+    const appearanceBody = appearance.querySelector('.homeAppearanceBody');
+    for (const selector of ['.detailSectionHeading', '.skinPicker']) {
+      appearanceBody.appendChild(content.querySelector(selector));
     }
-    content.querySelector('.detailArtFrame').before(profile);
-    profile.addEventListener('toggle', () => { homeProfileOpen = profile.open; });
+    artFrame.after(appearance);
+    appearance.addEventListener('toggle', () => { homeAppearanceOpen = appearance.open; });
     const info = content.querySelector('.detailInfo');
     const inspector = content.querySelector('.growthInspector');
     const choices = document.createElement('div');
@@ -326,7 +328,7 @@ export function renderCharacterDetail(characterId) {
       const nextId = button.dataset.homeCharacter;
       if (!isCharUnlocked(nextId)) return;
       selectedGrowthLine = 'atk';
-      homeProfileOpen = false;
+      homeAppearanceOpen = false;
       renderCharacterDetail(nextId);
       render();
       content.querySelector(`[data-home-character="${nextId}"]`)?.focus({ preventScroll: true });

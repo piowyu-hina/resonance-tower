@@ -2,6 +2,8 @@
 
 ## 2026-09-06 cultivation update (current)
 
+Profile follow-up: removed the combined "介紹與外觀" popover. The introduction is always readable above the left portrait. A separate "更換外觀" entry switches the left art area to the skin list; "返回立繪" restores the full art. No floating panel obscures the art, and the right upgrade controls retain identical positions. Home browser tests verify visible introduction, appearance equip/return, fixed upgrade geometry and 720/900px heights; unit tests pass. This supersedes the disclosure behavior described below.
+
 Pinned growth workspace: desktop details now keep the character header and ability/skill choices above a fixed inspector. Current/next values, book cost and upgrade button stay visible without scrolling the modal. Long skill descriptions scroll within their own area; the choice list can scroll locally when space is tight. Character description and skin choices live in the left-side "介紹與外觀" disclosure, which preserves its open state when equipping a skin. Existing upgrade and repeat handlers are reused. Desktop checks now include 720px and 900px heights, pinned action hit testing, description readability and skin disclosure round trips.
 
 Latest interaction: clicking Wuming opens the cultivation detail overlay immediately over the unchanged room. The intermediate roster page and its "← 家" button are removed. A compact character picker above the full art switches between unlocked characters; locked partners cannot be selected, and unseen unlocked partners retain a NEW badge until viewed. Closing with ×, Escape or the backdrop returns to the room and restores focus to the entry. The existing ?debug&view=growth now previews this same panel. No new artwork or gameplay changes.
