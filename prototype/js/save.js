@@ -123,7 +123,7 @@ export function normalizeSaveData(raw) {
     xiaochuStoryChapter = 0;
   }
   if (normalizedResonance.xiaochu === RESONANCE_STATES.CONTRACTED) xiaochuStoryChapter = 4;
-  else if (normalizedResonance.xiaochu === RESONANCE_STATES.FOLLOWING) xiaochuStoryChapter = Math.min(xiaochuStoryChapter, 2);
+  else if (normalizedResonance.xiaochu === RESONANCE_STATES.FOLLOWING) xiaochuStoryChapter = xiaochuStoryChapter > 0 ? 2 : 0;
   else if (!normalizedResonance.xiaochu) xiaochuStoryChapter = 0;
 
   const characters = new Map();

@@ -53,10 +53,21 @@ export function buildShopUI() {
     resetShopIdleTimer();
     renderShopView();
   });
-  document.querySelector('.shopKeeperPanel').addEventListener('click', () => {
-    shopUiState.shopDialogueIndex += 1;
-    renderShopDialogue();
-  });
+  for (const element of document.querySelectorAll('.shopKeeperArt, #shopDialogue')) {
+    element.addEventListener('click', () => {
+      shopUiState.shopDialogueIndex += 1;
+      resetShopIdleTimer();
+      renderShopDialogue();
+    });
+  }
+  const tabs = [document.getElementById('shopBuyTab'), document.getElementById('shopSellTab')];
+  tabs.forEach((tab, index) => tab.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? 1 : 1 - index;
+    tabs[next].click();
+    tabs[next].focus();
+  }));
 }
 
 export function renderShopView() {
@@ -83,6 +94,8 @@ export function renderShopView() {
   sellTab.classList.toggle('active', shopUiState.shopTab === 'sell');
   buyTab.setAttribute('aria-selected', String(shopUiState.shopTab === 'buy'));
   sellTab.setAttribute('aria-selected', String(shopUiState.shopTab === 'sell'));
+  buyTab.tabIndex = shopUiState.shopTab === 'buy' ? 0 : -1;
+  sellTab.tabIndex = shopUiState.shopTab === 'sell' ? 0 : -1;
   document.getElementById('shopBuySection').hidden = shopUiState.shopTab !== 'buy';
   document.getElementById('shopSellSection').hidden = shopUiState.shopTab !== 'sell';
   renderShopDialogue();

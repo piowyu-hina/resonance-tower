@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="styles/world.css?v=20260905-11">
 <link rel="stylesheet" href="styles/events.css?v=20260905-2">
 <link rel="stylesheet" href="styles/journal.css?v=20260905-2">
+<link rel="stylesheet" href="styles/shop.css?v=20260905-1">
 </head>
 <body>
 
@@ -227,29 +228,30 @@
   <div id="shopModal" role="dialog" aria-modal="true" aria-labelledby="shopTitle">
     <div class="shopHeader">
       <div class="shopHeading">
-        <img src="assets/ui/shop.png" alt="">
-        <div><span id="shopTitle">地城商店</span></div>
+        <div><span id="shopTitle">地城商店</span><small data-i18n="shop.tagline">旅途所需，都替你準備好了</small></div>
       </div>
       <div class="shopHeaderMeta"><span id="shopCountdown"></span></div>
       <button id="shopLeaveBtn" type="button" aria-label="關閉商店" data-i18n-aria-label="shop.close">×</button>
     </div>
     <div class="shopLayout">
       <aside class="shopKeeperPanel">
-        <div class="shopKeeperArt">
+        <div class="shopKeeperIdentity"><small data-i18n="shop.keeperRole">旅途中的商人</small><b>露咪<span aria-hidden="true">✦</span></b></div>
+        <button class="shopKeeperArt" type="button" aria-label="和露咪聊聊" data-i18n-aria-label="shop.chatHint">
           <img src="assets/characters/merchant_full.png" alt="露咪">
-        </div>
+        </button>
         <button id="shopDialogue" type="button">
-            <span id="shopKeeperName">露咪</span>
-          <span id="shopDialogueText"></span>
+          <span id="shopKeeperName" data-i18n="shop.chatHint">和露咪聊聊</span>
+          <span id="shopDialogueText" aria-live="polite"></span>
+          <span class="shopChatDots" aria-hidden="true">···</span>
         </button>
       </aside>
       <main class="shopGoodsPanel">
         <div id="shopWallet" aria-label="目前金幣" data-i18n-aria-label="shop.gold"></div>
         <div class="shopTabs" role="tablist" aria-label="商店功能" data-i18n-aria-label="shop.features">
-          <button id="shopBuyTab" class="shopTab active" type="button" role="tab" aria-selected="true" data-i18n="shop.buy">購買</button>
-          <button id="shopSellTab" class="shopTab" type="button" role="tab" aria-selected="false" data-i18n="shop.sell">出售</button>
+          <button id="shopBuyTab" class="shopTab active" type="button" role="tab" aria-selected="true" aria-controls="shopBuySection" data-i18n="shop.buy">購買</button>
+          <button id="shopSellTab" class="shopTab" type="button" role="tab" aria-selected="false" aria-controls="shopSellSection" data-i18n="shop.sell">出售</button>
         </div>
-        <div id="shopSellSection" class="shopSection" role="tabpanel" hidden>
+        <div id="shopSellSection" class="shopSection" role="tabpanel" aria-labelledby="shopSellTab" hidden>
           <div class="shopSectionTitle"><span data-i18n="shop.sellMaterials">出售素材</span><small data-i18n="shop.sellMaterialsDesc">把遠征收穫換成金幣</small></div>
           <div class="shopSellRow">
             <img src="assets/item/monster_crystal.png" alt="魔物結晶">
@@ -261,7 +263,7 @@
             </div>
           </div>
         </div>
-        <div id="shopBuySection" class="shopSection" role="tabpanel">
+        <div id="shopBuySection" class="shopSection" role="tabpanel" aria-labelledby="shopBuyTab">
           <div class="shopSectionTitle"><span data-i18n="shop.supplies">旅行補給</span><small data-i18n="shop.suppliesDesc">為下一次戰鬥做好準備</small></div>
           <div id="shopBuyList"></div>
         </div>

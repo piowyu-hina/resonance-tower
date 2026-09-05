@@ -33,7 +33,7 @@ const approvedEncounter = fs.readFileSync(path.resolve(__dirname, '../story/xiao
   .map(line => line.startsWith('（') ? line.slice(1, -1) : line.replace(/^\*\*.+?：\*\*\s*/, ''));
 assert.deepEqual(DIALOGUE_DEFS.xiaochu_encounter.map(line => line.text), approvedEncounter);
 assert.deepEqual(Object.keys(DIALOGUE_DEFS).filter(id => id.startsWith('xiaochu_')).sort(),
-  ['xiaochu_encounter', 'xiaochu_home', 'xiaochu_trust', 'xiaochu_choice', 'xiaochu_oath', 'xiaochu_after',
+  ['xiaochu_encounter', 'xiaochu_home', 'xiaochu_choice', 'xiaochu_oath', 'xiaochu_after',
     'xiaochu_daily_practice', 'xiaochu_daily_chair', 'xiaochu_daily_departure'].sort());
 
 // Same idea as lineCount above: count index.html's own <link rel="stylesheet">
@@ -448,27 +448,9 @@ async function testXiaochuEncounterFlow(browser) {
   await page.click('#xiaochuTalkBtn');
   assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialogueScriptId), 'xiaochu_home');
   await advanceDialogue(lineCount('xiaochu_home'));
-  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.xiaochuStoryChapter), 1);
-  assert.equal(await page.locator('#xiaochuTalkBtn').isDisabled(), true);
-  assert.equal(await page.locator('#travelJournalBtn').isVisible(), true);
-  await page.click('#homeBackBtn');
-  await page.click('#expeditionLocationBtn');
-  await page.click('#forestRegionBtn');
-  await page.click('#startBtn');
-  await page.waitForFunction(() => window.__debugHooks.gameState.phase === 'combat');
-  await page.evaluate(() => {
-    const state = window.__debugHooks.gameState;
-    state.monsters.forEach(monster => { monster.hp = 1; monster.actionCountdown = 999999; });
-    state.roster.find(character => character.id === 'wuming').actionCountdown = 0;
-  });
-  await waitForOverlay('dialogue');
-  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialogueScriptId), 'xiaochu_trust');
-  assert.equal(await isUnlocked(), false);
-  await advanceDialogue(lineCount('xiaochu_trust'));
   assert.equal(await page.evaluate(() => window.__debugHooks.gameState.xiaochuStoryChapter), 2);
-  await click('retreatBtn');
-  await page.click('#homeLocationBtn');
-  await page.click('#xiaochuTalkBtn');
+  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialogueScriptId), 'xiaochu_choice', 'first home visit continues directly into covenant discussion');
+  assert.equal(await isUnlocked(), false);
   await advanceDialogue(lineCount('xiaochu_choice'));
   assert.equal(await xiaochuState(), 'oathReady');
   assert.equal(await isUnlocked(), false);
@@ -508,7 +490,7 @@ async function testXiaochuEncounterFlow(browser) {
   assert.equal(await page.evaluate(() => window.__debugHooks.gameState.xiaochuStoryChapter), 4);
   assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true, 'contracted Xiaochu retains optional daily conversations');
   assert.equal(await page.locator('#homeBackBtn').isEnabled(), true);
-  assert.equal(await page.evaluate(async () => (await import('./js/story.js')).tryXiaochuTravelStory(() => {})), false, 'completed chapter does not repeat');
+  assert.equal(await page.evaluate(async () => !!(await import('./js/story.js')).DIALOGUE_DEFS.xiaochu_trust), false, 'retired travel requirement is not an active dialogue');
   assertNoRuntimeErrors(page, 'xiaochu completed covenant');
   await page.close();
 }
@@ -1072,13 +1054,13 @@ async function testXiaochuDaily(browser) {
   }
   const blocked = await page.evaluate(async () => {
     const { gameState, setResonanceState, RESONANCE_STATES } = await import('./js/state.js');
-    const { talkToXiaochu } = await import('./js/story.js');
+    const { talkToXiaochu, storyState } = await import('./js/story.js');
     setResonanceState('xiaochu', RESONANCE_STATES.FOLLOWING, { force: true });
     gameState.xiaochuStoryChapter = 1;
     talkToXiaochu();
-    return gameState.activeOverlay;
+    return storyState.dialogueScriptId;
   });
-  assert.equal(blocked, null, 'daily chats must not bypass the existing following story');
+  assert.equal(blocked, 'xiaochu_choice', 'legacy travel-wait progress resumes covenant discussion, not daily chat');
   assertNoRuntimeErrors(page, 'Xiaochu daily conversations');
   await page.close();
 }
@@ -1175,12 +1157,91 @@ async function testDialogueSizing(browser) {
   }
 }
 
+async function testMerchantShop(browser) {
+  for (const [width, height] of [[1440, 1000], [390, 844], [320, 568], [844, 390]]) {
+    const page = await openView(browser, 'shop');
+    await page.setViewportSize({ width, height });
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      gameState.bankedGold = 100;
+      gameState.runGold = 7;
+      gameState.inventory = [{ itemId: 'monsterCrystal', qty: 3 }];
+      (await import('./js/ui-commerce.js')).renderShopView();
+    });
+    await page.locator('.shopKeeperArt img').evaluate(img => img.decode());
+    await page.waitForTimeout(300);
+    for (const locale of ['zh-Hant', 'en']) {
+      await page.evaluate(async locale => (await import('./js/i18n.js')).setLocale(locale), locale);
+      const bounds = await page.evaluate(() => {
+        const modal = document.getElementById('shopModal');
+        const rect = modal.getBoundingClientRect();
+        const art = document.querySelector('.shopKeeperArt');
+        return { left: rect.left, right: rect.right, viewport: document.documentElement.clientWidth,
+          overflow: modal.scrollWidth > modal.clientWidth,
+          artHeight: art.getBoundingClientRect().height,
+          fit: getComputedStyle(art.querySelector('img')).objectFit };
+      });
+      assert.ok(bounds.left >= 0 && bounds.right <= bounds.viewport + 1, `${width} shop fits viewport: ${JSON.stringify(bounds)}`);
+      assert.equal(bounds.overflow, false);
+      assert.ok(bounds.artHeight >= 340, 'merchant must not collapse to a tiny thumbnail');
+      assert.equal(bounds.fit, 'contain');
+    }
+    await page.evaluate(async () => (await import('./js/i18n.js')).setLocale('zh-Hant'));
+    const greeting = await page.locator('#shopDialogueText').textContent();
+    await page.locator('.shopKeeperArt').click();
+    assert.notEqual(await page.locator('#shopDialogueText').textContent(), greeting);
+    if (process.argv.includes('--shop-only')) {
+      fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
+      await page.locator('#shopModal').evaluate(el => { el.scrollTop = 0; });
+      await page.screenshot({ path: path.resolve(__dirname, `../test-results/merchant-shop-${width}.png`) });
+    }
+    await page.locator('.shopBuyRow[data-item-id="potion"] button').click();
+    const balances = () => page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const { inventoryItemCount } = await import('./js/ui-loadout.js');
+      return { bank: gameState.bankedGold, run: gameState.runGold, potions: inventoryItemCount('potion'), crystals: inventoryItemCount('monsterCrystal') };
+    });
+    assert.deepEqual(await balances(), { bank: 88, run: 7, potions: 1, crystals: 3 });
+    await page.locator('#shopBuyTab').focus();
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.locator('#shopSellTab').getAttribute('aria-selected'), 'true');
+    await page.click('#shopSellOneBtn');
+    await page.click('#shopSellAllBtn');
+    assert.deepEqual(await balances(), { bank: 103, run: 7, potions: 1, crystals: 0 });
+    assert.equal(await page.locator('#shopSellAllBtn').isDisabled(), true);
+    await page.click('#shopLeaveBtn');
+    assert.equal(await page.locator('#shopOverlay').getAttribute('aria-hidden'), 'true');
+    await page.evaluate(async () => {
+      const { gameState, setPhase, PHASES } = await import('./js/state.js');
+      setPhase(PHASES.PREP_BOSS, { force: true });
+      (await import('./js/combat.js')).enterPrepBoss();
+      (await import('./js/ui-main.js')).render();
+      gameState.shopCountdown = 3000;
+    });
+    assert.equal(await page.locator('#shopCountdown').isVisible(), true, 'dungeon countdown remains visible on mobile');
+    assert.equal(await page.locator('.shopBuyRow[data-item-id="potion"] button').isDisabled(), true, 'dungeon purchases use run gold, not bank gold');
+    await page.locator('#shopDialogue').focus();
+    await page.keyboard.press('Enter');
+    assert.ok(await page.evaluate(() => window.__debugHooks.gameState.shopCountdown > 8000), 'chatting resets dungeon idle timeout');
+    await page.click('#shopAutoLeaveBtn');
+    assert.equal(await page.evaluate(() => window.__debugHooks.gameState.shopAutoLeave), false);
+    await page.click('#shopLeaveBtn');
+    assertNoRuntimeErrors(page, 'merchant shop');
+    await page.close();
+  }
+}
+
 (async () => {
   const server = await startServer();
   const { port } = server.address();
   prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    await testMerchantShop(browser);
+    if (process.argv.includes('--shop-only')) {
+      console.log('ui-regression.test.js: merchant shop assertions passed');
+      return;
+    }
     await testDialogueSizing(browser);
     if (process.argv.includes('--entry-story-only')) {
       await testBossTransition(browser);

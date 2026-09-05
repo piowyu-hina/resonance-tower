@@ -20,7 +20,7 @@ import { clearGuardState, grantGuard, consumeGuard, tickGuardState } from './gua
 import { clearSurvivalState, tickSurvivalState, tryEvade, resolveDamage } from './wuming-combat.js';
 import { clearGooArena, gooTick } from './goo.js';
 import { tickShopIdle, addInventoryItem } from './shop.js';
-import { startCharacterEncounter, startChapter1DefeatSequence, tryXiaochuTravelStory } from './story.js';
+import { startCharacterEncounter, startChapter1DefeatSequence } from './story.js';
 import { startRandomEvent, tickEventIdle } from './events.js';
 
 // This file only mutates game state and queues one-shot effects via
@@ -623,7 +623,7 @@ export function onMonsterDefeated(m) {
       startCharacterEncounter(encounterId, continueThroughEvent);
       return;
     }
-    if (!tryXiaochuTravelStory(continueThroughEvent)) continueThroughEvent();
+    continueThroughEvent();
   }, MONSTER_DEATH_ANIMATION_MS);
 }
 

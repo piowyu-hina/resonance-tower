@@ -52,7 +52,7 @@ console.log('save.test.js: all assertions passed');
 const storySave = (state, chapter) => normalizeSaveData({ format: 'resonance-tower-save', version: 1, progression: {
   chapter1State: 'complete', resonanceState: { xiaochu: state }, xiaochuStoryChapter: chapter,
 } });
-for (const chapter of [0, 1, 2]) assert.equal(storySave('following', chapter).xiaochuStoryChapter, chapter);
+for (const chapter of [0, 1, 2]) assert.equal(storySave('following', chapter).xiaochuStoryChapter, chapter === 1 ? 2 : chapter);
 assert.equal(storySave('oathReady', 3).resonanceState.xiaochu, 'oathReady');
 assert.equal(storySave('oathReady', 3).xiaochuStoryChapter, 3);
 assert.equal(storySave('contracting', 3).resonanceState.xiaochu, 'oathReady');

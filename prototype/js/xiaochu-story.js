@@ -1,5 +1,5 @@
 // New continuation draft: initial encounter remains in story.js, unchanged.
-export const XIAOCHU_DIALOGUES = {
+const XIAOCHU_SCRIPTS = {
   xiaochu_home: [
     { speaker: 'narrator', text: '無名推開家門，往旁邊讓了一步。小初卻停在門外。' },
     { speaker: 'wuming', text: '怎麼了？' },
@@ -29,11 +29,9 @@ export const XIAOCHU_DIALOGUES = {
     { speaker: 'xiaochu', text: '……像我這樣的？' },
     { speaker: 'wuming', text: '嗯。妳願意的話，我可以把我知道的告訴妳。' },
     { speaker: 'xiaochu', text: '那要現在決定嗎？' },
-    { speaker: 'wuming', text: '不用。我們今天才認識。' },
-    { speaker: 'narrator', text: '小初看了一眼書頁，又看向靠在桌邊的劍。' },
-    { speaker: 'xiaochu', text: '那……下次出門，還叫我嗎？' },
-    { speaker: 'wuming', text: '會啊。不是說好幫我看後面？' },
-    { speaker: 'xiaochu', text: '嗯，說好了。' },
+    { speaker: 'wuming', text: '不用急。先聽完，再決定也可以。' },
+    { speaker: 'narrator', text: '小初看了一眼書頁，把椅子往桌邊挪近了些。' },
+    { speaker: 'xiaochu', text: '嗯。你說，我在聽。' },
   ],
   xiaochu_trust: [
     { speaker: 'narrator', text: '最後一隻怪物倒下。無名收住劍勢，回頭看向一直跟在身後的小初。' },
@@ -62,7 +60,7 @@ export const XIAOCHU_DIALOGUES = {
     { speaker: 'wuming', text: '好。回家慢慢說。' },
   ],
   xiaochu_choice: [
-    { speaker: 'narrator', text: '小初這次沒有停在門外。她走到桌邊，在上次的位子坐下。' },
+    { speaker: 'narrator', text: '小初在桌邊坐好，目光落在記著誓言的書頁上。' },
     { speaker: 'narrator', text: '無名把《旅人手記》攤在兩人之間，說起女神與靈魂契約的事。' },
     { speaker: 'xiaochu', text: '所以，契約以後，我會住進你的身體裡？' },
     { speaker: 'wuming', text: '嗯。等我真正走完自己的人生，妳就能跟我一起到女神那裡。不是現在就要走。' },
@@ -80,7 +78,7 @@ export const XIAOCHU_DIALOGUES = {
     { speaker: 'xiaochu', text: '……那我也是。' },
     { speaker: 'narrator', text: '小初把手記轉回記著誓言的那一頁。' },
     { speaker: 'xiaochu', text: '我原本想，能找到一個聽得見我的人就好了。' },
-    { speaker: 'xiaochu', text: '可是今天你回頭謝我的時候，我又覺得……只是跟在後面，好像不太夠。' },
+    { speaker: 'xiaochu', text: '可是你真的帶我回來，還替我留了位子。我就想……以後也想跟你一起去。' },
     { speaker: 'wuming', text: '妳已經有幫上忙了。' },
     { speaker: 'xiaochu', text: '我知道。我不是在說自己沒用。' },
     { speaker: 'xiaochu', text: '我是想，以後也跟你一起去。不是遇到下一個聽得見我的人，就換一條路。' },
@@ -129,3 +127,8 @@ export const XIAOCHU_DIALOGUES = {
     { speaker: 'narrator', text: '無名合上手記，卻沒有把桌旁的椅子推回去。' },
   ],
 };
+
+// Retained for future relationship writing, not an active pre-contract gate.
+const { xiaochu_trust, ...activeDialogues } = XIAOCHU_SCRIPTS;
+export const XIAOCHU_DIALOGUES = activeDialogues;
+export const XIAOCHU_DEFERRED_DIALOGUES = { xiaochu_trust };

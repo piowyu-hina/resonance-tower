@@ -1,0 +1,102 @@
+/* Merchant-led shop. Transactions retain their existing DOM and state. */
+#shopOverlay { padding: 18px; background: #100d10c9; backdrop-filter: blur(5px); }
+#shopModal {
+  width: min(1120px, calc(100vw - 36px)); max-width: none; min-width: 0;
+  max-height: calc(100dvh - 36px); min-height: 0; padding: 0;
+  border: 1px solid #927050; border-radius: 18px;
+  background: #262125; color: #f1e6d4;
+  box-shadow: 0 28px 90px #0009;
+}
+#shopModal .shopHeader {
+  top: 0; margin: 0; padding: 20px 26px; gap: 16px;
+  border-bottom: 1px solid #b9955c40; background: #292125f5;
+  backdrop-filter: blur(12px);
+}
+#shopModal .shopHeading { flex: 1; }
+#shopTitle { font-size: 25px; color: #f5ddb0; letter-spacing: .08em; }
+#shopModal .shopHeading small { display: block; margin-top: 5px; font-size: 13px; color: #b6a28f; letter-spacing: .06em; }
+#shopModal .shopHeaderMeta { display: flex; flex: 0 1 auto; margin: 0; }
+#shopCountdown { display: block; color: #e2c59d; background: #46342f; padding: 6px 10px; }
+#shopCountdown:empty { display: none; }
+#shopLeaveBtn { flex: 0 0 42px; height: 42px; padding: 0; font-size: 25px; background: #423235; border: 1px solid #866656; border-radius: 50%; }
+#shopModal .shopLayout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 0; align-items: stretch; }
+#shopModal .shopKeeperPanel {
+  position: relative; top: auto; display: flex; flex-direction: column; gap: 0;
+  min-width: 0; overflow: hidden; border: 0; border-right: 1px solid #cfa66b25; border-radius: 0;
+  background: radial-gradient(ellipse at 50% 45%, #bb825343, transparent 65%), linear-gradient(150deg, #483038, #382a2a 65%, #292024);
+  box-shadow: none;
+}
+#shopModal .shopKeeperPanel::before { content: ''; position: absolute; inset: 20px 24px 130px; border: 1px solid #d5b27930; border-radius: 160px 160px 10px 10px; pointer-events: none; }
+.shopKeeperIdentity { position: absolute; z-index: 1; top: 24px; left: 25px; pointer-events: none; }
+.shopKeeperIdentity small { font-size: 12px; letter-spacing: .12em; color: #d1b58e; }
+.shopKeeperIdentity b { display: block; margin-top: 6px; font-size: 32px; letter-spacing: .16em; color: #ffe7bd; text-shadow: 0 2px 12px #261c1c; }
+.shopKeeperIdentity b span { display: inline-block; margin-left: 8px; font-size: 15px; color: #c9955a; vertical-align: middle; }
+#shopModal .shopKeeperArt {
+  position: relative; grid-column: auto; justify-self: auto; width: 100%;
+  height: min(560px, 64dvh); min-height: 340px; aspect-ratio: auto;
+  padding: 20px 6px 0; border: 0; border-radius: 0; overflow: visible; background: transparent;
+  cursor: pointer;
+}
+#shopModal .shopKeeperArt img { display: block; width: 100%; height: 100%; padding: 0; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 12px 18px #180e1655); transition: filter .2s ease; }
+#shopModal .shopKeeperArt:hover img { filter: drop-shadow(0 12px 22px #e6bc7133); }
+#shopModal .shopKeeperArt:focus-visible { outline-offset: -5px; }
+#shopDialogue {
+  position: relative; inset: auto; width: calc(100% - 40px); min-height: 100px; margin: 8px 20px 20px;
+  padding: 14px 18px 23px; border: 1px solid #ad825a70; border-radius: 12px;
+  background: #2c2225ed; color: #eee2d6; backdrop-filter: none; box-shadow: 0 8px 24px #1c141533;
+}
+#shopDialogue:hover { background: #38292c; border-color: #c6a272; }
+#shopKeeperName { position: static; display: block; padding: 0; margin-bottom: 7px; background: none; border-radius: 0; color: #dbb57b; font-size: 13px; letter-spacing: .06em; }
+#shopDialogueText { font-size: 15px; line-height: 1.7; color: #f0e2d5; }
+.shopChatDots { position: absolute; bottom: 3px; right: 14px; color: #d4ac70; font-size: 25px; letter-spacing: 3px; }
+#shopModal .shopGoodsPanel { display: grid; align-content: start; gap: 20px; padding: 28px; min-width: 0; background: linear-gradient(135deg, #32292a, #272327); }
+#shopWallet { padding: 8px 16px; min-width: 108px; border-radius: 8px; background: #221e20; border-color: #8f724a; color: #f5d58b; font-size: 18px; }
+#shopModal .shopTabs { display: flex; gap: 0; padding: 0; border: 0; border-bottom: 1px solid #82654966; border-radius: 0; background: transparent; }
+#shopModal .shopTab { flex: 1; min-height: 46px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; font-size: 17px; color: #b9a49a; background: transparent; box-shadow: none; }
+#shopModal .shopTab.active { color: #ffe1ac; border-bottom-color: #d6a365; background: linear-gradient(0deg, #cb9b5420, transparent); }
+#shopModal .shopSection { margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+#shopModal .shopSectionTitle { display: grid; gap: 5px; padding: 0; margin-bottom: 18px; border: 0; }
+#shopModal .shopSectionTitle span { font-size: 19px; color: #ecd5b9; }
+#shopModal .shopSectionTitle small { color: #b4a297; font-size: 13px; }
+#shopModal .shopBuyRow, #shopModal .shopSellRow {
+  grid-template-columns: 72px minmax(0, 1fr); gap: 10px 16px;
+  padding: 18px; min-height: 145px; border: 1px solid #93735666; border-radius: 12px;
+  background: linear-gradient(120deg, #473835aa, #352d2f); box-shadow: 0 8px 18px #17131722;
+}
+#shopModal .shopBuyRow + .shopBuyRow { margin-top: 14px; padding-top: 18px; border-top: 1px solid #93735666; }
+#shopModal .shopBuyRow > img, #shopModal .shopSellRow > img { width: 68px; height: 68px; grid-row: 1 / 3; filter: drop-shadow(0 5px 7px #0005); }
+#shopModal .shopItemCopy { grid-column: 2; gap: 5px; }
+#shopModal .shopItemCopy b { color: #fff0dc; font-size: 17px; }
+#shopModal .shopItemCopy small { white-space: normal; overflow: visible; color: #c5b5aa; font-size: 13px; line-height: 1.55; }
+#shopModal .shopOwned, #shopModal #shopMonsterCrystalQty { grid-column: 2; justify-self: start; padding: 0; border: 0; border-radius: 0; background: none; color: #b9a79b; }
+#shopModal .shopBuyRow > button { grid-column: 1 / -1; justify-self: end; width: 124px; }
+#shopModal .shopSellActions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; width: 100%; justify-content: flex-end; }
+#shopModal .shopSellActions button, #shopModal .shopBuyRow > button { min-height: 42px; padding: 8px 14px; border: 1px solid #c39965; background: linear-gradient(#8b6541, #68492f); color: #fff1d2; font-size: 16px; border-radius: 8px; }
+#shopModal .shopSellActions button:hover:not(:disabled), #shopModal .shopBuyRow > button:hover:not(:disabled) { background: #956b43; border-color: #f0c894; }
+#shopModal .shopFooter { margin-top: 0; }
+#shopAutoLeaveBtn { min-height: 42px; font-size: 14px; border-color: #80634f; background: #413234; }
+@media (max-width: 760px) {
+  #shopOverlay { padding: 10px; }
+  #shopModal { width: calc(100vw - 20px); max-width: none; max-height: calc(100dvh - 20px); padding: 0; border-radius: 14px; }
+  #shopModal .shopHeader { flex-wrap: wrap; padding: 14px 16px; gap: 8px; }
+  #shopTitle { font-size: 20px; white-space: normal; }
+  #shopModal .shopHeading small { font-size: 12px; }
+  #shopModal .shopHeaderMeta { order: 3; flex-basis: 100%; }
+  #shopModal .shopHeaderMeta:has(#shopCountdown:empty) { display: none; }
+  #shopCountdown { font-size: 13px; }
+  #shopModal .shopLayout { grid-template-columns: minmax(0, 1fr); }
+  #shopModal .shopKeeperPanel { display: flex; border-right: 0; border-bottom: 1px solid #cfa66b33; }
+  #shopModal .shopKeeperArt { height: 350px; min-height: 0; padding: 12px 0 0; }
+  #shopModal .shopKeeperPanel::before { inset: 16px 26px 105px; }
+  .shopKeeperIdentity { top: 22px; left: 20px; }
+  .shopKeeperIdentity b { font-size: 27px; }
+  .shopKeeperIdentity small { font-size: 11px; }
+  #shopDialogue { width: calc(100% - 28px); min-height: 90px; margin: 0 14px 14px; padding: 12px 15px 20px; border: 1px solid #ad825a70; border-radius: 10px; }
+  #shopModal .shopGoodsPanel { padding: 20px 16px; gap: 16px; }
+  #shopModal .shopBuyRow, #shopModal .shopSellRow { grid-template-columns: 58px minmax(0, 1fr); padding: 14px; gap: 8px 12px; }
+  #shopModal .shopBuyRow > img, #shopModal .shopSellRow > img { width: 54px; height: 54px; }
+  #shopModal .shopBuyRow + .shopBuyRow { padding-top: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #shopModal .shopKeeperArt img { transition: none; }
+}

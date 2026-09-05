@@ -575,15 +575,15 @@ export function renderPrepView() {
   const contractedXiaochu = gameState.resonanceState.xiaochu === RESONANCE_STATES.CONTRACTED;
   const xiaochuTalk = document.getElementById('xiaochuTalkBtn');
   xiaochuTalk.hidden = !followingXiaochu && !contractedXiaochu;
-  xiaochuTalk.disabled = storyLocked || (followingXiaochu && gameState.xiaochuStoryChapter === 1);
-  xiaochuTalk.classList.toggle('storyRequired', followingXiaochu && gameState.xiaochuStoryChapter !== 1);
-  document.getElementById('xiaochuTalkHint').textContent = t(contractedXiaochu ? XIAOCHU_DAILY_TALKS[gameState.xiaochuDailyTalkIndex].titleKey : gameState.xiaochuStoryChapter === 1 ? 'home.xiaochuExplore' : gameState.xiaochuStoryChapter === 2 ? 'home.xiaochuReady' : 'home.xiaochuWelcome');
+  xiaochuTalk.disabled = storyLocked;
+  xiaochuTalk.classList.toggle('storyRequired', followingXiaochu);
+  document.getElementById('xiaochuTalkHint').textContent = t(contractedXiaochu ? XIAOCHU_DAILY_TALKS[gameState.xiaochuDailyTalkIndex].titleKey : gameState.xiaochuStoryChapter > 0 ? 'home.xiaochuReady' : 'home.xiaochuWelcome');
   const visibleHomeFacilities = [...document.querySelectorAll('#homeMenu .homeFacilityBtn')]
     .filter(element => !element.hidden).length;
   document.getElementById('homeMenu').classList.toggle('singleFacility', visibleHomeFacilities === 1);
   document.getElementById('travelJournalBtn').classList.toggle('storyRequired', mustReadJournal);
   document.getElementById('contractFacilityBtn').classList.toggle('storyRequired', oathReady);
-  document.getElementById('homeLocationBtn').classList.toggle('storyRequired', mustGoHome || Boolean(newCharacter && atVillage) || (atVillage && (oathReady || (followingXiaochu && gameState.xiaochuStoryChapter !== 1))));
+  document.getElementById('homeLocationBtn').classList.toggle('storyRequired', mustGoHome || Boolean(newCharacter && atVillage) || (atVillage && (oathReady || followingXiaochu)));
   document.getElementById('homeGrowthBtn').classList.toggle('storyRequired', Boolean(newCharacter && atHome && overlayUiState.homeMode === 'menu'));
   document.querySelectorAll('.storyFocusTarget,.storyGuideTarget').forEach(element => element.classList.remove('storyFocusTarget', 'storyGuideTarget'));
   let storyFocusTarget = null;

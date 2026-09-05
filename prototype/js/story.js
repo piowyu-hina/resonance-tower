@@ -202,7 +202,6 @@ export const DIALOGUE_PRESENTATION = {
   ...Object.fromEntries(XIAOCHU_DAILY_TALKS.map(talk => [talk.id, { backdrop: 'home' }])),
   xiaochu_encounter: { backdrop: 'forest' },
   xiaochu_home: { backdrop: 'home' },
-  xiaochu_trust: { backdrop: 'forest' },
   xiaochu_choice: { backdrop: 'home' },
   xiaochu_oath: { backdrop: 'home', outro: 'contractFormed', partner: 'xiaochu' },
   xiaochu_after: { backdrop: 'home' },
@@ -501,22 +500,20 @@ export function talkToXiaochu() {
     return;
   }
   if (gameState.resonanceState.xiaochu !== RESONANCE_STATES.FOLLOWING) return;
-  const chapter = gameState.xiaochuStoryChapter;
-  if (chapter !== 0 && chapter !== 2) return;
-  queueDialogue(chapter === 0 ? 'xiaochu_home' : 'xiaochu_choice', () => {
-    gameState.xiaochuStoryChapter = chapter + 1;
-    if (chapter === 2) setResonanceState('xiaochu', RESONANCE_STATES.OATH_READY);
+  const finishChoice = () => {
+    gameState.xiaochuStoryChapter = 3;
+    setResonanceState('xiaochu', RESONANCE_STATES.OATH_READY);
     render();
-  });
-}
-
-export function tryXiaochuTravelStory(onDone) {
-  if (gameState.resonanceState.xiaochu !== RESONANCE_STATES.FOLLOWING || gameState.xiaochuStoryChapter !== 1) return false;
-  queueDialogue('xiaochu_trust', () => {
-    gameState.xiaochuStoryChapter = 2;
-    onDone();
-  });
-  return true;
+  };
+  if (gameState.xiaochuStoryChapter === 0) {
+    queueDialogue('xiaochu_home', () => {
+      gameState.xiaochuStoryChapter = 2;
+      queueDialogue('xiaochu_choice', finishChoice);
+    });
+  } else {
+    // Also resumes older saves at the retired "clear another wave" step.
+    queueDialogue('xiaochu_choice', finishChoice);
+  }
 }
 
 export function startChapter1DefeatSequence() {
