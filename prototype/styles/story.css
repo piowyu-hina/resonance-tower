@@ -80,6 +80,7 @@
   z-index: 2;
   isolation: isolate;
   width: min(860px, calc(100vw - 30px));
+  max-height: calc(100dvh - 48px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -94,8 +95,10 @@
 #dialoguePortraitFrame {
   position: relative;
   z-index: 1;
-  width: 380px;
-  height: min(520px, 62vh);
+  width: min(520px, 92vw);
+  height: min(680px, 72dvh);
+  min-height: 0;
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,6 +120,9 @@
 #dialoguePortraitFrame.missing .dialogueMissingArt { display: block; }
 #dialoguePortraitFrame.missing img { display: none; }
 #dialogueBox {
+  flex-shrink: 0;
+  max-height: 44dvh;
+  overflow-y: auto;
   position: relative;
   z-index: 2;
   width: 100%;
@@ -145,8 +151,8 @@
 #dialoguePortraitFrame.goddessSpeaker::before { content: ''; position: absolute; inset: -8%; background: url('../assets/story/goddess_back.png') center / contain no-repeat; opacity: .62; filter: drop-shadow(0 0 24px rgba(255,213,121,.42)); }
 #dialoguePortraitFrame.goddessSpeaker img { position: relative; z-index: 1; }
 #dialogueOverlay.heavenDialogue #dialoguePortraitFrame.goddessSpeaker {
-  width: 420px;
-  height: min(560px,65vh);
+  width: min(480px, 90vw);
+  height: min(650px,68dvh);
   animation: goddessGentleFloat 3.4s ease-in-out infinite;
 }
 #dialogueOverlay.heavenDialogue #dialoguePortraitFrame.goddessSpeaker::before {
@@ -739,12 +745,13 @@
 
 @media (max-width: 650px) {
   #dialogueOverlay { padding: 12px; }
-  #dialoguePortraitFrame { width: 210px; height: min(330px,48vh); }
+  #dialogueModal { max-height: calc(100dvh - 24px); }
+  #dialoguePortraitFrame { width: min(340px, 92vw); height: min(520px,64dvh); }
   #dialogueBox { padding: 12px 14px; }
   #soulResonanceOrb { width: min(70vw,340px); }
   .soulResonanceTitle { top: calc(50% + min(38vw,195px)); }
   .contractFormedStage { height: min(430px,58vh); }
-  #dialogueOverlay.heavenDialogue #dialoguePortraitFrame.goddessSpeaker { width: 250px; height: min(390px,52vh); }
+  #dialogueOverlay.heavenDialogue #dialoguePortraitFrame.goddessSpeaker { width: min(320px,90vw); height: min(480px,60dvh); }
   #dialogueOverlay.heavenDialogue #dialoguePortraitFrame.goddessSpeaker::before { inset: -24% -38%; }
   .teleportBreakStone { width: min(76vmin,430px); margin: calc(min(76vmin,430px) / -2) 0 0 calc(min(76vmin,430px) / -2); }
   .heavenTransitionSigil img { width: min(76vmin,520px); }

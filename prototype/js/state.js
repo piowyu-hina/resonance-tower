@@ -108,6 +108,7 @@ export const gameState = {
   activeGoos: [],      // { el, msLeft, spawnTime }
   gooDebuffStacks: 0,  // matured-but-unclicked goo count this boss fight
   gooSpawnCountdown: 0,
+  gooOpeningCountdown: 0,
   activeGooBatch: null,
 };
 

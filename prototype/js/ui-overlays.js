@@ -1,5 +1,5 @@
-import { localizedItemDef, DEFEAT_RESTART_DELAY_MS, BOSS_INTRO_DURATION_MS, CHAR_DEFS, localizedRegionDef } from './constants.js';
-import { gameState, PHASES, log, contractStoryLocked, setPhase, speedLineIntervalMult } from './state.js';
+import { localizedItemDef, DEFEAT_RESTART_DELAY_MS, BOSS_INTRO_DURATION_MS, localizedRegionDef } from './constants.js';
+import { gameState, PHASES, log, contractStoryLocked, setPhase, characterActionInterval } from './state.js';
 import { t, formatLocaleNumber } from './i18n.js';
 import { playTransientAnimation, beginManagedTransition, afterAnimationPaint, removeAfterAnimation } from './transitions.js';
 import { leaveShop } from './shop.js';
@@ -236,7 +236,8 @@ export function prepareCombat(entryPhase, spawnEncounter = spawnWave) {
   spawnEncounter();
   gameState.party.forEach(id => {
     const c = gameState.roster.find(r => r.id === id);
-    c.actionCountdown = CHAR_DEFS[id].atkInterval * speedLineIntervalMult(c);
+    c.actionCycleMs = characterActionInterval(c);
+    c.actionCountdown = c.actionCycleMs;
   });
   flushCombat();
 }

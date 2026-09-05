@@ -106,7 +106,8 @@ export function makeBoss() {
       ],
       desc: '造成傷害並降低攻速 4 秒',
     },
-    skill2Cd: BOSS_SUMMON_OPENING_MS,
+    summonOpeningMs: BOSS_SUMMON_OPENING_MS,
+    skill2Cd: 0,
     skill2: { name: '召喚黏液', icon: '🟢', img: 'floor1/slime_boss_skill2', cd: BOSS_SUMMON_CD_MS / 1000, desc: `召喚 1 隻隨機史萊姆，場上最多 ${BOSS_SUMMON_MAX} 隻召喚物` },
     skill3: { name: '黏液陣', icon: '🔵', img: 'floor1/slime_boss_skill3', cd: GOO_SKILL_CD_MS / 1000, desc: `一次召喚 ${GOO_BATCH_SIZE} 顆黏液，限時全部點完才造成傷害；漏掉任一顆會讓隊伍沾黏、攻擊力下降` },
   };
@@ -132,7 +133,7 @@ export function spawnWave() {
     for (let i = 0; i < count; i++) gameState.monsters.push(makeMob());
   } else {
     gameState.monsters.push(makeBoss());
-    gameState.gooSpawnCountdown = 800; // faster opening spawn than the steady-state cooldown, so the fight doesn't feel dead at the start
+    gameState.gooOpeningCountdown = 800; // opening wind-up is not a spent skill cooldown
   }
   emitCombatEvent({ type: 'waveSpawned' });
 }
@@ -346,6 +347,10 @@ export function tickRuinsLord(boss) {
 // construction, no battle logic, so it doesn't belong here.)
 
 export function bossSummonTick(boss) {
+  if (boss.summonOpeningMs > 0) {
+    boss.summonOpeningMs = Math.max(0, boss.summonOpeningMs - MASTER_TICK_MS);
+    if (boss.summonOpeningMs > 0) return;
+  }
   boss.skill2Cd = Math.max(0, boss.skill2Cd - MASTER_TICK_MS);
   if (boss.skill2Cd > 0) return;
 
@@ -687,7 +692,7 @@ export function grantHaste(target, mult, durationSeconds) {
 export function canUseCharacterAction(characterId) {
   const c = gameState.roster.find(member => member.id === characterId);
   const action = CHAR_DEFS[characterId] && CHAR_DEFS[characterId].action;
-  return gameState.phase === PHASES.COMBAT && !['dialogue', 'event'].includes(gameState.activeOverlay) && gameState.party.includes(characterId) && !!c && c.alive && !!action && !isCharacterActionLocked(c) && c.manualActionCd <= 0 && aliveMonsters().length > 0;
+  return gameState.phase === PHASES.COMBAT && !['dialogue', 'event'].includes(gameState.activeOverlay) && gameState.party.includes(characterId) && !!c && c.alive && !!action && !isCharacterActionLocked(c) && c.manualActionCd <= 0 && aliveMonsters().some(m => m.hp > 0);
 }
 
 export function isCharacterActionLocked(character) {
@@ -703,7 +708,7 @@ export function useCharacterAction(characterId) {
   if (action.type === 'randomSkill') {
     const skillIndex = Math.floor(Math.random() * def.skills.length);
     const skill = def.skills[skillIndex];
-    const targets = aliveMonsters();
+    const targets = aliveMonsters().filter(m => m.hp > 0);
     const target = targets[Math.floor(Math.random() * targets.length)];
     log(`${def.name} 發動【${action.name}】！`, 'party');
     emitCombatEvent({ type: 'popup', targetKind: 'char', targetId: characterId, text: 'RANDOM', cls: 'buff' });
@@ -822,7 +827,7 @@ export function tickCharacters(alive) {
       return;
     }
 
-    const targets = aliveMonsters();
+    const targets = aliveMonsters().filter(m => m.hp > 0);
     if (targets.length === 0) return; // wave already cleared this tick
 
     const target = targets[Math.floor(Math.random() * targets.length)];
@@ -867,16 +872,18 @@ export function tickBuffs() {
 
 export function tickMonsters() {
   const boss = gameState.monsters.find(m => m.isBoss);
-  if (boss && boss.alive && boss.storyBoss) {
+  // Death flags are swept after both sides act; HP is authoritative meanwhile.
+  if (boss && (!boss.alive || boss.hp <= 0)) return;
+  if (boss && boss.alive && boss.hp > 0 && boss.storyBoss) {
     tickRuinsLord(boss);
     return;
   }
-  if (boss && boss.alive) {
+  if (boss && boss.alive && boss.hp > 0) {
     gooTick(boss);
     bossSummonTick(boss);
   }
 
-  aliveMonsters().forEach(m => {
+  aliveMonsters().filter(m => m.hp > 0).forEach(m => {
     m.skillCd = Math.max(0, m.skillCd - MASTER_TICK_MS);
 
     m.actionCountdown -= MASTER_TICK_MS;

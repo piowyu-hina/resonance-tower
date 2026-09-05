@@ -1,5 +1,5 @@
 import { GOO_BATCH_SIZE, GOO_LIFESPAN_MS, GOO_SKILL_CD_MS, MASTER_TICK_MS, GOO_PULSE_MS, GOO_PERFECT_WINDOW_MS, GOO_PERFECT_MULT } from './constants.js';
-import { gameState, log } from './state.js';
+import { gameState, PHASES, log } from './state.js';
 import { popup, flash } from './ui-overlays.js';
 import { render } from './ui-main.js';
 
@@ -8,6 +8,8 @@ import { render } from './ui-main.js';
 // separate from combat.js so a future floor mechanic can live alongside it
 // without the two tangling together.
 export function clearGooArena() {
+  gameState.gooSpawnCountdown = 0;
+  gameState.gooOpeningCountdown = 0;
   gameState.activeGoos.forEach(g => g.el.remove());
   gameState.activeGoos = [];
   gameState.activeGooBatch = null;
@@ -54,6 +56,8 @@ export function isPerfectPop(goo) {
 }
 
 export function popGoo(goo) {
+  if (gameState.phase !== PHASES.COMBAT || ['dialogue', 'event'].includes(gameState.activeOverlay)) return;
+  if (goo.batch !== gameState.activeGooBatch || !gameState.monsters.some(m => m.isBoss && m.alive && m.hp > 0)) return;
   const idx = gameState.activeGoos.indexOf(goo);
   if (idx === -1) return; // already matured/removed
   gameState.activeGoos.splice(idx, 1);
@@ -98,9 +102,13 @@ export function gooTick(boss) {
     log('有黏液化開了！整批失敗，隊伍沾黏、攻擊力下降', 'warn');
   }
 
-  gameState.gooSpawnCountdown -= MASTER_TICK_MS;
-  if (gameState.gooSpawnCountdown <= 0) {
+  if (gameState.gooOpeningCountdown > 0) {
+    gameState.gooOpeningCountdown = Math.max(0, gameState.gooOpeningCountdown - MASTER_TICK_MS);
+    if (gameState.gooOpeningCountdown > 0) return;
+  }
+  gameState.gooSpawnCountdown = Math.max(0, gameState.gooSpawnCountdown - MASTER_TICK_MS);
+  if (gameState.gooSpawnCountdown <= 0 && !gameState.activeGooBatch) {
     gameState.gooSpawnCountdown = GOO_SKILL_CD_MS;
-    if (!gameState.activeGooBatch) spawnGooBatch();
+    spawnGooBatch();
   }
 }

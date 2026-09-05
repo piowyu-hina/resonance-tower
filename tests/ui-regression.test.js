@@ -286,6 +286,21 @@ async function testBossTransition(browser) {
     allCards: document.querySelectorAll('#monsterSide .monsterCard').length,
   }));
   assert.deepEqual(intro, { phase: 'bossIntro', bossCards: 1, dyingCards: 0, allCards: 1 });
+  const entryTimers = () => page.evaluate(() => {
+    const state = window.__debugHooks.gameState;
+    const boss = state.monsters[0];
+    const refs = state.monsterEls[boss.id];
+    return { cooldowns: [boss.skillCd, boss.skill2Cd, state.gooSpawnCountdown],
+      opening: [boss.summonOpeningMs, state.gooOpeningCountdown],
+      overlays: [refs.skillCdOverlayEl, refs.skill2CdOverlayEl, refs.skill3CdOverlayEl].map(el => el.style.height),
+      hp: boss.hp };
+  });
+  const beforeEntry = await entryTimers();
+  assert.deepEqual(beforeEntry.cooldowns, [0, 0, 0], 'uncast boss skills start ready');
+  assert.deepEqual(beforeEntry.overlays, ['0%', '0%', '0%']);
+  assert.deepEqual(beforeEntry.opening, [3000, 800]);
+  await page.waitForTimeout(350);
+  assert.deepEqual(await entryTimers(), beforeEntry, 'intro must not tick combat or opening timers');
 
   await page.waitForFunction(() => window.__debugHooks.gameState.phase === 'combat', null, { timeout: 6500 });
   const active = await page.evaluate(() => ({
@@ -1116,12 +1131,62 @@ async function testWumingSkills(browser) {
   }
 }
 
+async function testDialogueSizing(browser) {
+  for (const [width, height] of [[1440, 1000], [390, 844], [320, 568], [844, 390]]) {
+    const page = await openView(browser, 'village');
+    await page.setViewportSize({ width, height });
+    for (const speaker of ['xiaochu', 'wuming', 'goddess']) {
+      await page.evaluate(async speaker => {
+        const story = await import('./js/story.js');
+        if (story.storyState.dialogueScript) story.closeDialogue();
+        story.queueDialogue('xiaochu_home');
+        const line = Object.values(story.DIALOGUE_DEFS).flat().filter(line => line.speaker === speaker)
+          .sort((a, b) => b.text.length - a.text.length)[0];
+        story.storyState.dialogueScript = [line];
+        story.storyState.dialogueLineIndex = 0;
+        story.storyState.lastDialogueSpeaker = null;
+        document.getElementById('dialogueOverlay').classList.toggle('heavenDialogue', speaker === 'goddess');
+        story.renderDialogueLine();
+      }, speaker);
+      await page.locator('#dialoguePortraitImg').evaluate(img => img.decode());
+      await page.waitForTimeout(800);
+      const layout = await page.evaluate(() => {
+        const portrait = document.getElementById('dialoguePortraitFrame').getBoundingClientRect();
+        const box = document.getElementById('dialogueBox').getBoundingClientRect();
+        return { top: portrait.top, left: portrait.left, right: portrait.right, portraitHeight: portrait.height,
+          bottom: box.bottom, overlap: portrait.bottom - box.top,
+          overflow: document.documentElement.scrollWidth > innerWidth,
+          fit: getComputedStyle(document.getElementById('dialoguePortraitImg')).objectFit };
+      });
+      assert.ok(layout.top >= 0, `${speaker} portrait remains inside ${width}x${height}`);
+      assert.ok(layout.left >= 0 && layout.right <= width);
+      assert.ok(layout.bottom <= height);
+      assert.ok(layout.overlap <= 14, 'only the small authored frame overlap is allowed');
+      assert.equal(layout.fit, 'contain', 'full artwork must not be cropped');
+      assert.equal(layout.overflow, false);
+      if (width === 390) assert.ok(layout.portraitHeight > 390, 'mobile story characters are enlarged');
+      if (process.argv.includes('--entry-story-only')) {
+        fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
+        await page.screenshot({ path: path.resolve(__dirname, `../test-results/story-larger-${speaker}-${width}.png`) });
+      }
+    }
+    assertNoRuntimeErrors(page, 'responsive story portraits');
+    await page.close();
+  }
+}
+
 (async () => {
   const server = await startServer();
   const { port } = server.address();
   prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    await testDialogueSizing(browser);
+    if (process.argv.includes('--entry-story-only')) {
+      await testBossTransition(browser);
+      console.log('ui-regression.test.js: entry and story sizing assertions passed');
+      return;
+    }
     await testWumingSkills(browser);
     if (process.argv.includes('--wuming-only')) {
       console.log('ui-regression.test.js: Wuming skill UI assertions passed');
