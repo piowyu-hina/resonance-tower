@@ -22,12 +22,26 @@ const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const report = [];
 try {
   for (const width of (process.argv.includes('--sheets-only') ? [] : [1440, 390])) {
-    for (const view of (process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
+    for (const view of (process.argv.includes('--slime-only') ? ['slime-enter', 'slime-crouch', 'slime-wuming'] : process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
       const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1000 } });
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
       await page.goto(`http://127.0.0.1:${server.address().port}/?debug&view=${view === 'detail' ? 'growth' : view}`, { waitUntil: 'load' });
       if (view === 'detail') await page.locator('.homeGrowthCard').first().click();
+      if (view.startsWith('slime-')) {
+        await page.evaluate(async () => {
+          const story = await import('./js/story.js');
+          story.queueDialogue('xiaochu_encounter');
+          story.storyState.dialogueLineIndex = 1;
+          story.renderDialogueLine();
+        });
+        await page.waitForTimeout(950);
+        await page.evaluate(async view => {
+          const story = await import('./js/story.js');
+          story.storyState.dialogueLineIndex = view === 'slime-crouch' ? 6 : view === 'slime-wuming' ? 4 : 1;
+          story.renderDialogueLine();
+        }, view);
+      }
       if (view === 'journal-contents') await page.evaluate(async () => {
         const { gameState } = await import('./js/state.js');
         gameState.chapter1State = 'complete';

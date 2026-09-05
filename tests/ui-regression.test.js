@@ -372,13 +372,27 @@ async function testXiaochuEncounterFlow(browser) {
     }
   };
 
+  const advanceSlimeScene = async times => {
+    for (let i = 0; i < times; i++) {
+      await page.waitForFunction(() => !window.__debugHooks.storyState.lineEffectLocked);
+      await advanceDialogue(1);
+    }
+  };
   await page.evaluate(() => document.querySelector('[data-debug-action="xiaochu-preview"]').click());
   for (let index = 0; index < DIALOGUE_DEFS.xiaochu_encounter.length; index++) {
     assert.equal(await page.textContent('#dialogueText'), DIALOGUE_DEFS.xiaochu_encounter[index].text);
     const speaker = DIALOGUE_DEFS.xiaochu_encounter[index].speaker;
+    const beat = DIALOGUE_DEFS.xiaochu_encounter[index].slimeBeat;
+    if (beat && beat !== 'gone') {
+      assert.equal(await page.locator('#storySlime').isVisible(), true);
+      assert.equal(await page.getAttribute('#storySlime', 'data-beat'), beat);
+      await page.evaluate(() => document.getElementById('dialogueOverlay').click());
+      assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialogueLineIndex), index, 'slime action cannot be skipped');
+    }
+    if (beat === 'gone') assert.equal(await page.locator('#storySlime').isVisible(), false);
     if (speaker.startsWith('xiaochu_')) assert.equal(await page.textContent('#dialogueSpeakerName'), '？？？');
     if (speaker === 'xiaochu') assert.equal(await page.textContent('#dialogueSpeakerName'), '小初');
-    await advanceDialogue(1);
+    await advanceSlimeScene(1);
   }
   assert.equal(await xiaochuState(), undefined, 'preview must not grant progression');
 
@@ -386,7 +400,7 @@ async function testXiaochuEncounterFlow(browser) {
   await page.evaluate(() => document.querySelector('[data-debug-action="xiaochu-story"]').click());
   await waitForOverlay('dialogue');
   assert.equal(await xiaochuState(), 'encountering');
-  await advanceDialogue(lineCount('xiaochu_encounter'));
+  await advanceSlimeScene(lineCount('xiaochu_encounter'));
   assert.equal(await xiaochuState(), 'following');
 
   assert.equal(await isUnlocked(), false);

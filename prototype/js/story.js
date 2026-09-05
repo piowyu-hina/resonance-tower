@@ -114,18 +114,18 @@ export const DIALOGUE_DEFS = {
   ],
   xiaochu_encounter: [
     {"speaker":"narrator","text":"無名清掉眼前最後一隻怪物，放下劍，喘了口氣。"},
-    {"speaker":"narrator","text":"草叢忽然晃動。一隻史萊姆從裡面跳了出來。"},
+    {"speaker":"narrator","text":"草叢忽然晃動。一隻史萊姆從裡面跳了出來。", slimeBeat: 'enter'},
     {"speaker":"xiaochu_voice","text":"右邊！牠要跳過去了！"},
-    {"speaker":"narrator","text":"無名下意識往旁邊閃。史萊姆擦過他的身側，落在地上。"},
+    {"speaker":"narrator","text":"無名下意識往旁邊閃。史萊姆擦過他的身側，落在地上。", slimeBeat: 'hop'},
     {"speaker":"wuming","text":"誰……？"},
     {"speaker":"xiaochu_voice","text":"先別看這邊！牠轉過來了！"},
-    {"speaker":"narrator","text":"史萊姆縮起身體。"},
+    {"speaker":"narrator","text":"史萊姆縮起身體。", slimeBeat: 'crouch'},
     {"speaker":"xiaochu_voice","text":"就是現在，揮劍！"},
-    {"speaker":"narrator","text":"無名揮下劍。史萊姆卻突然彈起，撞進他的懷裡。"},
+    {"speaker":"narrator","text":"無名揮下劍。史萊姆卻突然彈起，撞進他的懷裡。", slimeBeat: 'hit'},
     {"speaker":"wuming","text":"嗚哇！"},
-    {"speaker":"narrator","text":"無名跌坐在地。史萊姆落下後，再次朝他跳來。"},
-    {"speaker":"narrator","text":"這次無名沒有急著揮劍。他側身躲過撞擊，趁史萊姆落地時補上一劍。"},
-    {"speaker":"narrator","text":"四周安靜下來。"},
+    {"speaker":"narrator","text":"無名跌坐在地。史萊姆落下後，再次朝他跳來。", slimeBeat: 'hop'},
+    {"speaker":"narrator","text":"這次無名沒有急著揮劍。他側身躲過撞擊，趁史萊姆落地時補上一劍。", slimeBeat: 'defeat'},
+    {"speaker":"narrator","text":"四周安靜下來。", slimeBeat: 'gone'},
     {"speaker":"wuming","text":"……剛才是誰叫我揮劍的？"},
     {"speaker":"xiaochu_voice","text":"……"},
     {"speaker":"wuming","text":"我有聽到喔。"},
@@ -234,6 +234,36 @@ let journalPageTransition = null;
 let heavenTransitionRun = null;
 let dialogueLineEffectRun = null;
 let presentationRun = null;
+let slimeStoryRun = null;
+
+function resetStorySlime() {
+  if (slimeStoryRun) storyState.lineEffectLocked = false;
+  slimeStoryRun?.cancel();
+  slimeStoryRun = null;
+  const actor = document.getElementById('storySlime');
+  actor.hidden = true;
+  actor.removeAttribute('data-beat');
+  document.getElementById('dialogueModal').classList.remove('slimeScene');
+}
+
+function renderStorySlime(line) {
+  if (storyState.dialogueScriptId !== 'xiaochu_encounter') return resetStorySlime();
+  const actor = document.getElementById('storySlime');
+  if (!line.slimeBeat) return;
+  if (line.slimeBeat === 'gone') return resetStorySlime();
+  actor.hidden = false;
+  document.getElementById('dialogueModal').classList.add('slimeScene');
+  actor.removeAttribute('data-beat');
+  void actor.offsetWidth;
+  actor.dataset.beat = line.slimeBeat;
+  storyState.lineEffectLocked = true;
+  slimeStoryRun = beginManagedTransition('story-slime');
+  const run = slimeStoryRun;
+  run.after(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 50 : 900, () => run.finish(() => {
+    storyState.lineEffectLocked = false;
+    slimeStoryRun = null;
+  }));
+}
 
 function heavenTransitionDuration(normalDuration) {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 250 : normalDuration;
@@ -255,6 +285,7 @@ export function startDialogue(scriptId, onDone) {
   const script = DIALOGUE_DEFS[scriptId];
   if (!script || script.length === 0) return;
   closeOtherOverlays('dialogue');
+  resetStorySlime();
   gameState.activeOverlay = 'dialogue';
   storyState.dialogueScriptId = scriptId;
   storyState.dialogueScript = script;
@@ -382,6 +413,7 @@ export function beginDialogueLines() {
 
 export function renderDialogueLine() {
   const line = storyState.dialogueScript[storyState.dialogueLineIndex];
+  renderStorySlime(line);
   const speakerChanged = line.speaker !== storyState.lastDialogueSpeaker;
   const firstSpeakerAppearance = !storyState.seenDialogueSpeakers.has(line.speaker);
   const def = CHAR_DEFS[line.speaker];
@@ -713,6 +745,7 @@ export function finishContractFormed() {
 }
 
 export function closeDialogue() {
+  resetStorySlime();
   presentationRun?.cancel();
   presentationRun = null;
   heavenTransitionRun?.cancel();
