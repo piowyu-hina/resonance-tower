@@ -1282,6 +1282,27 @@ async function testDesktopHome(browser) {
     if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-detail-${width}.png`) });
     await page.locator('.growthCard[data-line="action"]').click();
     assert.ok(await page.locator('.growthInspectorHead h3').textContent());
+    for (const height of [720, 900]) {
+      await page.setViewportSize({ width, height });
+      const pinned = await page.locator('#characterDetailModal').evaluate(modal => {
+        const button = modal.querySelector('#growthUpgradeBtn').getBoundingClientRect();
+        const compare = modal.querySelector('.growthCompare').getBoundingClientRect();
+        return { fits: button.bottom < innerHeight && compare.top > 0 && compare.bottom < innerHeight,
+          hit: modal.querySelector('#growthUpgradeBtn').contains(document.elementFromPoint(button.x + button.width / 2, button.y + button.height / 2)),
+          pageScroll: modal.scrollHeight > modal.clientHeight };
+      });
+      assert.ok(pinned.fits && pinned.hit && !pinned.pageScroll, 'comparison and upgrade stay on-screen without modal scrolling');
+      assert.ok(await page.locator('.homeGrowthExplanation').evaluate(el => el.clientHeight >= 24), 'long descriptions retain a readable scroll area');
+      await page.locator('.homeGrowthExplanation').evaluate(el => { el.scrollTop = el.scrollHeight; });
+      assert.equal(await page.locator('#growthUpgradeBtn').isVisible(), true);
+      if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-pinned-${width}-${height}.png`) });
+    }
+    await page.locator('.homeCharacterProfile summary').click();
+    assert.equal(await page.locator('.skinPicker').isVisible(), true);
+    await page.locator('.skinOption').first().click();
+    assert.equal(await page.locator('.homeCharacterProfile').getAttribute('open'), '');
+    await page.locator('.homeCharacterProfile summary').click();
+    await page.setViewportSize({ width, height: 1080 });
     await page.click('#characterDetailCloseBtn');
     assert.equal(await page.locator('#homeGrowthBtn').evaluate(el => el === document.activeElement), true, 'closing returns keyboard focus to room entry');
     const door = await page.locator('#homeBackBtn').evaluate(el => {

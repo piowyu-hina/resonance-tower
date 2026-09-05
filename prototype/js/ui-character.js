@@ -13,8 +13,10 @@ import { attachHoldRepeat } from './ui-press.js';
 export { attachHoldRepeat } from './ui-press.js';
 let disposeGrowthHold = null;
 let detailReturnFocus = null;
+let homeProfileOpen = false;
 
 export function setCharacterDetailOpen(open, characterId = null) {
+  if (open && gameState.activeOverlay !== 'characterDetail') homeProfileOpen = false;
   if (open && gameState.activeOverlay !== 'characterDetail') detailReturnFocus = document.activeElement;
   if (!open) { disposeGrowthHold?.(); disposeGrowthHold = null; }
   if (open) closeOtherOverlays('characterDetail');
@@ -289,12 +291,42 @@ export function renderCharacterDetail(characterId) {
     </div>
   `;
 
+  if (atHome) {
+    // Keep the existing growth controls/handlers, but give each area its own
+    // layout so long descriptions never push the upgrade action off screen.
+    const profile = document.createElement('details');
+    profile.className = 'homeCharacterProfile';
+    profile.open = homeProfileOpen;
+    profile.innerHTML = '<summary>介紹與外觀</summary><div class="homeProfileBody"></div>';
+    const profileBody = profile.querySelector('.homeProfileBody');
+    for (const selector of ['.detailCharacterDescription', '.detailSectionHeading', '.skinPicker']) {
+      profileBody.appendChild(content.querySelector(selector));
+    }
+    content.querySelector('.detailArtFrame').before(profile);
+    profile.addEventListener('toggle', () => { homeProfileOpen = profile.open; });
+    const info = content.querySelector('.detailInfo');
+    const inspector = content.querySelector('.growthInspector');
+    const choices = document.createElement('div');
+    choices.className = 'homeGrowthChoices';
+    for (const child of [...info.children]) {
+      if (!child.classList.contains('detailTitleRow') && child !== inspector) choices.appendChild(child);
+    }
+    inspector.before(choices);
+    const explanation = document.createElement('div');
+    explanation.className = 'homeGrowthExplanation';
+    for (const child of [...inspector.children]) {
+      if (child.matches('.growthSkillDescription')) explanation.appendChild(child);
+    }
+    inspector.querySelector('.growthCompare').before(explanation);
+  }
+
   const fullArt = content.querySelector('.detailArtFrame img');
   content.querySelectorAll('[data-home-character]').forEach(button => {
     button.addEventListener('click', () => {
       const nextId = button.dataset.homeCharacter;
       if (!isCharUnlocked(nextId)) return;
       selectedGrowthLine = 'atk';
+      homeProfileOpen = false;
       renderCharacterDetail(nextId);
       render();
       content.querySelector(`[data-home-character="${nextId}"]`)?.focus({ preventScroll: true });
@@ -309,6 +341,7 @@ export function renderCharacterDetail(characterId) {
     el.addEventListener('click', () => {
       selectedGrowthLine = el.dataset.line;
       renderCharacterDetail(characterId);
+      content.querySelector(`.growthCard[data-line="${selectedGrowthLine}"]`)?.focus({ preventScroll: true });
     });
   });
   content.querySelectorAll('.skinOption[data-skin-id]').forEach(el => {

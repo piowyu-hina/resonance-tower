@@ -6,6 +6,9 @@
 .homeCharacterChoices button[aria-pressed="true"] { background: #62472d; border-color: #e5c087; color: #ffebc8; }
 .homeCharacterChoices button:disabled { opacity: .55; cursor: default; }
 .homeCharacterChoices small { font-size: 12px; color: #d7b985; }
+.homeCharacterProfile { position: relative; z-index: 3; color: #d9c09a; }
+.homeCharacterProfile summary { width: fit-content; padding: 8px 0; cursor: pointer; font-size: 15px; }
+.homeProfileBody { position: absolute; top: 100%; left: 0; right: 0; max-height: min(480px, 55dvh); overflow-y: auto; padding: 16px; border: 1px solid #b18d5a; border-radius: 8px; background: #302319; box-shadow: 0 12px 28px #100b0877; }
 @media (min-width: 960px) {
 
   #characterDetailOverlay.homeCharacterDetail { background: #1c140f99; }
@@ -50,4 +53,36 @@
   .homeCharacterDetail #growthUpgradeBtn:hover:not(:disabled) { background: #9a703b; }
   .homeCharacterDetail #growthUpgradeBtn:disabled { background: #352c24; color: #b6a18a; border-color: #6d5842; }
   .homeCharacterDetail button:focus-visible { outline: 2px solid #f3d397; outline-offset: 3px; }
+
+  /* Fixed workspace: only choices and long explanations scroll, never the action. */
+  .homeCharacterDetail #characterDetailModal { height: min(900px, calc(100dvh - 48px)); padding: 24px; overflow: hidden; }
+  .homeCharacterDetail #characterDetailCloseBtn { position: absolute; top: 16px; right: 16px; margin: 0; }
+  .homeCharacterDetail #characterDetailContent { height: 100%; min-height: 0; gap: 28px; }
+  .homeCharacterDetail .detailPortraitColumn { position: relative; top: auto; align-self: stretch; min-height: 0; gap: 8px; }
+  .homeCharacterDetail .detailArtFrame { height: auto; flex: 1; min-height: 0; }
+  .homeCharacterDetail .detailInfo { display: grid; grid-template-rows: auto minmax(0, 1fr) minmax(220px, .85fr); gap: 12px; min-height: 0; padding: 0; }
+  .homeCharacterDetail .detailTitleRow { padding-right: 46px; }
+  .homeCharacterDetail .detailTitleRow h2 { font-size: 32px; }
+  .homeCharacterDetail .detailIdentity .detailRarity { font-size: 12px; margin-bottom: 0; }
+  .homeCharacterDetail .homeGrowthChoices { overflow-y: auto; min-height: 0; padding: 2px 4px; scrollbar-width: thin; scrollbar-color: #99764c transparent; }
+  .homeCharacterDetail .homeGrowthChoices .detailSectionTitle { margin: 8px 0 6px; font-size: 15px; }
+  .homeCharacterDetail .growthVital { margin: 0 0 4px; padding: 5px 8px; }
+  .homeCharacterDetail .growthGrid { gap: 8px; }
+  .homeCharacterDetail .growthCard { min-height: 64px; padding: 8px 10px 22px; gap: 8px; }
+  .homeCharacterDetail .growthCardText small { display: none; }
+  .homeCharacterDetail .growthCardText b { font-size: 16px; }
+  .homeCharacterDetail .growthInspector { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; margin: 0; padding: 14px; gap: 8px; }
+  .homeCharacterDetail .homeGrowthExplanation { overflow-y: auto; min-height: 0; scrollbar-width: thin; scrollbar-color: #99764c transparent; }
+  .homeCharacterDetail .growthSkillDescription { margin: 0 0 10px; line-height: 1.6; }
+  .homeCharacterDetail .growthCompare { margin: 0; }
+  .homeCharacterDetail .growthUpgradeRow { padding-top: 8px; border-top: 1px solid #ad8b5138; }
+  @media (max-height: 800px) {
+    .homeCharacterDetail .detailInfo { grid-template-rows: auto minmax(0, 1fr) 260px; gap: 10px; }
+    .homeCharacterDetail .detailIdentity .detailRarity { display: none; }
+    .homeCharacterDetail .detailTitleRow h2 { font-size: 28px; }
+    .homeCharacterDetail .growthCard { min-height: 54px; padding: 6px 8px 18px; }
+    .homeCharacterDetail .growthCard img { flex-basis: 30px; width: 30px; height: 30px; }
+    .homeCharacterDetail .growthInspector { padding: 10px; gap: 6px; }
+    .homeCharacterDetail .growthCompare > div { padding: 8px; }
+  }
 }
