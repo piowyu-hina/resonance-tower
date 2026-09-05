@@ -224,6 +224,7 @@ export function renderCharacterDetail(characterId) {
   const def = CHAR_DEFS[characterId];
   if (!c || !def) return;
   const atHome = overlayUiState.prepLocation === 'home';
+  const homeCharacters = atHome ? gameState.roster.filter(member => isCharUnlocked(member.id)) : [];
   if (atHome && isCharUnlocked(characterId)) gameState.seenCharacterIds.add(characterId);
   const unlocked = isCharUnlocked(characterId);
   const selected = gameState.party.includes(characterId);
@@ -242,14 +243,15 @@ export function renderCharacterDetail(characterId) {
   content.style.setProperty('--rarity-color', rarity.color);
   content.innerHTML = `
     <div class="detailPortraitColumn">
-      ${atHome ? `<nav class="homeCharacterPicker" aria-label="選擇培養角色">
+      ${atHome ? `<div class="homeCharacterPicker">
         <span class="homeCultivationTitle">角色培養</span>
-        <div class="homeCharacterChoices">${gameState.roster.filter(member => isCharUnlocked(member.id)).map(member => {
+      </div>` : ''}
+      ${atHome && homeCharacters.length > 1 ? `<nav class="homeCharacterChoices" aria-label="切換培養角色">${homeCharacters.map(member => {
           const isNew = !gameState.seenCharacterIds.has(member.id);
           return `<button type="button" data-home-character="${member.id}" aria-pressed="${member.id === characterId}">
+            <img src="${characterFullArtPath(member.id)}" alt="">
             <span>${CHAR_DEFS[member.id].name}</span>${isNew ? '<small>NEW</small>' : ''}</button>`;
-        }).join('')}</div>
-      </nav>` : ''}
+        }).join('')}</nav>` : ''}
       <div class="detailArtFrame">
         <img src="${characterFullArtPath(characterId)}" alt="${def.name} 完整立繪">
         <div class="detailMissingArt">缺少目前外觀立繪</div>
@@ -309,8 +311,25 @@ export function renderCharacterDetail(characterId) {
     }
     profile.querySelector('.detailSectionHeading small').remove();
     content.querySelector('.detailArtFrame').before(content.querySelector('.detailIdentity'));
+    const identity = content.querySelector('.detailIdentity');
+    identity.querySelector('.detailRarity').remove();
+    const experience = document.createElement('progress');
+    experience.className = 'homeExperience';
+    experience.max = xpToNext(c.level);
+    experience.value = c.xp;
+    experience.setAttribute('aria-label', `${def.name} 經驗值`);
+    identity.appendChild(experience);
+    const characterChoices = content.querySelector('.homeCharacterChoices');
+    if (characterChoices) content.querySelector('.detailArtFrame').after(characterChoices);
     const info = content.querySelector('.detailInfo');
     const inspector = content.querySelector('.growthInspector');
+    const selectedIcon = content.querySelector('.growthCard.selected img');
+    if (selectedIcon) {
+      const icon = selectedIcon.cloneNode();
+      icon.alt = '';
+      icon.className = 'homeInspectorIcon';
+      inspector.querySelector('.growthInspectorHead').prepend(icon);
+    }
     const choices = document.createElement('div');
     choices.className = 'homeGrowthChoices';
     for (const child of [...info.children]) {

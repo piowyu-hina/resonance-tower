@@ -1,8 +1,10 @@
 /* Desktop home cultivation. Combat/expedition detail styling remains independent. */
 .homeCharacterPicker { display: grid; gap: 14px; }
 .homeCultivationTitle { color: #edd4ae; font-family: Georgia, 'Noto Serif TC', serif; font-size: 22px; letter-spacing: .12em; }
-.homeCharacterChoices { display: flex; flex-wrap: wrap; gap: 8px; }
-.homeCharacterChoices button { display: grid; align-content: center; justify-items: center; gap: 4px; min-width: 90px; min-height: 44px; padding: 9px 14px; border: 1px solid #876b49; border-radius: 6px; background: #36281e; color: #dcc5a2; font-size: 16px; cursor: pointer; }
+.homeCharacterChoices { display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0; padding: 6px 2px; scrollbar-width: thin; }
+.homeCharacterChoices button { position: relative; display: grid; grid-template-columns: 38px auto; align-content: center; align-items: center; gap: 8px; flex-shrink: 0; min-width: 104px; min-height: 60px; padding: 6px 12px; border: 1px solid #876b49; border-radius: 6px; background: #36281e; color: #dcc5a2; font-size: 16px; cursor: pointer; }
+.homeCharacterChoices img { width: 38px; height: 48px; object-fit: contain; }
+.homeCharacterChoices small { position: absolute; top: 0; right: 4px; }
 .homeCharacterChoices button[aria-pressed="true"] { background: #62472d; border-color: #e5c087; color: #ffebc8; }
 .homeCharacterChoices button:disabled { opacity: .55; cursor: default; }
 .homeCharacterChoices small { font-size: 12px; color: #d7b985; }
@@ -69,8 +71,13 @@
   .homeCharacterDetail .homeProfilePanel .skinOption { width: 140px; padding: 12px; }
   .homeCharacterDetail .homeProfilePanel .skinOption img { height: 150px; }
   .homeCharacterDetail .homeDetailTabs { position: static; margin-right: 46px; min-height: 44px; align-items: stretch; }
-  .homeCharacterDetail .detailPortraitColumn > .detailIdentity { margin: 12px 0 0; gap: 4px; }
-  .homeCharacterDetail .detailIdentity h2 { margin: 0; color: #ffebc8; font-family: Georgia, 'Noto Serif TC', serif; font-size: 32px; letter-spacing: .08em; }
+  .homeCharacterDetail .homeCultivationTitle { font-size: 16px; color: #c5a47a; }
+  .homeCharacterDetail .detailPortraitColumn > .detailIdentity { margin: 10px 0 0; gap: 8px; padding-bottom: 14px; border-bottom: 1px solid #c2a06b33; }
+  .homeCharacterDetail .detailIdentity h2 { margin: 0; color: #ffebc8; font-family: Georgia, 'Noto Serif TC', serif; font-size: 38px; letter-spacing: .12em; }
+  .homeCharacterDetail .homeExperience { display: block; width: 100%; height: 3px; border: 0; border-radius: 2px; background: #b9986330; appearance: none; }
+  .homeCharacterDetail .homeExperience::-webkit-progress-bar { background: #b9986330; border-radius: 2px; }
+  .homeCharacterDetail .homeExperience::-webkit-progress-value { background: #d8b475; border-radius: 2px; }
+  .homeCharacterDetail .homeExperience::-moz-progress-bar { background: #d8b475; }
   .homeCharacterDetail .detailIdentity > span { color: #cfb694; font-size: 14px; }
   .homeCharacterDetail .homeProfileHeading { margin: 0 0 14px; color: #dabe93; font-size: 16px; font-weight: 600; letter-spacing: .12em; }
   .homeCharacterDetail .growthCost { line-height: 1.6; }
@@ -87,6 +94,10 @@
   .homeCharacterDetail .growthSkills .growthCard { min-height: 92px; padding: 10px 12px 20px; gap: 12px; }
   .homeCharacterDetail .growthSkills .growthCard img { width: 64px; height: 64px; flex-basis: 64px; background: none; }
   .homeCharacterDetail .growthInspector { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; margin: 0; padding: 14px; gap: 8px; }
+  .homeCharacterDetail .growthInspectorHead { position: relative; min-height: 56px; padding-left: 68px; }
+  .homeCharacterDetail .homeInspectorIcon { position: absolute; left: 0; top: 0; width: 56px; height: 56px; object-fit: contain; }
+  .homeCharacterDetail .growthCompare > div { border: 1px solid #b9986326; background: #34281d; }
+  .homeCharacterDetail .growthCompare > div:last-child { border-color: #c7a46c55; background: #493622; }
   .homeCharacterDetail .homeGrowthExplanation { overflow-y: auto; min-height: 0; scrollbar-width: thin; scrollbar-color: #99764c transparent; }
   .homeCharacterDetail .homeGrowthExplanation:empty { display: none; }
   .homeCharacterDetail .growthInspector:has(.homeGrowthExplanation:empty) { grid-template-rows: auto auto auto; align-content: center; }

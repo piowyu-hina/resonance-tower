@@ -1284,12 +1284,7 @@ async function testDesktopHome(browser) {
     assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('homeSceneActive')), true);
     assert.equal(await page.locator('#characterDetailName').textContent(), '璃雪');
     assert.equal(await page.locator('[data-home-character="xiaochu"]').count(), 0, 'locked characters are absent from cultivation');
-    const nameOffset = await page.locator('[data-home-character="wuming"]').evaluate(button => {
-      const card = button.getBoundingClientRect();
-      const name = button.querySelector('span').getBoundingClientRect();
-      return Math.abs(name.y + name.height / 2 - card.y - card.height / 2);
-    });
-    assert.ok(nameOffset < 2, 'single-line character name is vertically centered');
+    assert.equal(await page.locator('.homeCharacterChoices').count(), 0, 'one unlocked character needs no redundant switcher');
     const workspace = await page.evaluate(() => {
       const choices = document.querySelector('.homeGrowthChoices').getBoundingClientRect();
       const inspector = document.querySelector('.growthInspector').getBoundingClientRect();
