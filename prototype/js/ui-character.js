@@ -190,6 +190,8 @@ export function updateGrowthPanelLive(c, lineKey) {
   const walletBs = document.querySelectorAll('.growthWallet b');
   if (walletBs[0]) walletBs[0].textContent = inventoryItemCount('statBook');
   if (walletBs[1]) walletBs[1].textContent = inventoryItemCount('skillBook');
+  const heldCount = document.getElementById('growthBookOwned');
+  if (heldCount) heldCount.textContent = bookCount;
 
   const cardEl = document.querySelector(`.growthCard[data-line="${lineKey}"]`);
   if (cardEl) {
@@ -327,7 +329,10 @@ export function renderCharacterDetail(characterId) {
     growth.className = 'homeGrowthPanel';
     growth.setAttribute('role', 'tabpanel');
     growth.setAttribute('aria-labelledby', 'homeTab-growth');
-    growth.append(content.querySelector('.growthWallet'), choices, inspector);
+    content.querySelector('.growthWallet').remove();
+    const cost = content.querySelector('.growthCost');
+    cost.innerHTML = `<img src="assets/item/${ITEM_DEFS[activeBookId].img}.png" alt=""><span>消耗${ITEM_DEFS[activeBookId].name} ×1 <span class="growthOwned">／ 持有 <b id="growthBookOwned">${activeBookCount}</b></span></span>`;
+    growth.append(choices, inspector);
     info.append(growth, profile);
     const tabs = document.createElement('div');
     tabs.className = 'homeDetailTabs';

@@ -2,6 +2,8 @@
 
 ## 2026-09-06 cultivation update (current)
 
+Book display finalization: remove the separate home wallet entirely. The pinned upgrade cost now reads "消耗 [selected book] ×1 ／ 持有 [count]" and changes with the selected ability/skill. Hold-repeat live updates patch the owned count without replacing the held button. Expedition detail remains unchanged. Unit and home UI tests cover book-type switching and counts decreasing after actual upgrades.
+
 Finishing adjustments: book counts align to the right of cultivation; the character page introduces its description with the heading "角色介紹". Existing tab behavior and upgrade placement are unchanged.
 
 Settled layout: character switching, identity/name, level and full art are grouped on the left. The right side starts with the fixed cultivation/character tabs. Book resources belong inside cultivation only; the character page groups introduction and skin thumbnails without the collection-count metadata. Portrait geometry stays unchanged across tabs, and the pinned upgrade workspace is retained. Unit and desktop home checks pass, including identity placement, resource visibility, keyboard tabs, equipping and short-window action visibility. No gameplay or user artwork changes.

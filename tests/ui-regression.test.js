@@ -1299,8 +1299,21 @@ async function testDesktopHome(browser) {
     }
     assert.equal(await page.locator('#homeTab-growth').getAttribute('aria-selected'), 'true');
     assert.equal(await page.locator('.detailPortraitColumn #characterDetailName').textContent(), '無名');
-    assert.equal(await page.locator('#homeGrowthPanel .growthWallet').isVisible(), true);
-    assert.equal(await page.locator('.growthWallet').evaluate(el => getComputedStyle(el).justifyContent), 'flex-end', 'books align to the right');
+    assert.equal(await page.locator('.growthWallet').count(), 0, 'no separate book wallet in home');
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      gameState.inventory = [{ itemId: 'statBook', qty: 3 }, { itemId: 'skillBook', qty: 5 }];
+    });
+    await page.locator('.growthCard[data-line="atk"]').click();
+    assert.match(await page.locator('.growthCost').textContent(), /能力書/);
+    assert.equal(await page.locator('#growthBookOwned').textContent(), '3');
+    await page.locator('#growthUpgradeBtn').click();
+    assert.equal(await page.locator('#growthBookOwned').textContent(), '2');
+    await page.locator('.growthCard[data-line="action"]').click();
+    assert.match(await page.locator('.growthCost').textContent(), /技能書/);
+    assert.equal(await page.locator('#growthBookOwned').textContent(), '5');
+    await page.locator('#growthUpgradeBtn').click();
+    assert.equal(await page.locator('#growthBookOwned').textContent(), '4');
     const upgradeBeforeAppearance = await page.locator('#growthUpgradeBtn').boundingBox();
     const artBeforeTab = await page.locator('.detailArtFrame').boundingBox();
     await page.locator('#homeTab-profile').click();

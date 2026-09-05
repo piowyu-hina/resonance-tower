@@ -26,7 +26,6 @@
   .homeCharacterDetail .detailIdentity .detailRarity { border: 0; padding: 0; }
   .homeCharacterDetail .detailCharacterDescription { padding: 8px 0 14px; border: 0; border-bottom: 1px solid #ac8b593d; background: none; color: #dac6a7; font-size: 16px; }
   .homeCharacterDetail .detailCharacterDescription::before { display: none; }
-  .homeCharacterDetail .growthWallet span { padding: 7px 9px; border-color: #99774e66; border-radius: 5px; background: #201812; font-size: 14px; }
   .homeCharacterDetail .detailSectionTitle { color: #dabe93; font-size: 16px; margin-top: 20px; }
   .homeCharacterDetail .detailSectionHeading small { color: #bca383; font-size: 13px; }
   .homeCharacterDetail .skinOption { border-color: #806648; background: #382a20; color: #d8c1a0; box-shadow: none; }
@@ -62,7 +61,7 @@
   .homeCharacterDetail .detailPortraitColumn { position: relative; top: auto; align-self: stretch; min-height: 0; gap: 8px; }
   .homeCharacterDetail .detailArtFrame { height: auto; flex: 1; min-height: 0; }
   .homeCharacterDetail .detailInfo { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px; min-height: 0; padding: 0; }
-  .homeCharacterDetail .homeGrowthPanel { display: grid; grid-template-rows: auto minmax(0, 1fr) minmax(220px, .85fr); gap: 12px; min-height: 0; }
+  .homeCharacterDetail .homeGrowthPanel { display: grid; grid-template-rows: minmax(0, 1fr) minmax(220px, .85fr); gap: 12px; min-height: 0; }
   .homeCharacterDetail .homeProfilePanel { overflow-y: auto; min-height: 0; padding: 8px 8px 18px 0; scrollbar-width: thin; }
   .homeCharacterDetail .homeProfilePanel .detailCharacterDescription { font-size: 18px; line-height: 1.9; margin-top: 0; padding-bottom: 24px; }
   .homeCharacterDetail .homeProfilePanel .skinPicker { gap: 16px; margin-top: 18px; }
@@ -72,9 +71,10 @@
   .homeCharacterDetail .detailPortraitColumn > .detailIdentity { margin: 12px 0 0; gap: 4px; }
   .homeCharacterDetail .detailIdentity h2 { margin: 0; color: #ffebc8; font-family: Georgia, 'Noto Serif TC', serif; font-size: 32px; letter-spacing: .08em; }
   .homeCharacterDetail .detailIdentity > span { color: #cfb694; font-size: 14px; }
-  .homeCharacterDetail .growthWallet { justify-content: flex-end; gap: 10px; }
   .homeCharacterDetail .homeProfileHeading { margin: 0 0 14px; color: #dabe93; font-size: 16px; font-weight: 600; letter-spacing: .12em; }
-  .homeCharacterDetail .growthWallet span { display: flex; align-items: center; gap: 6px; margin: 0; }
+  .homeCharacterDetail .growthCost { line-height: 1.6; }
+  .homeCharacterDetail .growthOwned { display: inline-block; color: #d4b995; }
+  .homeCharacterDetail .growthOwned b { color: #f2d39a; font-weight: 600; }
   .homeCharacterDetail .detailIdentity .detailRarity { font-size: 12px; margin-bottom: 0; }
   .homeCharacterDetail .homeGrowthChoices { overflow-y: auto; min-height: 0; padding: 2px 4px; scrollbar-width: thin; scrollbar-color: #99764c transparent; }
   .homeCharacterDetail .homeGrowthChoices .detailSectionTitle { margin: 8px 0 6px; font-size: 15px; }
@@ -90,7 +90,7 @@
   .homeCharacterDetail .growthUpgradeRow { padding-top: 8px; border-top: 1px solid #ad8b5138; }
   @media (max-height: 800px) {
     .homeCharacterDetail .detailInfo { gap: 10px; }
-    .homeCharacterDetail .homeGrowthPanel { grid-template-rows: auto minmax(0, 1fr) 260px; gap: 10px; }
+    .homeCharacterDetail .homeGrowthPanel { grid-template-rows: minmax(0, 1fr) 260px; gap: 10px; }
     .homeCharacterDetail .detailIdentity .detailRarity { display: none; }
     .homeCharacterDetail .detailIdentity h2 { font-size: 28px; }
     .homeCharacterDetail .growthCard { min-height: 54px; padding: 6px 8px 18px; }
