@@ -13,9 +13,9 @@
   .regionSceneActive #regionView .homeTopbar > div { position: absolute; top: 15%; left: 4%; text-shadow: 0 2px 8px #15170b; }
   .regionSceneActive #regionView .prepHeading { color: #ffedca; font-family: Georgia, 'Noto Serif TC', serif; font-size: 32px !important; letter-spacing: .12em; }
   .regionSceneActive #regionView .prepMsg { color: #efe1c7; font-size: 16px; margin-top: 8px; }
-  .regionSceneActive #regionBackBtn { position: absolute; left: 1.5%; top: 25%; width: 17%; height: 35%; pointer-events: auto; }
+  .regionSceneActive #regionBackBtn { position: absolute; left: 0%; top: 30%; width: 13%; height: 25%; pointer-events: auto; }
   .regionSceneActive #regionView .regionGrid { position: absolute; inset: 0; display: block; pointer-events: none; }
-  .regionSceneActive #regionView #forestRegionBtn { position: absolute; left: 57%; top: 27%; width: 35%; height: 36%; min-height: 0; pointer-events: auto; }
+  .regionSceneActive #regionView #forestRegionBtn { position: absolute; left: 63%; top: 36%; width: 21%; height: 18%; min-height: 0; pointer-events: auto; }
   .regionSceneActive #regionView .regionArt,
   .regionSceneActive #regionView .regionTitleRow em,
   .regionSceneActive #regionView .regionIntel,
