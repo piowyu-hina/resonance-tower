@@ -121,7 +121,6 @@ export default {
   'shop.chatHint': 'Chat with Lumi',
   'shop.close': 'Close shop',
   'shop.gold': 'Current gold',
-  'shop.insufficientGold': 'Not enough gold',
   'shop.features': 'Shop actions',
   'shop.buy': 'Buy',
   'shop.sell': 'Sell',

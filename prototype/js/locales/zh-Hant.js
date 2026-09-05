@@ -118,7 +118,6 @@ export default {
   'shop.chatHint': '和露咪聊聊',
   'shop.close': '關閉商店',
   'shop.gold': '目前金幣',
-  'shop.insufficientGold': '金幣不足',
   'shop.features': '商店功能',
   'shop.buy': '購買',
   'shop.sell': '出售',

@@ -1,5 +1,9 @@
 # Quiet merchant scene
 
+## Current status: experiment reverted
+
+At the user's request, the shop was restored to f990302, before the first background-removal experiment. The original complete backing, merchant arch, headings and transaction presentation are restored. Home cultivation changes and user artwork remain untouched. The notes below are historical experiments, not the current design.
+
 ## Village-grounded follow-up
 
 Town shops no longer blur the left village. The merchant is sized/positioned from the actual village rectangle, with feet at 82% of scene height and dialogue near the bottom. Resize, village geometry changes and scrolling refresh the anchor. Disable the town modal transform so the fixed-position merchant uses viewport coordinates correctly. Only the right goods surface keeps its local blur; its layout and transactions are unchanged. Dungeon shops retain their existing presentation. Added regression assertions for the foot anchor and absence of full-overlay blur; unit and merchant tests pass. Earlier full-scene soft-focus notes below are superseded for town shops.
