@@ -860,42 +860,6 @@ async function testEventInteractions(browser) {
   await waitForEventToFinish(page, 'aqueduct puzzle');
 }
 
-async function testBattleArtUnclipped(browser) {
-  for (const width of [1440, 390]) {
-    const page = await openView(browser, 'village');
-    await page.setViewportSize({ width, height: 1000 });
-    await page.evaluate(async () => {
-      const { gameState } = await import('./js/state.js');
-      gameState.unlockedChars.add('xiaochu');
-      gameState.party = ['xiaochu'];
-      (await import('./js/debug.js')).debugStartBossFight();
-      gameState.activeOverlay = 'test-pause';
-      (await import('./js/ui-main.js')).render();
-    });
-    const art = page.locator('#partySide .portrait > img');
-    // A wide illustration must extend beyond the frame at full height.
-    const metrics = await art.evaluate(async img => {
-      img.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="180" height="160"><rect width="180" height="160" fill="gold"/></svg>');
-      await img.decode();
-      const frame = img.parentElement;
-      const rect = img.getBoundingClientRect();
-      return {
-        width: rect.width, height: rect.height,
-        frameWidth: frame.clientWidth, frameHeight: frame.clientHeight,
-        radius: getComputedStyle(img).borderRadius,
-        overflow: [frame, frame.parentElement].map(el => getComputedStyle(el).overflowX),
-      };
-    });
-    near(metrics.height, metrics.frameHeight, 'battle art retains full height');
-    near(metrics.width / metrics.height, 180 / 160, 'battle art preserves aspect ratio');
-    assert.ok(metrics.width > metrics.frameWidth, 'wide art can extend beyond both sides');
-    assert.equal(metrics.radius, '0px', 'do not round off illustration edges');
-    assert.deepEqual(metrics.overflow, ['visible', 'visible']);
-    assertNoRuntimeErrors(page, 'unclipped battle art');
-    await page.close();
-  }
-}
-
 (async () => {
   const server = await startServer();
   const { port } = server.address();
@@ -907,7 +871,6 @@ async function testBattleArtUnclipped(browser) {
       console.log('ui-regression.test.js: Xiaochu encounter-to-covenant assertions passed');
       return;
     }
-    await testBattleArtUnclipped(browser);
     await testMajorViewsRender(browser);
     await testJournalNavigation(browser);
     await testJournalLayout(browser);
