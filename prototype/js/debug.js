@@ -11,7 +11,7 @@ import {
   showBossIntro, prepareBossCombat, overlayUiState,
 } from './ui-overlays.js';
 import { openTravelJournal, openContractPanel, queueDialogue, storyState } from './story.js';
-import { spawnWave, makeMob, beginRuinsExpedition, enterPrepBoss } from './combat.js';
+import { spawnWave, makeMob, beginRuinsExpedition, enterPrepBoss, endRun } from './combat.js';
 import { buildBattleRoster, buildMonsterCards, render } from './ui-main.js';
 import { flushCombat } from './ui-combat-effects.js';
 import { EVENT_DEFS, startEventById, startRandomEvent } from './events.js';
@@ -166,12 +166,25 @@ export function runDebugAction(action) {
     openTravelJournal({ preview: true });
   } else if (action === 'xiaochu-preview') {
     queueDialogue('xiaochu_encounter');
+  } else if (action === 'xiaochu-followup' || action === 'xiaochu-ready') {
+    closeOtherOverlays(null);
+    endRun();
+    setChapter1State(CHAPTER1_STATES.COMPLETE);
+    gameState.unlockedChars.delete('xiaochu');
+    gameState.seenCharacterIds.delete('xiaochu');
+    gameState.party = ['wuming'];
+    setResonanceState('xiaochu', RESONANCE_STATES.FOLLOWING, { force: true });
+    gameState.xiaochuStoryChapter = action === 'xiaochu-ready' ? 2 : 0;
+    overlayUiState.prepLocation = 'home';
+    overlayUiState.homeMode = 'menu';
+    render();
   } else if (action === 'xiaochu-story') {
     setChapter1State(CHAPTER1_STATES.COMPLETE);
     closeOtherOverlays(null);
     gameState.activeOverlay = null;
     gameState.unlockedChars.delete('xiaochu');
     clearResonanceState('xiaochu');
+    gameState.xiaochuStoryChapter = 0;
     gameState.agentKillCount = 49;
     overlayUiState.prepLocation = 'expedition';
     setPhase(PHASES.COMBAT, { force: true });

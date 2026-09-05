@@ -25,7 +25,8 @@ const approvedEncounter = fs.readFileSync(path.resolve(__dirname, '../story/xiao
   .split('## 劇情正文')[1].trim().split(/\r?\n/).filter(line => line.trim())
   .map(line => line.startsWith('（') ? line.slice(1, -1) : line.replace(/^\*\*.+?：\*\*\s*/, ''));
 assert.deepEqual(DIALOGUE_DEFS.xiaochu_encounter.map(line => line.text), approvedEncounter);
-assert.deepEqual(Object.keys(DIALOGUE_DEFS).filter(id => id.startsWith('xiaochu_')), ['xiaochu_encounter']);
+assert.deepEqual(Object.keys(DIALOGUE_DEFS).filter(id => id.startsWith('xiaochu_')).sort(),
+  ['xiaochu_encounter', 'xiaochu_home', 'xiaochu_trust', 'xiaochu_choice', 'xiaochu_oath', 'xiaochu_after'].sort());
 
 // Same idea as lineCount above: count index.html's own <link rel="stylesheet">
 // tags instead of hardcoding how many exist, so adding a new split stylesheet
@@ -341,7 +342,7 @@ async function testOverlayExclusivity(browser) {
   await page.close();
 }
 
-// The only test that drives gameState.resonanceState.xiaochu's full 9-value
+// Drives the approved encounter and new home/travel/covenant chapters
 // state machine (design.md「角色解鎖系統」) through its real production seam
 // end to end, instead of a ?view= snapshot of a single state. Stage 1 uses the
 // same setup as debug.js's "xiaochu-story" button (one kill short of the
@@ -419,6 +420,73 @@ async function testXiaochuEncounterFlow(browser) {
   assert.notEqual(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), 'dialogue');
   assert.equal(await isUnlocked(), false);
   assertNoRuntimeErrors(page, 'xiaochu encounter flow');
+  // Continue from the approved encounter through the new relationship chapters.
+  assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true);
+  await page.click('#xiaochuTalkBtn');
+  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialogueScriptId), 'xiaochu_home');
+  await advanceDialogue(lineCount('xiaochu_home'));
+  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.xiaochuStoryChapter), 1);
+  assert.equal(await page.locator('#xiaochuTalkBtn').isDisabled(), true);
+  assert.equal(await page.locator('#travelJournalBtn').isVisible(), true);
+  await page.click('#homeBackBtn');
+  await page.click('#expeditionLocationBtn');
+  await page.click('#forestRegionBtn');
+  await page.click('#startBtn');
+  await page.waitForFunction(() => window.__debugHooks.gameState.phase === 'combat');
+  await page.evaluate(() => {
+    const state = window.__debugHooks.gameState;
+    state.monsters.forEach(monster => { monster.hp = 1; monster.actionCountdown = 999999; });
+    state.roster.find(character => character.id === 'wuming').actionCountdown = 0;
+  });
+  await waitForOverlay('dialogue');
+  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialogueScriptId), 'xiaochu_trust');
+  assert.equal(await isUnlocked(), false);
+  await advanceDialogue(lineCount('xiaochu_trust'));
+  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.xiaochuStoryChapter), 2);
+  await click('retreatBtn');
+  await page.click('#homeLocationBtn');
+  await page.click('#xiaochuTalkBtn');
+  await advanceDialogue(lineCount('xiaochu_choice'));
+  assert.equal(await xiaochuState(), 'oathReady');
+  assert.equal(await isUnlocked(), false);
+  assert.equal(await page.locator('#homeBackBtn').isEnabled(), true, 'readiness must not force a covenant');
+  const saved = await page.evaluate(async () => {
+    const save = await import('./js/save.js');
+    const normalized = save.normalizeSaveData(save.createSaveData());
+    return { canSave: save.canManageSave(), chapter: normalized.xiaochuStoryChapter, state: normalized.resonanceState.xiaochu };
+  });
+  assert.deepEqual(saved, { canSave: true, chapter: 3, state: 'oathReady' });
+  await page.evaluate(async () => {
+    const save = await import('./js/save.js');
+    save.applySaveData(save.normalizeSaveData(save.createSaveData()));
+  });
+  await page.click('#homeLocationBtn');
+  assert.equal(await xiaochuState(), 'oathReady', 'load preserves the new ready state');
+  await page.click('#contractFacilityBtn');
+  await page.click('#xiaochuSoulBtn');
+  await page.click('#contractCancelBtn');
+  assert.equal(await xiaochuState(), 'oathReady');
+  await page.click('#contractCloseBtn');
+  await page.click('#homeBackBtn');
+  await page.click('#homeLocationBtn');
+  await page.click('#contractFacilityBtn');
+  await page.click('#xiaochuSoulBtn');
+  await page.click('#contractConfirmBtn');
+  assert.equal(await xiaochuState(), 'contracting');
+  await advanceDialogue(lineCount('xiaochu_oath'));
+  assert.equal(await page.evaluate(() => window.__debugHooks.storyState.dialoguePhase), 'outro');
+  await page.keyboard.press('Enter');
+  await page.locator('#contractFormed').click({ force: true });
+  assert.equal(await isUnlocked(), false, 'reveal cannot be skipped to unlock early');
+  await page.waitForFunction(() => window.__debugHooks.storyState.dialogueScriptId === 'xiaochu_after');
+  assert.equal(await xiaochuState(), 'contracted');
+  assert.equal(await isUnlocked(), true);
+  await advanceDialogue(lineCount('xiaochu_after'));
+  assert.equal(await page.evaluate(() => window.__debugHooks.gameState.xiaochuStoryChapter), 4);
+  assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), false);
+  assert.equal(await page.locator('#homeBackBtn').isEnabled(), true);
+  assert.equal(await page.evaluate(async () => (await import('./js/story.js')).tryXiaochuTravelStory(() => {})), false, 'completed chapter does not repeat');
+  assertNoRuntimeErrors(page, 'xiaochu completed covenant');
   await page.close();
 }
 
@@ -798,6 +866,11 @@ async function testEventInteractions(browser) {
   prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    if (process.argv.includes('--xiaochu-only')) {
+      await testXiaochuEncounterFlow(browser);
+      console.log('ui-regression.test.js: Xiaochu encounter-to-covenant assertions passed');
+      return;
+    }
     await testMajorViewsRender(browser);
     await testJournalNavigation(browser);
     await testJournalLayout(browser);

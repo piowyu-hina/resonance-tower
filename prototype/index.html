@@ -7,7 +7,7 @@
 <title>共鳴之塔｜Resonance Tower</title>
 <link rel="stylesheet" href="styles/base.css?v=20260905-3">
 <link rel="stylesheet" href="styles/items.css?v=20260905-1">
-<link rel="stylesheet" href="styles/story.css?v=20260905-16">
+<link rel="stylesheet" href="styles/story.css?v=20260905-17">
 <link rel="stylesheet" href="styles/world.css?v=20260905-11">
 <link rel="stylesheet" href="styles/events.css?v=20260905-2">
 <link rel="stylesheet" href="styles/journal.css?v=20260905-2">
@@ -55,6 +55,8 @@
       <button type="button" data-debug-action="intro">播放首領演出</button>
       <button type="button" data-debug-action="xiaochu-story">準備小初相遇測試</button>
       <button type="button" data-debug-action="xiaochu-preview">播放新版小初初遇</button>
+      <button type="button" data-debug-action="xiaochu-followup">小初後續：從同行開始</button>
+      <button type="button" data-debug-action="xiaochu-ready">小初後續：契約前談心</button>
       <button type="button" data-debug-action="journal-preview">預覽旅人手記</button>
       <button type="button" data-debug-action="ruins-event">測試遺跡入口</button>
       <button type="button" data-debug-action="ruins-boss">測試遺跡王戰前</button>
@@ -110,6 +112,10 @@
         <button id="contractFacilityBtn" class="homeFacilityBtn contractFacilityBtn" type="button" hidden>
           <img src="assets/skills/wuming_unique.png" alt="">
           <span><b data-i18n="home.contract">締結誓約</b><small data-i18n="home.contractDesc">回應正在等待的靈魂</small></span>
+        </button>
+        <button id="xiaochuTalkBtn" class="homeFacilityBtn" type="button" hidden>
+          <img src="assets/characters/xiaochu_full_2.png" alt="">
+          <span><b data-i18n="home.xiaochuTalk">和小初聊聊</b><small id="xiaochuTalkHint"></small></span>
         </button>
       </div>
       <div id="homeGrowthView" hidden>

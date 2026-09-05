@@ -8,9 +8,11 @@ import { render } from './ui-main.js';
 import { afterAnimationPaint, beginManagedTransition, playTransientAnimation } from './transitions.js';
 import { t, formatLocaleNumber } from './i18n.js';
 import { endRun } from './combat.js';
+import { XIAOCHU_DIALOGUES } from './xiaochu-story.js';
 
 // --- 對話與契約演出 ---
 export const DIALOGUE_DEFS = {
+  ...XIAOCHU_DIALOGUES,
   chapter1_defeat: [
     { speaker: 'wuming', text: '不要……' },
     { speaker: 'wuming', text: '我還不想死……！' },
@@ -196,6 +198,11 @@ export const DIALOGUE_DEFS = {
 
 export const DIALOGUE_PRESENTATION = {
   xiaochu_encounter: { backdrop: 'forest' },
+  xiaochu_home: { backdrop: 'home' },
+  xiaochu_trust: { backdrop: 'forest' },
+  xiaochu_choice: { backdrop: 'home' },
+  xiaochu_oath: { backdrop: 'home', outro: 'contractFormed', partner: 'xiaochu' },
+  xiaochu_after: { backdrop: 'home' },
   chapter1_goddess: {
     intro: 'heavenArrival',
     outro: 'heavenDeparture',
@@ -310,6 +317,7 @@ export function startDialogue(scriptId, onDone) {
   const overlay = document.getElementById('dialogueOverlay');
   overlay.classList.toggle('heavenDialogue', presentation?.backdrop === 'heaven');
   overlay.classList.toggle('forestDialogue', presentation?.backdrop === 'forest');
+  overlay.classList.toggle('homeDialogue', presentation?.backdrop === 'home');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
   if (presentation && presentation.intro === 'soulResonance') startSoulResonance();
@@ -474,8 +482,30 @@ export function startCharacterEncounter(characterId, onDone) {
   if (characterId !== 'xiaochu') return onDone();
   queueDialogue('xiaochu_encounter', () => {
     setResonanceState('xiaochu', RESONANCE_STATES.FOLLOWING);
+    gameState.xiaochuStoryChapter = 0;
     if (onDone) onDone();
   });
+}
+
+export function talkToXiaochu() {
+  if (gameState.activeOverlay || gameState.partyLocked || overlayUiState.prepLocation !== 'home' ||
+      gameState.resonanceState.xiaochu !== RESONANCE_STATES.FOLLOWING) return;
+  const chapter = gameState.xiaochuStoryChapter;
+  if (chapter !== 0 && chapter !== 2) return;
+  queueDialogue(chapter === 0 ? 'xiaochu_home' : 'xiaochu_choice', () => {
+    gameState.xiaochuStoryChapter = chapter + 1;
+    if (chapter === 2) setResonanceState('xiaochu', RESONANCE_STATES.OATH_READY);
+    render();
+  });
+}
+
+export function tryXiaochuTravelStory(onDone) {
+  if (gameState.resonanceState.xiaochu !== RESONANCE_STATES.FOLLOWING || gameState.xiaochuStoryChapter !== 1) return false;
+  queueDialogue('xiaochu_trust', () => {
+    gameState.xiaochuStoryChapter = 2;
+    onDone();
+  });
+  return true;
 }
 
 export function startChapter1DefeatSequence() {
@@ -697,7 +727,8 @@ export function openContractPanel() {
 export function beginContractPreparation() {
   if (gameState.resonanceState.xiaochu === RESONANCE_STATES.CONTRACTED) return openContractPanel();
   if (gameState.resonanceState.xiaochu !== RESONANCE_STATES.OATH_READY) return;
-  // A new contract chapter has not been written; do not replay the retired script.
+  if (gameState.partyLocked || overlayUiState.prepLocation !== 'home') return;
+  openContractPanel();
 }
 
 export function closeContractPanel() {
@@ -708,8 +739,16 @@ export function closeContractPanel() {
 }
 
 export function confirmXiaochuContract() {
-  // Retained UI scaffold only. No automatic contract after the new encounter.
+  if (gameState.resonanceState.xiaochu !== RESONANCE_STATES.OATH_READY ||
+      gameState.partyLocked || overlayUiState.prepLocation !== 'home' || gameState.activeOverlay !== 'contract') return;
   closeContractPanel();
+  setResonanceState('xiaochu', RESONANCE_STATES.CONTRACTING);
+  queueDialogue('xiaochu_oath', () => {
+    setResonanceState('xiaochu', RESONANCE_STATES.CONTRACTED);
+    gameState.xiaochuStoryChapter = 4;
+    unlockChar('xiaochu');
+    queueDialogue('xiaochu_after', render);
+  });
 }
 
 export function advanceDialogue() {
@@ -728,7 +767,7 @@ export function startContractFormed(characterId) {
   storyState.dialoguePhase = 'outro';
   document.getElementById('dialogueModal').classList.add('presentationHidden');
   const img = document.getElementById('contractFormedCharacter');
-  img.src = characterFullArtPath(characterId);
+  img.src = characterId === 'xiaochu' ? STORY_SPEAKERS.xiaochu_unknown.art : characterFullArtPath(characterId);
   img.alt = `${def.name} 立繪`;
   const circle = document.getElementById('contractFormedMagicCircle');
   const rarity = RARITY_DEFS[def.rarity];
@@ -774,6 +813,7 @@ export function closeDialogue() {
   const overlay = document.getElementById('dialogueOverlay');
   overlay.classList.remove('heavenDialogue');
   overlay.classList.remove('forestDialogue');
+  overlay.classList.remove('homeDialogue');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
   if (gameState.activeOverlay === 'dialogue') gameState.activeOverlay = null;
@@ -808,6 +848,7 @@ export function bindDialogueUI() {
     if (storyState.dialoguePhase === 'dialogue') advanceDialogue();
   });
   document.getElementById('travelJournalBtn').addEventListener('click', openTravelJournal);
+  document.getElementById('xiaochuTalkBtn').addEventListener('click', talkToXiaochu);
   document.getElementById('journalCloseBtn').addEventListener('click', () => closeTravelJournal(false));
   document.getElementById('journalNextBtn').addEventListener('click', advanceTravelJournal);
   document.getElementById('journalContentsBtn').addEventListener('click', showJournalContents);

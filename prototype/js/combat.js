@@ -18,7 +18,7 @@ import { OVERLAY_CLOSERS, closeOtherOverlays, overlayUiState } from './ui-overla
 import { emitCombatEvent } from './combat-events.js';
 import { clearGooArena, gooTick } from './goo.js';
 import { tickShopIdle, addInventoryItem } from './shop.js';
-import { startCharacterEncounter, startChapter1DefeatSequence } from './story.js';
+import { startCharacterEncounter, startChapter1DefeatSequence, tryXiaochuTravelStory } from './story.js';
 import { startRandomEvent, tickEventIdle } from './events.js';
 
 // This file only mutates game state and queues one-shot effects via
@@ -570,17 +570,21 @@ export function onMonsterDefeated(m) {
       return;
     }
     const encounterId = checkResonanceTriggers();
-    const continueThroughEvent = () => startRandomEvent(action => {
-      if (action === 'enterRuins') beginRuinsExpedition();
-      else continueAfterClearedWave();
-    });
+    const continueThroughEvent = () => {
+      if (gameState.runId !== expectedRunId) return;
+      startRandomEvent(action => {
+        if (gameState.runId !== expectedRunId) return;
+        if (action === 'enterRuins') beginRuinsExpedition();
+        else continueAfterClearedWave();
+      });
+    };
     if (encounterId) {
       // Character resonance always stops unattended progress first. Ordinary
       // events only begin after that non-skippable story encounter finishes.
       startCharacterEncounter(encounterId, continueThroughEvent);
       return;
     }
-    continueThroughEvent();
+    if (!tryXiaochuTravelStory(continueThroughEvent)) continueThroughEvent();
   }, MONSTER_DEATH_ANIMATION_MS);
 }
 

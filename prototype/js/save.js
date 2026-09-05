@@ -85,6 +85,7 @@ export function createSaveData() {
       equippedSkinByCharacter: { ...gameState.equippedSkinByCharacter },
       chapter1State: gameState.chapter1State,
       agentKillCount: gameState.agentKillCount,
+      xiaochuStoryChapter: gameState.xiaochuStoryChapter,
       journalReading: { chapterId: gameState.journalReading.chapterId, pages: { ...gameState.journalReading.pages } },
     },
   };
@@ -109,10 +110,19 @@ export function normalizeSaveData(raw) {
     if (CHAR_DEFS[id] && isValidResonanceSaveState(value)) normalizedResonance[id] = value;
   });
   if (normalizedResonance.xiaochu === RESONANCE_STATES.CONTRACTED) unlocked.add('xiaochu');
-  // Retired intermediate story states must not strand an older save in a locked quest.
-  if (normalizedResonance.xiaochu && ![RESONANCE_STATES.ENCOUNTERING, RESONANCE_STATES.FOLLOWING, RESONANCE_STATES.CONTRACTED].includes(normalizedResonance.xiaochu)) {
+  const hasNewXiaochuStory = Number.isInteger(source.xiaochuStoryChapter) && source.xiaochuStoryChapter >= 0 && source.xiaochuStoryChapter <= 4;
+  let xiaochuStoryChapter = hasNewXiaochuStory ? source.xiaochuStoryChapter : 0;
+  // Interrupted rituals resume before consent; retired saves resume at the new home scene.
+  if (hasNewXiaochuStory && xiaochuStoryChapter >= 3 && [RESONANCE_STATES.OATH_READY, RESONANCE_STATES.CONTRACTING].includes(normalizedResonance.xiaochu)) {
+    normalizedResonance.xiaochu = RESONANCE_STATES.OATH_READY;
+    xiaochuStoryChapter = 3;
+  } else if (normalizedResonance.xiaochu && ![RESONANCE_STATES.FOLLOWING, RESONANCE_STATES.CONTRACTED].includes(normalizedResonance.xiaochu)) {
     normalizedResonance.xiaochu = RESONANCE_STATES.FOLLOWING;
+    xiaochuStoryChapter = 0;
   }
+  if (normalizedResonance.xiaochu === RESONANCE_STATES.CONTRACTED) xiaochuStoryChapter = 4;
+  else if (normalizedResonance.xiaochu === RESONANCE_STATES.FOLLOWING) xiaochuStoryChapter = Math.min(xiaochuStoryChapter, 2);
+  else if (!normalizedResonance.xiaochu) xiaochuStoryChapter = 0;
 
   const characters = new Map();
   (Array.isArray(source.roster) ? source.roster : []).forEach(saved => {
@@ -163,6 +173,7 @@ export function normalizeSaveData(raw) {
     equippedSkinByCharacter: equipped,
     chapter1State,
     agentKillCount: safeInteger(source.agentKillCount, 0),
+    xiaochuStoryChapter,
     journalReading: {
       chapterId: JOURNAL_CHAPTERS.some(chapter => chapter.id === source.journalReading?.chapterId) ? source.journalReading.chapterId : JOURNAL_CHAPTERS[0].id,
       pages: Object.fromEntries(JOURNAL_CHAPTERS.filter(chapter => Object.hasOwn(source.journalReading?.pages || {}, chapter.id)).map(chapter => [chapter.id, safeInteger(source.journalReading.pages[chapter.id], 0, chapter.pages.length - 1)])),
@@ -217,6 +228,7 @@ export function applySaveData(data) {
   gameState.equippedSkinByCharacter = data.equippedSkinByCharacter;
   gameState.chapter1State = data.chapter1State;
   gameState.agentKillCount = data.agentKillCount;
+  gameState.xiaochuStoryChapter = data.xiaochuStoryChapter;
   gameState.journalReading = data.journalReading;
   gameState.roster.forEach(character => {
     const saved = data.characters.get(character.id);

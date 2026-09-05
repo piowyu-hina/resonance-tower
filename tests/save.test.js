@@ -49,3 +49,13 @@ const reading = progression => normalizeSaveData({ format: 'resonance-tower-save
 assert.deepEqual(reading({ journalReading: { chapterId: 'shapeshifter', pages: { shapeshifter: 2 } } }), { chapterId: 'shapeshifter', pages: { shapeshifter: 2 } });
 assert.deepEqual(reading({ journalReading: { chapterId: 'unknown', pages: { shapeshifter: 999, unknown: 4 } } }), { chapterId: 'shapeshifter', pages: { shapeshifter: 3 } });
 console.log('save.test.js: all assertions passed');
+const storySave = (state, chapter) => normalizeSaveData({ format: 'resonance-tower-save', version: 1, progression: {
+  chapter1State: 'complete', resonanceState: { xiaochu: state }, xiaochuStoryChapter: chapter,
+} });
+for (const chapter of [0, 1, 2]) assert.equal(storySave('following', chapter).xiaochuStoryChapter, chapter);
+assert.equal(storySave('oathReady', 3).resonanceState.xiaochu, 'oathReady');
+assert.equal(storySave('oathReady', 3).xiaochuStoryChapter, 3);
+assert.equal(storySave('contracting', 3).resonanceState.xiaochu, 'oathReady');
+assert.equal(storySave('oathReady', undefined).resonanceState.xiaochu, 'following');
+assert.equal(storySave('following', 99).xiaochuStoryChapter, 0);
+assert.equal(storySave('contracted', undefined).xiaochuStoryChapter, 4);

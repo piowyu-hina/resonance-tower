@@ -22,12 +22,24 @@ const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const report = [];
 try {
   for (const width of (process.argv.includes('--sheets-only') ? [] : [1440, 390])) {
-    for (const view of (process.argv.includes('--xiaochu-only') ? ['xiaochu-unknown', 'xiaochu-named'] : process.argv.includes('--slime-only') ? ['slime-enter', 'slime-crouch', 'slime-wuming', 'slime-hit', 'slime-strike'] : process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
+    for (const view of (process.argv.includes('--xiaochu-story-only') ? ['followup-home', 'followup-talk', 'followup-reveal'] : process.argv.includes('--xiaochu-only') ? ['xiaochu-unknown', 'xiaochu-named'] : process.argv.includes('--slime-only') ? ['slime-enter', 'slime-crouch', 'slime-wuming', 'slime-hit', 'slime-strike'] : process.argv.includes('--journal-only') ? ['journal', 'journal-contents', 'journal-reread'] : ['village', 'home', 'growth', 'detail', 'regions', 'expedition', 'shop', 'inventory', 'defeat', 'journal', 'contract', 'dialogue', 'combat', 'boss-prep', 'event'])) {
       const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1000 } });
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
       await page.goto(`http://127.0.0.1:${server.address().port}/?debug&view=${view === 'detail' ? 'growth' : view}`, { waitUntil: 'load' });
       if (view === 'detail') await page.locator('.homeGrowthCard').first().click();
+      if (view.startsWith('followup-')) {
+        await page.evaluate(async view => {
+          document.querySelector('[data-debug-action="xiaochu-ready"]').click();
+          if (view === 'followup-home') return;
+          const story = await import('./js/story.js');
+          story.queueDialogue('xiaochu_choice');
+          story.storyState.dialogueLineIndex = 25;
+          story.renderDialogueLine();
+          if (view === 'followup-reveal') story.startContractFormed('xiaochu');
+        }, view);
+        if (view === 'followup-reveal') await page.waitForTimeout(1000);
+      }
       if (view.startsWith('xiaochu-')) {
         await page.evaluate(async view => {
           const story = await import('./js/story.js');

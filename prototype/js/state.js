@@ -51,6 +51,7 @@ export const gameState = {
   chapter1State: 'forest',
   journalReading: { chapterId: 'shapeshifter', pages: {} },
   agentKillCount: 0,
+  xiaochuStoryChapter: 0,
   expeditionMode: 'forest',
   ruinsKillCount: 0,
   partyLocked: false, // once true (first "開始出擊" of a run), party can't change until endRun()
@@ -121,6 +122,7 @@ export function initGame() {
   gameState.floor = 1;
   gameState.chapter1State = CHAPTER1_STATES.FOREST;
   gameState.agentKillCount = 0;
+  gameState.xiaochuStoryChapter = 0;
   gameState.journalReading = { chapterId: 'shapeshifter', pages: {} };
   gameState.expeditionMode = 'forest';
   gameState.ruinsKillCount = 0;
@@ -194,7 +196,7 @@ const RS = RESONANCE_STATES;
 const RESONANCE_INITIAL_TRANSITIONS = new Set([RS.ENCOUNTERING]);
 export const RESONANCE_TRANSITIONS = Object.freeze({
   [RS.ENCOUNTERING]: new Set([RS.FOLLOWING]),
-  [RS.FOLLOWING]: new Set([RS.VILLAGE_RETURN]),
+  [RS.FOLLOWING]: new Set([RS.VILLAGE_RETURN, RS.OATH_READY]),
   [RS.VILLAGE_RETURN]: new Set([RS.GO_HOME]),
   [RS.GO_HOME]: new Set([RS.BOOK_PENDING]),
   [RS.BOOK_PENDING]: new Set([RS.BOOK_READING]),
@@ -225,7 +227,7 @@ export function clearResonanceState(characterId) {
 // saving must stay locked - deliberately excludes FOLLOWING (still freely
 // playable out in the field) and CONTRACTED (story fully resolved).
 const RESONANCE_STORY_LOCKED_STATES = new Set([
-  RS.VILLAGE_RETURN, RS.GO_HOME, RS.BOOK_PENDING, RS.BOOK_READING, RS.OATH_READY, RS.CONTRACTING,
+  RS.VILLAGE_RETURN, RS.GO_HOME, RS.BOOK_PENDING, RS.BOOK_READING, RS.CONTRACTING,
 ]);
 
 export const CHAPTER1_STATES = Object.freeze({
@@ -333,7 +335,7 @@ export function checkResonanceTriggers() {
 }
 
 export function startPendingVillageContracts() {
-  // The new encounter ends with companionship. Later chapters are not written yet.
+  // Returning never auto-signs a covenant. Relationship scenes are chosen at home.
 }
 
 export function contractStoryLocked() {
