@@ -21,7 +21,7 @@ export default {
   'story.guideNewPartner': 'Let’s meet our new partner',
   'village.shop': 'Shop',
   'village.shopDesc': 'Sell materials and buy supplies',
-  'village.expedition': 'Expedition Gate',
+  'village.expedition': 'Village Gate',
   'village.expeditionDesc': 'Choose a region and prepare to depart',
   'home.title': 'Home',
   'home.subtitle': 'Develop soul companions or organize expedition supplies.',

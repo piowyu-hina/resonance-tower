@@ -66,49 +66,67 @@
   max-width: 290px;
   padding: 0;
   border: 0;
-  gap: 8px;
+  gap: 4px;
   pointer-events: none;
 }
 #villageView .villageLocationCopy::after { display: none; }
 #villageView .villageLocationCopy b {
   pointer-events: auto;
+  position: relative;
   display: block;
-  padding: 9px 26px 10px;
-  border: 1px solid #e6cca866;
-  border-radius: 4px 14px 4px 14px;
-  background: linear-gradient(110deg, #352b25f2, #44352eee);
-  color: #ffedce;
-  box-shadow: 0 5px 15px #22170f55;
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: .12em;
-  transition: background .2s, transform .2s, border-color .2s;
+  min-width: 100px;
+  padding: 8px 22px 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff0d9;
+  box-shadow: none;
+  font-family: Georgia, 'Noto Serif TC', 'PMingLiU', serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-shadow: 0 2px 3px #21160fff, 0 0 9px #21160fe6, 0 3px 18px #21160fcc;
+  transition: color .2s, text-shadow .2s;
+}
+#villageView .villageLocationCopy b::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 44px;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, #f6cf8c 25%, #f6cf8c 75%, transparent);
+  box-shadow: 0 1px 3px #302010;
+  transition: width .2s, filter .2s;
 }
 #villageView .villageLocationCopy small {
   color: #fff0d6;
   font-size: 14px;
   line-height: 1.5;
-  padding: 5px 12px;
-  border-radius: 4px;
-  background: #30271eed;
+  padding: 4px 14px;
+  border-radius: 0;
+  background: radial-gradient(ellipse, #30271eb8, #30271e50 55%, transparent 75%);
+  text-shadow: 0 1px 3px #21160f, 0 0 6px #21160f;
   opacity: 0;
   transform: translateY(-4px);
   transition: opacity .18s, transform .18s;
 }
 #villageView .villageLocation:is(:hover, :focus-visible):not(:disabled) .villageLocationCopy b {
-  transform: translateY(-4px);
-  border-color: #ffe1a7;
-  background: #614a31;
+  color: #fff9eb;
+  text-shadow: 0 2px 3px #21160f, 0 0 8px #21160f, 0 0 18px #f5d29499;
 }
+#villageView .villageLocation:is(:hover, :focus-visible):not(:disabled) .villageLocationCopy b::after { width: 72px; filter: brightness(1.25); }
 #villageView .villageLocation:is(:hover, :focus-visible):not(:disabled) .villageLocationCopy small { opacity: 1; transform: none; }
 #villageView .villageLocation:focus-visible { outline: 2px dashed #ffe4b7; outline-offset: 4px; }
-#villageView .villageLocation:active:not(:disabled) .villageLocationCopy b { transform: translateY(-1px); }
+#villageView .villageLocation:active:not(:disabled) .villageLocationCopy b { color: #eac38a; }
 #villageView .villageLocation:disabled { cursor: default; }
 #villageView .villageLocation:disabled .villageLocationCopy { opacity: .45; }
-#villageView .villageLocation.storyRequired .villageLocationCopy b { border-color: #ffe0a0; box-shadow: 0 0 0 2px #edc27a44, 0 0 22px #ffcc7155; }
+#villageView .villageLocation.storyRequired .villageLocationCopy b { color: #ffe0a0; text-shadow: 0 2px 3px #21160f, 0 0 8px #21160f, 0 0 18px #ffcc71; }
+#villageView .villageLocation.storyRequired .villageLocationCopy b::after { width: 72px; }
 #villageView .villageLocation.storyFocusTarget { box-shadow: none; }
 #villageView .villageLocation.storyFocusTarget::before { border-radius: 30%; }
 #villageView .homeGuideHina { top: auto; bottom: 8%; right: -14%; width: 180px; height: 218px; }
 @media (prefers-reduced-motion: reduce) {
-  #villageView .villageLocationCopy b, #villageView .villageLocationCopy small { transition: none; }
+  #villageView .villageLocationCopy b, #villageView .villageLocationCopy b::after, #villageView .villageLocationCopy small { transition: none; }
 }

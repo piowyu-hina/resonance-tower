@@ -6,6 +6,8 @@ Artwork: prototype/assets/backgrounds/village-square.png. Created with built-in 
 
 With user confirmation, home guidance now uses characters/guider.png and the home growth entrance uses characters/guider_full.png. Existing IDs and character names remain unchanged.
 
+Label refinement: removed the solid brown plates in favor of warm ivory serif names, soft dark text shadows and a fine gold underline. Hover and keyboard focus brighten the name, extend the underline and reveal the description without moving the clickable label. The gate is named 村口 / Village Gate. Mandatory home guidance keeps a gold text emphasis without restoring the old box.
+
 Validation: npm test passed; focused desktop checks at widths 1024, 1440 and 1920 passed, covering art aspect ratio, building/label hit areas, shop entry, keyboard gate entry, home round-trip, app width reset and mandatory home guidance. Mobile overlay geometry tests remain, but the desktop-only village beneath them is no longer required to fit a phone viewport.
 
 Generation prompt:

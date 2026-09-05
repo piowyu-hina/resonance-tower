@@ -20,7 +20,7 @@ export default {
   'story.guideNewPartner': '去看看新夥伴吧',
   'village.shop': '商店',
   'village.shopDesc': '出售素材與購買補給',
-  'village.expedition': '遠征入口',
+  'village.expedition': '村口',
   'village.expeditionDesc': '選擇地區並準備出發',
   'home.title': '家',
   'home.subtitle': '培養靈魂夥伴，回顧一路上的故事。',
