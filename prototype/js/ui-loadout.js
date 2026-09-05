@@ -30,7 +30,7 @@ export function characterActionTooltipHTML(action, character = null) {
   const cooldown = character ? characterActionCooldown(character) / 1000 : action.cooldown;
   return `
     <div class="ttName">${action.name}</div>
-    <div class="ttStat">手動操作・冷卻 ${cooldown.toFixed(1)} 秒</div>
+    <div class="ttStat">冷卻：${cooldown.toFixed(1)} 秒</div>
     <div class="ttStat">基礎效果：${action.desc}</div>
   `;
 }
