@@ -2,6 +2,8 @@
 
 ## Current status: experiment reverted
 
+Follow-up on the restored layout: desktop dialogue is now a small warm-paper speech bubble to the right of Lumi's face/shoulder, within the merchant panel. The portrait shifts left (uncropped); the bottom dialogue block is removed. Clicking either the figure or bubble keeps the existing chat behavior. The complete shop backing, headings, transaction UI and narrow layouts remain. Browser checks cover bubble containment and clickability in both languages at 1440 and 1024 desktop widths.
+
 At the user's request, the shop was restored to f990302, before the first background-removal experiment. The original complete backing, merchant arch, headings and transaction presentation are restored. Home cultivation changes and user artwork remain untouched. The notes below are historical experiments, not the current design.
 
 ## Village-grounded follow-up

@@ -97,6 +97,18 @@
   #shopModal .shopBuyRow > img, #shopModal .shopSellRow > img { width: 54px; height: 54px; }
   #shopModal .shopBuyRow + .shopBuyRow { padding-top: 14px; }
 }
+/* Desktop conversation sits beside Lumi, inside her own panel. */
+@media (min-width: 960px) {
+  #shopModal .shopKeeperArt { width: 70%; padding-left: 0; padding-right: 0; }
+  #shopModal .shopKeeperPanel::before { bottom: 20px; }
+  #shopDialogue { position: absolute; z-index: 2; top: 84px; right: 16px; bottom: auto; left: auto; width: 38%; min-height: 0; margin: 0; padding: 14px 16px 26px; border-color: #bf9865; border-radius: 16px 16px 16px 4px; background: #eee1c9; color: #4b3428; text-align: left; box-shadow: 0 8px 18px #150e1233; }
+  #shopDialogue::before { content: ''; position: absolute; top: 34px; left: -10px; width: 18px; height: 18px; transform: rotate(45deg); border-left: 1px solid #bf9865; border-bottom: 1px solid #bf9865; background: #eee1c9; }
+  #shopDialogue:hover, #shopDialogue:hover::before { background: #f8ecd6; }
+  #shopDialogue:focus-visible { outline: 2px solid #f3cb85; outline-offset: 4px; }
+  #shopKeeperName { color: #87613e; font-size: 13px; }
+  #shopDialogueText { position: relative; font-size: 15px; line-height: 1.75; color: #4b3428; }
+  #shopDialogue .shopChatDots { color: #997348; }
+}
 @media (prefers-reduced-motion: reduce) {
   #shopModal .shopKeeperArt img { transition: none; }
 }

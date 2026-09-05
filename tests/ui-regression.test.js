@@ -1162,7 +1162,7 @@ async function testDialogueSizing(browser) {
 }
 
 async function testMerchantShop(browser) {
-  for (const [width, height] of [[1440, 1000], [390, 844], [320, 568], [844, 390]]) {
+  for (const [width, height] of [[1440, 1000], [1024, 768], [390, 844], [320, 568], [844, 390]]) {
     const page = await openView(browser, 'shop');
     await page.setViewportSize({ width, height });
     await page.evaluate(async () => {
@@ -1189,6 +1189,17 @@ async function testMerchantShop(browser) {
       assert.equal(bounds.overflow, false);
       assert.ok(bounds.artHeight >= 340, 'merchant must not collapse to a tiny thumbnail');
       assert.equal(bounds.fit, 'contain');
+      if (width >= 960) {
+        const bubble = await page.locator('#shopDialogue').evaluate(el => {
+          const box = el.getBoundingClientRect();
+          const panel = document.querySelector('.shopKeeperPanel').getBoundingClientRect();
+          const goods = document.querySelector('.shopGoodsPanel').getBoundingClientRect();
+          return { upper: box.top < panel.top + panel.height * .3,
+            contained: box.left >= panel.left && box.right <= goods.left && box.bottom <= panel.bottom,
+            hit: el.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)) };
+        });
+        assert.ok(bubble.upper && bubble.contained && bubble.hit, 'speech bubble stays beside merchant and outside goods');
+      }
     }
     await page.evaluate(async () => (await import('./js/i18n.js')).setLocale('zh-Hant'));
     const greeting = await page.locator('#shopDialogueText').textContent();
