@@ -3,6 +3,7 @@ export default {
   'brand.name': 'Resonance Tower',
   'common.close': 'Close',
   'common.back.village': '← Village',
+  'home.exit': 'Step outside',
   'common.back.home': '← Home',
   'common.back.expedition': '← Expedition Gate',
   'header.bag': 'Bag',

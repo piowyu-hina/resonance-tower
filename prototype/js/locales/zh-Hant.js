@@ -3,6 +3,7 @@ export default {
   'brand.name': '共鳴之塔',
   'common.close': '關閉',
   'common.back.village': '← 村莊',
+  'home.exit': '出門',
   'common.back.home': '← 家',
   'common.back.expedition': '← 遠征入口',
   'header.bag': '物品庫',

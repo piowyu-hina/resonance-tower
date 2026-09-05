@@ -33,7 +33,9 @@
   .homeSceneActive #homeBackBtn { position: absolute; left: 87%; top: 22%; width: 11%; height: 48%; display: flex; align-items: end; justify-content: center; }
   .homeSceneActive #homeBackBtn { pointer-events: auto; padding: 5px 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; color: #fff0d9; font-family: Georgia, 'Noto Serif TC', serif; font-size: 23px; text-shadow: 0 2px 5px #19120f; }
   .homeSceneActive #homeBackBtn:focus-visible { outline: 2px dashed #eac78a; outline-offset: 5px; }
-  .homeSceneActive #homeBackBtn:hover:not(:disabled) { color: #fff2da; }
+  .homeSceneActive #homeBackBtn > span { padding: 6px 14px; border: 1px solid #d9ba7b38; border-radius: 20px; background: #251b1399; color: #dbc5a4; font-size: 16px; letter-spacing: .16em; transition: background .2s, color .2s, border-color .2s; }
+  .homeSceneActive #homeBackBtn:hover:not(:disabled) > span,
+  .homeSceneActive #homeBackBtn:focus-visible > span { background: #34251de6; color: #fff2da; border-color: #eac78a99; }
   .homeSceneActive #homeMenu { display: block; position: absolute; inset: 0; }
   .homeSceneActive #homeMenu[hidden] { display: none; }
   .homeSceneActive #homeMenu .homeFacilityBtn {

@@ -1124,7 +1124,7 @@ async function testDialogueSizing(browser) {
       await page.evaluate(async speaker => {
         const story = await import('./js/story.js');
         if (speaker === 'wuming') {
-          (await import('./js/state.js')).equipCharacterSkin('wuming', 'lixue_nohat');
+          (await import('./js/state.js')).gameState.equippedSkinByCharacter.wuming = 'lixue_nohat';
         }
         if (story.storyState.dialogueScript) story.closeDialogue();
         story.queueDialogue('xiaochu_home');
@@ -1139,7 +1139,7 @@ async function testDialogueSizing(browser) {
       await page.locator('#dialoguePortraitImg').evaluate(img => img.decode());
       if (speaker === 'wuming') {
         assert.equal(await page.locator('#dialogueSpeakerName').textContent(), '璃雪');
-        assert.match(await page.locator('#dialoguePortraitImg').getAttribute('src'), /lixue_nohat_full\.png$/);
+        assert.match(await page.locator('#dialoguePortraitImg').getAttribute('src'), /lixue_full\.png$/);
       }
       await page.waitForTimeout(800);
       const layout = await page.evaluate(() => {
@@ -1332,11 +1332,11 @@ async function testDesktopHome(browser) {
     assert.equal(await page.locator('.detailCharacterDescription').isVisible(), true);
     assert.equal(await page.locator('#growthUpgradeBtn').isVisible(), false);
     assert.deepEqual(await page.locator('.detailArtFrame').boundingBox(), artBeforeTab, 'portrait stays on stage across tabs');
-    assert.equal(await page.locator('.skinOption').count(), 2, 'both Lixue appearances are free');
-    await page.locator('[data-skin-id="lixue_nohat"]').click();
+    assert.equal(await page.locator('.skinOption').count(), 1, 'only hooded Lixue is available; picker is retained');
+    assert.equal(await page.locator('[data-skin-id="lixue_nohat"]').count(), 0);
     await page.locator('.detailArtFrame img').evaluate(el => el.decode());
-    assert.match(await page.locator('.detailArtFrame img').getAttribute('src'), /lixue_nohat_full\.png$/);
-    assert.equal(await page.locator('[data-skin-id="lixue_nohat"]').getAttribute('aria-pressed'), 'true');
+    assert.match(await page.locator('.detailArtFrame img').getAttribute('src'), /lixue_full\.png$/);
+    assert.equal(await page.locator('[data-skin-id="wuming_default"]').getAttribute('aria-pressed'), 'true');
     if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-appearance-${width}.png`) });
     await page.locator('.skinOption').first().click();
     assert.equal(await page.locator('#homeTab-profile').getAttribute('aria-selected'), 'true', 'equipping preserves active tab');
@@ -1355,6 +1355,7 @@ async function testDesktopHome(browser) {
         hit: el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) };
     });
     assert.ok(door.rightSide && door.hit, 'exit is a clickable door hotspot');
+    assert.equal(await page.locator('#homeBackBtn').textContent(), '出門');
     assert.equal(await page.locator('#homeGrowthBtn > img').count(), 0, 'no resident guide portrait');
     await page.evaluate(async () => {
       const { gameState, RESONANCE_STATES } = await import('./js/state.js');
