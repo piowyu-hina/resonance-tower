@@ -4,6 +4,7 @@ import { syncCoinItem } from './ui-commerce.js';
 import { render } from './ui-main.js';
 import { overlayUiState } from './ui-overlays.js';
 import { JOURNAL_CHAPTERS } from './story.js';
+import { XIAOCHU_DAILY_TALKS } from './xiaochu-daily.js';
 
 // --- 桌面版手動存檔 ---
 // Only permanent progression is serialized. An expedition in progress must be
@@ -86,6 +87,7 @@ export function createSaveData() {
       chapter1State: gameState.chapter1State,
       agentKillCount: gameState.agentKillCount,
       xiaochuStoryChapter: gameState.xiaochuStoryChapter,
+      xiaochuDailyTalkIndex: gameState.xiaochuDailyTalkIndex,
       journalReading: { chapterId: gameState.journalReading.chapterId, pages: { ...gameState.journalReading.pages } },
     },
   };
@@ -174,6 +176,9 @@ export function normalizeSaveData(raw) {
     chapter1State,
     agentKillCount: safeInteger(source.agentKillCount, 0),
     xiaochuStoryChapter,
+    xiaochuDailyTalkIndex: normalizedResonance.xiaochu === RESONANCE_STATES.CONTRACTED &&
+      Number.isInteger(source.xiaochuDailyTalkIndex) && source.xiaochuDailyTalkIndex >= 0 &&
+      source.xiaochuDailyTalkIndex < XIAOCHU_DAILY_TALKS.length ? source.xiaochuDailyTalkIndex : 0,
     journalReading: {
       chapterId: JOURNAL_CHAPTERS.some(chapter => chapter.id === source.journalReading?.chapterId) ? source.journalReading.chapterId : JOURNAL_CHAPTERS[0].id,
       pages: Object.fromEntries(JOURNAL_CHAPTERS.filter(chapter => Object.hasOwn(source.journalReading?.pages || {}, chapter.id)).map(chapter => [chapter.id, safeInteger(source.journalReading.pages[chapter.id], 0, chapter.pages.length - 1)])),
@@ -229,6 +234,7 @@ export function applySaveData(data) {
   gameState.chapter1State = data.chapter1State;
   gameState.agentKillCount = data.agentKillCount;
   gameState.xiaochuStoryChapter = data.xiaochuStoryChapter;
+  gameState.xiaochuDailyTalkIndex = data.xiaochuDailyTalkIndex;
   gameState.journalReading = data.journalReading;
   gameState.roster.forEach(character => {
     const saved = data.characters.get(character.id);

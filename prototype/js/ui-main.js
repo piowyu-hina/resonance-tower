@@ -7,6 +7,7 @@ import {
   activeCharacterStatuses,
 } from './state.js';
 import { t, formatLocaleNumber } from './i18n.js';
+import { XIAOCHU_DAILY_TALKS } from './xiaochu-daily.js';
 import {
   attachTextTooltip, attachCharTooltip, attachSkillTooltip, attachCharacterActionTooltip, attachActiveRelicTooltip,
   attachStatusTooltip, attachMonsterTooltip, attachCombatActionTooltip, hideTooltip, positionTooltip,
@@ -571,11 +572,12 @@ export function renderPrepView() {
   document.getElementById('travelJournalBtn').hidden = !(journalUnlocked || chapterJournal || gameState.chapter1State === CHAPTER1_STATES.COMPLETE);
   document.getElementById('contractFacilityBtn').hidden = !contractAvailable;
   const followingXiaochu = gameState.resonanceState.xiaochu === RESONANCE_STATES.FOLLOWING;
+  const contractedXiaochu = gameState.resonanceState.xiaochu === RESONANCE_STATES.CONTRACTED;
   const xiaochuTalk = document.getElementById('xiaochuTalkBtn');
-  xiaochuTalk.hidden = !followingXiaochu;
-  xiaochuTalk.disabled = storyLocked || gameState.xiaochuStoryChapter === 1;
+  xiaochuTalk.hidden = !followingXiaochu && !contractedXiaochu;
+  xiaochuTalk.disabled = storyLocked || (followingXiaochu && gameState.xiaochuStoryChapter === 1);
   xiaochuTalk.classList.toggle('storyRequired', followingXiaochu && gameState.xiaochuStoryChapter !== 1);
-  document.getElementById('xiaochuTalkHint').textContent = t(gameState.xiaochuStoryChapter === 1 ? 'home.xiaochuExplore' : gameState.xiaochuStoryChapter === 2 ? 'home.xiaochuReady' : 'home.xiaochuWelcome');
+  document.getElementById('xiaochuTalkHint').textContent = t(contractedXiaochu ? XIAOCHU_DAILY_TALKS[gameState.xiaochuDailyTalkIndex].titleKey : gameState.xiaochuStoryChapter === 1 ? 'home.xiaochuExplore' : gameState.xiaochuStoryChapter === 2 ? 'home.xiaochuReady' : 'home.xiaochuWelcome');
   const visibleHomeFacilities = [...document.querySelectorAll('#homeMenu .homeFacilityBtn')]
     .filter(element => !element.hidden).length;
   document.getElementById('homeMenu').classList.toggle('singleFacility', visibleHomeFacilities === 1);

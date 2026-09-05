@@ -59,3 +59,10 @@ assert.equal(storySave('contracting', 3).resonanceState.xiaochu, 'oathReady');
 assert.equal(storySave('oathReady', undefined).resonanceState.xiaochu, 'following');
 assert.equal(storySave('following', 99).xiaochuStoryChapter, 0);
 assert.equal(storySave('contracted', undefined).xiaochuStoryChapter, 4);
+const dailySave = (index, state = 'contracted') => normalizeSaveData({
+  format: 'resonance-tower-save', version: 1,
+  progression: { resonanceState: { xiaochu: state }, xiaochuDailyTalkIndex: index },
+}).xiaochuDailyTalkIndex;
+for (const index of [0, 1, 2]) assert.equal(dailySave(index), index);
+for (const invalid of [undefined, null, -1, 3, 999, 1.5, '2', Infinity]) assert.equal(dailySave(invalid), 0);
+assert.equal(dailySave(2, 'following'), 0);

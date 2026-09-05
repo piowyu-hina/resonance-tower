@@ -53,6 +53,7 @@ export const gameState = {
   journalReading: { chapterId: 'shapeshifter', pages: {} },
   agentKillCount: 0,
   xiaochuStoryChapter: 0,
+  xiaochuDailyTalkIndex: 0,
   expeditionMode: 'forest',
   ruinsKillCount: 0,
   partyLocked: false, // once true (first "開始出擊" of a run), party can't change until endRun()
@@ -125,6 +126,7 @@ export function initGame() {
   gameState.chapter1State = CHAPTER1_STATES.FOREST;
   gameState.agentKillCount = 0;
   gameState.xiaochuStoryChapter = 0;
+  gameState.xiaochuDailyTalkIndex = 0;
   gameState.journalReading = { chapterId: 'shapeshifter', pages: {} };
   gameState.expeditionMode = 'forest';
   gameState.ruinsKillCount = 0;

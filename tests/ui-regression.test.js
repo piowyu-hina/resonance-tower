@@ -26,7 +26,8 @@ const approvedEncounter = fs.readFileSync(path.resolve(__dirname, '../story/xiao
   .map(line => line.startsWith('（') ? line.slice(1, -1) : line.replace(/^\*\*.+?：\*\*\s*/, ''));
 assert.deepEqual(DIALOGUE_DEFS.xiaochu_encounter.map(line => line.text), approvedEncounter);
 assert.deepEqual(Object.keys(DIALOGUE_DEFS).filter(id => id.startsWith('xiaochu_')).sort(),
-  ['xiaochu_encounter', 'xiaochu_home', 'xiaochu_trust', 'xiaochu_choice', 'xiaochu_oath', 'xiaochu_after'].sort());
+  ['xiaochu_encounter', 'xiaochu_home', 'xiaochu_trust', 'xiaochu_choice', 'xiaochu_oath', 'xiaochu_after',
+    'xiaochu_daily_practice', 'xiaochu_daily_chair', 'xiaochu_daily_departure'].sort());
 
 // Same idea as lineCount above: count index.html's own <link rel="stylesheet">
 // tags instead of hardcoding how many exist, so adding a new split stylesheet
@@ -483,7 +484,7 @@ async function testXiaochuEncounterFlow(browser) {
   assert.equal(await isUnlocked(), true);
   await advanceDialogue(lineCount('xiaochu_after'));
   assert.equal(await page.evaluate(() => window.__debugHooks.gameState.xiaochuStoryChapter), 4);
-  assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), false);
+  assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true, 'contracted Xiaochu retains optional daily conversations');
   assert.equal(await page.locator('#homeBackBtn').isEnabled(), true);
   assert.equal(await page.evaluate(async () => (await import('./js/story.js')).tryXiaochuTravelStory(() => {})), false, 'completed chapter does not repeat');
   assertNoRuntimeErrors(page, 'xiaochu completed covenant');
@@ -996,12 +997,79 @@ async function testSoftBattleArt(browser) {
   }
 }
 
+async function testXiaochuDaily(browser) {
+  const page = await openView(browser, 'village');
+  await page.click('#debugToggleBtn');
+  await page.click('[data-debug-action="xiaochu-daily"]');
+  await page.click('#debugToggleBtn');
+  const button = page.locator('#xiaochuTalkBtn');
+  assert.equal(await button.isVisible(), true);
+  assert.equal(await button.isEnabled(), true);
+  assert.equal(await button.evaluate(el => el.classList.contains('storyRequired')), false);
+  if (process.argv.includes('--daily-only')) {
+    fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
+    await page.screenshot({ path: path.resolve(__dirname, '../test-results/xiaochu-daily-home.png') });
+  }
+  for (const [index, id] of ['xiaochu_daily_practice', 'xiaochu_daily_chair', 'xiaochu_daily_departure'].entries()) {
+    await button.click();
+    const opened = await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const { storyState } = await import('./js/story.js');
+      return { id: storyState.dialogueScriptId, index: gameState.xiaochuDailyTalkIndex,
+        backdrop: document.getElementById('dialogueOverlay').classList.contains('homeDialogue') };
+    });
+    assert.deepEqual(opened, { id, index, backdrop: true });
+    const finished = await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const { advanceDialogue, storyState } = await import('./js/story.js');
+      const count = storyState.dialogueScript.length;
+      for (let i = 0; i < count; i++) advanceDialogue();
+      const { createSaveData, normalizeSaveData, applySaveData } = await import('./js/save.js');
+      const saved = normalizeSaveData(createSaveData());
+      const overlay = gameState.activeOverlay;
+      applySaveData(saved);
+      return { index: gameState.xiaochuDailyTalkIndex, overlay };
+    });
+    assert.deepEqual(finished, { index: (index + 1) % 3, overlay: null });
+    // Loading returns to the village; bring the next conversation back home.
+    await page.evaluate(async () => {
+      const { overlayUiState } = await import('./js/ui-overlays.js');
+      const { render } = await import('./js/ui-main.js');
+      overlayUiState.prepLocation = 'home';
+      overlayUiState.homeMode = 'menu';
+      render();
+    });
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await button.isVisible(), true);
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+  if (process.argv.includes('--daily-only')) {
+    await page.screenshot({ path: path.resolve(__dirname, '../test-results/xiaochu-daily-mobile.png') });
+  }
+  const blocked = await page.evaluate(async () => {
+    const { gameState, setResonanceState, RESONANCE_STATES } = await import('./js/state.js');
+    const { talkToXiaochu } = await import('./js/story.js');
+    setResonanceState('xiaochu', RESONANCE_STATES.FOLLOWING, { force: true });
+    gameState.xiaochuStoryChapter = 1;
+    talkToXiaochu();
+    return gameState.activeOverlay;
+  });
+  assert.equal(blocked, null, 'daily chats must not bypass the existing following story');
+  assertNoRuntimeErrors(page, 'Xiaochu daily conversations');
+  await page.close();
+}
+
 (async () => {
   const server = await startServer();
   const { port } = server.address();
   prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    await testXiaochuDaily(browser);
+    if (process.argv.includes('--daily-only')) {
+      console.log('ui-regression.test.js: Xiaochu daily assertions passed');
+      return;
+    }
     if (process.argv.includes('--xiaochu-only')) {
       await testXiaochuEncounterFlow(browser);
       console.log('ui-regression.test.js: Xiaochu encounter-to-covenant assertions passed');

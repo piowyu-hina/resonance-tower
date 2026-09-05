@@ -2,7 +2,7 @@ import { DEBUG_MODE, CHAR_DEFS, MOBS_PER_FLOOR, ROSTER_CHAR_IDS, RUINS_KILL_TARG
 import {
   gameState, PHASES, setPhase, recomputeStats, speedLineIntervalMult, log,
   RESONANCE_STATES, setResonanceState, clearResonanceState,
-  CHAPTER1_STATES, setChapter1State,
+  CHAPTER1_STATES, setChapter1State, unlockChar,
 } from './state.js';
 import { openTownShop, addInventoryItem } from './shop.js';
 import { setInventoryOpen } from './ui-commerce.js';
@@ -166,6 +166,18 @@ export function runDebugAction(action) {
     openTravelJournal({ preview: true });
   } else if (action === 'xiaochu-preview') {
     queueDialogue('xiaochu_encounter');
+  } else if (action === 'xiaochu-daily') {
+    closeOtherOverlays(null);
+    endRun();
+    setChapter1State(CHAPTER1_STATES.COMPLETE);
+    unlockChar('xiaochu');
+    gameState.seenCharacterIds.add('xiaochu');
+    setResonanceState('xiaochu', RESONANCE_STATES.CONTRACTED, { force: true });
+    gameState.xiaochuStoryChapter = 4;
+    gameState.xiaochuDailyTalkIndex = 0;
+    overlayUiState.prepLocation = 'home';
+    overlayUiState.homeMode = 'menu';
+    render();
   } else if (action === 'xiaochu-followup' || action === 'xiaochu-ready') {
     closeOtherOverlays(null);
     endRun();

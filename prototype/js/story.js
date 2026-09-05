@@ -9,9 +9,11 @@ import { afterAnimationPaint, beginManagedTransition, playTransientAnimation } f
 import { t, formatLocaleNumber } from './i18n.js';
 import { endRun } from './combat.js';
 import { XIAOCHU_DIALOGUES } from './xiaochu-story.js';
+import { XIAOCHU_DAILY_TALKS, XIAOCHU_DAILY_DIALOGUES } from './xiaochu-daily.js';
 
 // --- 對話與契約演出 ---
 export const DIALOGUE_DEFS = {
+  ...XIAOCHU_DAILY_DIALOGUES,
   ...XIAOCHU_DIALOGUES,
   chapter1_defeat: [
     { speaker: 'wuming', text: '不要……' },
@@ -197,6 +199,7 @@ export const DIALOGUE_DEFS = {
 };
 
 export const DIALOGUE_PRESENTATION = {
+  ...Object.fromEntries(XIAOCHU_DAILY_TALKS.map(talk => [talk.id, { backdrop: 'home' }])),
   xiaochu_encounter: { backdrop: 'forest' },
   xiaochu_home: { backdrop: 'home' },
   xiaochu_trust: { backdrop: 'forest' },
@@ -488,8 +491,16 @@ export function startCharacterEncounter(characterId, onDone) {
 }
 
 export function talkToXiaochu() {
-  if (gameState.activeOverlay || gameState.partyLocked || overlayUiState.prepLocation !== 'home' ||
-      gameState.resonanceState.xiaochu !== RESONANCE_STATES.FOLLOWING) return;
+  if (gameState.activeOverlay || gameState.partyLocked || overlayUiState.prepLocation !== 'home') return;
+  if (gameState.resonanceState.xiaochu === RESONANCE_STATES.CONTRACTED) {
+    const index = gameState.xiaochuDailyTalkIndex;
+    queueDialogue(XIAOCHU_DAILY_TALKS[index].id, () => {
+      gameState.xiaochuDailyTalkIndex = (index + 1) % XIAOCHU_DAILY_TALKS.length;
+      render();
+    });
+    return;
+  }
+  if (gameState.resonanceState.xiaochu !== RESONANCE_STATES.FOLLOWING) return;
   const chapter = gameState.xiaochuStoryChapter;
   if (chapter !== 0 && chapter !== 2) return;
   queueDialogue(chapter === 0 ? 'xiaochu_home' : 'xiaochu_choice', () => {
