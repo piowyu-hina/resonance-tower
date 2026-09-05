@@ -1297,16 +1297,21 @@ async function testDesktopHome(browser) {
       assert.equal(await page.locator('#growthUpgradeBtn').isVisible(), true);
       if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-pinned-${width}-${height}.png`) });
     }
-    assert.equal(await page.locator('.detailPortraitColumn > .detailCharacterDescription').isVisible(), true, 'introduction is readable without expanding anything');
+    assert.equal(await page.locator('#homeTab-growth').getAttribute('aria-selected'), 'true');
     const upgradeBeforeAppearance = await page.locator('#growthUpgradeBtn').boundingBox();
-    await page.locator('.homeCharacterAppearance summary').click();
+    const artBeforeTab = await page.locator('.detailArtFrame').boundingBox();
+    await page.locator('#homeTab-profile').click();
     assert.equal(await page.locator('.skinPicker').isVisible(), true);
-    assert.equal(await page.locator('.detailArtFrame').isVisible(), false, 'appearance selection replaces art rather than covering it');
-    assert.deepEqual(await page.locator('#growthUpgradeBtn').boundingBox(), upgradeBeforeAppearance, 'appearance does not move cultivation controls');
+    assert.equal(await page.locator('.detailCharacterDescription').isVisible(), true);
+    assert.equal(await page.locator('#growthUpgradeBtn').isVisible(), false);
+    assert.deepEqual(await page.locator('.detailArtFrame').boundingBox(), artBeforeTab, 'portrait stays on stage across tabs');
     if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-appearance-${width}.png`) });
     await page.locator('.skinOption').first().click();
-    assert.equal(await page.locator('.homeCharacterAppearance').getAttribute('open'), '');
-    await page.locator('.homeCharacterAppearance summary').click();
+    assert.equal(await page.locator('#homeTab-profile').getAttribute('aria-selected'), 'true', 'equipping preserves active tab');
+    await page.locator('#homeTab-profile').focus();
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await page.locator('#homeTab-growth').getAttribute('aria-selected'), 'true');
+    assert.deepEqual(await page.locator('#growthUpgradeBtn').boundingBox(), upgradeBeforeAppearance, 'returning restores the pinned workspace');
     assert.equal(await page.locator('.detailArtFrame').isVisible(), true);
     await page.setViewportSize({ width, height: 1080 });
     await page.click('#characterDetailCloseBtn');

@@ -13,10 +13,10 @@ import { attachHoldRepeat } from './ui-press.js';
 export { attachHoldRepeat } from './ui-press.js';
 let disposeGrowthHold = null;
 let detailReturnFocus = null;
-let homeAppearanceOpen = false;
+let homeDetailTab = 'growth';
 
 export function setCharacterDetailOpen(open, characterId = null) {
-  if (open && gameState.activeOverlay !== 'characterDetail') homeAppearanceOpen = false;
+  if (open && gameState.activeOverlay !== 'characterDetail') homeDetailTab = 'growth';
   if (open && gameState.activeOverlay !== 'characterDetail') detailReturnFocus = document.activeElement;
   if (!open) { disposeGrowthHold?.(); disposeGrowthHold = null; }
   if (open) closeOtherOverlays('characterDetail');
@@ -294,18 +294,14 @@ export function renderCharacterDetail(characterId) {
   if (atHome) {
     // Keep the existing growth controls/handlers, but give each area its own
     // layout so long descriptions never push the upgrade action off screen.
-    const artFrame = content.querySelector('.detailArtFrame');
-    artFrame.before(content.querySelector('.detailCharacterDescription'));
-    const appearance = document.createElement('details');
-    appearance.className = 'homeCharacterAppearance';
-    appearance.open = homeAppearanceOpen;
-    appearance.innerHTML = '<summary><span>更換外觀</span><small>返回立繪</small></summary><div class="homeAppearanceBody"></div>';
-    const appearanceBody = appearance.querySelector('.homeAppearanceBody');
-    for (const selector of ['.detailSectionHeading', '.skinPicker']) {
-      appearanceBody.appendChild(content.querySelector(selector));
+    const profile = document.createElement('section');
+    profile.id = 'homeProfilePanel';
+    profile.className = 'homeProfilePanel';
+    profile.setAttribute('role', 'tabpanel');
+    profile.setAttribute('aria-labelledby', 'homeTab-profile');
+    for (const selector of ['.detailCharacterDescription', '.detailSectionHeading', '.skinPicker']) {
+      profile.appendChild(content.querySelector(selector));
     }
-    artFrame.after(appearance);
-    appearance.addEventListener('toggle', () => { homeAppearanceOpen = appearance.open; });
     const info = content.querySelector('.detailInfo');
     const inspector = content.querySelector('.growthInspector');
     const choices = document.createElement('div');
@@ -320,6 +316,40 @@ export function renderCharacterDetail(characterId) {
       if (child.matches('.growthSkillDescription')) explanation.appendChild(child);
     }
     inspector.querySelector('.growthCompare').before(explanation);
+    const growth = document.createElement('section');
+    growth.id = 'homeGrowthPanel';
+    growth.className = 'homeGrowthPanel';
+    growth.setAttribute('role', 'tabpanel');
+    growth.setAttribute('aria-labelledby', 'homeTab-growth');
+    growth.append(choices, inspector);
+    info.append(growth, profile);
+    const tabs = document.createElement('div');
+    tabs.className = 'homeDetailTabs';
+    tabs.setAttribute('role', 'tablist');
+    tabs.setAttribute('aria-label', '角色資訊');
+    tabs.innerHTML = '<button type="button" role="tab" id="homeTab-growth" aria-controls="homeGrowthPanel" data-home-tab="growth">培養</button><button type="button" role="tab" id="homeTab-profile" aria-controls="homeProfilePanel" data-home-tab="profile">角色</button>';
+    info.querySelector('.detailTitleRow').appendChild(tabs);
+    const selectTab = (tab, focus = false) => {
+      homeDetailTab = tab;
+      growth.hidden = tab !== 'growth';
+      profile.hidden = tab !== 'profile';
+      tabs.querySelectorAll('button').forEach(button => {
+        const selected = button.dataset.homeTab === tab;
+        button.setAttribute('aria-selected', String(selected));
+        button.tabIndex = selected ? 0 : -1;
+        if (selected && focus) button.focus({ preventScroll: true });
+      });
+    };
+    tabs.addEventListener('click', event => {
+      const button = event.target.closest('[data-home-tab]');
+      if (button) selectTab(button.dataset.homeTab);
+    });
+    tabs.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      selectTab(event.key === 'Home' ? 'growth' : event.key === 'End' ? 'profile' : homeDetailTab === 'growth' ? 'profile' : 'growth', true);
+    });
+    selectTab(homeDetailTab);
   }
 
   const fullArt = content.querySelector('.detailArtFrame img');
@@ -328,7 +358,6 @@ export function renderCharacterDetail(characterId) {
       const nextId = button.dataset.homeCharacter;
       if (!isCharUnlocked(nextId)) return;
       selectedGrowthLine = 'atk';
-      homeAppearanceOpen = false;
       renderCharacterDetail(nextId);
       render();
       content.querySelector(`[data-home-character="${nextId}"]`)?.focus({ preventScroll: true });
