@@ -285,10 +285,15 @@ export function renderExpeditionSelectedSummary() {
         <div><small>${t('loadout.charm')}</small><div class="quickSlot activeQuickSlot"></div></div>
       </div>
       <div class="expeditionTechniquePreview">
-        ${[...def.skills, def.action].map(skill => `<span tabindex="0" role="img" aria-label="${skill.name}：${skill.desc}"><img src="assets/skills/${skill.img}.png" alt=""></span>`).join('')}
+        <section class="expeditionSkillGroup"><small>${t('loadout.autoSkills')}</small><div>
+          ${def.skills.map(skill => `<span data-preview-skill tabindex="0" role="img" aria-label="${skill.name}：${skill.desc}"><img src="assets/skills/${skill.img}.png" alt=""></span>`).join('')}
+        </div></section>
+        <section class="expeditionSkillGroup expeditionManualGroup"><small>${t('loadout.manualAction')}</small><div>
+          <span data-preview-skill tabindex="0" role="img" aria-label="${def.action.name}：${def.action.desc}"><img src="assets/skills/${def.action.img}.png" alt=""></span>
+        </div></section>
       </div>
     </div>`;
-  summary.querySelectorAll('.expeditionTechniquePreview > span').forEach((icon, index) => {
+  summary.querySelectorAll('[data-preview-skill]').forEach((icon, index) => {
     const action = index === def.skills.length;
     const skill = action ? def.action : def.skills[index];
     if (action) attachCharacterActionTooltip(icon, skill, character);

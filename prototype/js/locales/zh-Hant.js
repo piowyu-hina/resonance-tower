@@ -107,6 +107,8 @@ export default {
   'loadout.currentPossession': '目前附身',
   'loadout.equipment': '遠征裝備',
   'loadout.potion': '藥水',
+  'loadout.autoSkills': '自動技能',
+  'loadout.manualAction': '手動操作',
   'loadout.noItems': '不攜帶道具',
   'loadout.charm': '護符',
   'loadout.potionSlot': '藥水槽',

@@ -22,4 +22,7 @@
   .regionSceneActive #regionView .regionChoose { display: none; }
   .regionSceneActive #regionView .regionTitleRow { display: block; }
   .regionSceneActive #regionView .regionCopy { justify-content: center; }
+  /* Blend the scene edge into the page without stretching or zooming the art. */
+  #app.regionSceneActive { background: transparent; box-shadow: none; }
+  .regionSceneActive #regionView { mask-image: linear-gradient(#000 calc(100% - 100px), transparent 100%); }
 }

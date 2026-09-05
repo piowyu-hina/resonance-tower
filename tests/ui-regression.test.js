@@ -1524,6 +1524,9 @@ async function testExpeditionDeparture(browser) {
     assert.equal(await xiaochu.getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('#expeditionHeroPortrait').getAttribute('src'), 'assets/characters/xiaochu_full.png');
     assert.equal(await page.locator('.expeditionTechniquePreview img').count(), 4);
+    assert.equal(await page.locator('.expeditionSkillGroup:not(.expeditionManualGroup) [data-preview-skill]').count(), 3);
+    assert.equal(await page.locator('.expeditionManualGroup [data-preview-skill]').count(), 1);
+    assert.equal(await page.locator('[data-preview-skill]').first().evaluate(el => el.getBoundingClientRect().width), 72);
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       gameState.inventory = [];
@@ -1544,7 +1547,7 @@ async function testExpeditionDeparture(browser) {
       gameState.inventory = [{ itemId: 'potion', qty: 2 }, { itemId: Object.keys(ITEM_DEFS).find(id => ITEM_DEFS[id].equipSlot === 'charm'), qty: 1 }];
       (await import('./js/ui-main.js')).render();
     });
-    await page.locator('.expeditionTechniquePreview > span').first().focus();
+    await page.locator('[data-preview-skill]').first().focus();
     assert.equal(await page.locator('#tooltip').isVisible(), true);
     await page.locator('#expeditionSelectedSummary .combatItemQuickSlot').click();
     assert.equal(await page.locator('#combatItemPicker').evaluate(el => el.classList.contains('open')), true);
