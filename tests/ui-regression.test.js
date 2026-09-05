@@ -1199,6 +1199,11 @@ async function testMerchantShop(browser) {
       await page.locator('#shopModal').evaluate(el => { el.scrollTop = 0; });
       await page.screenshot({ path: path.resolve(__dirname, `../test-results/merchant-shop-${width}.png`) });
     }
+    if (width >= 960) {
+      assert.equal(await page.locator('#shopModal').evaluate(el => getComputedStyle(el).backgroundColor), 'rgba(0, 0, 0, 0)', 'no full shop backing');
+      assert.equal(await page.locator('.shopKeeperPanel').evaluate(el => getComputedStyle(el, '::before').display), 'none', 'merchant arch frame removed');
+      assert.equal(await page.locator('#shopOverlay').evaluate(el => getComputedStyle(el).backdropFilter), 'none', 'village remains unblurred');
+    }
     await page.locator('.shopBuyRow[data-item-id="potion"] button').click();
     const balances = () => page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');

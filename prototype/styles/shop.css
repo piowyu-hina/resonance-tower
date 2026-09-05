@@ -97,6 +97,23 @@
   #shopModal .shopBuyRow > img, #shopModal .shopSellRow > img { width: 54px; height: 54px; }
   #shopModal .shopBuyRow + .shopBuyRow { padding-top: 14px; }
 }
+/* Desktop: merchant in the village, with a readable trading surface only. */
+@media (min-width: 960px) {
+  #shopOverlay { background: #17100f80; backdrop-filter: none; }
+  body:has(#shopOverlay.open) .villageActive .villageIntro,
+  body:has(#shopOverlay.open) .villageActive .villageLocationCopy { visibility: hidden; }
+  #shopModal { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+  #shopModal .shopHeader { border: 0; background: transparent; backdrop-filter: none; padding: 12px 8px 22px; text-shadow: 0 2px 8px #160e0e; }
+  #shopModal .shopLayout { gap: 24px; }
+  #shopModal .shopKeeperPanel { overflow: visible; border: 0; background: transparent; box-shadow: none; }
+  #shopModal .shopKeeperPanel::before { display: none; }
+  #shopModal .shopKeeperArt { height: min(560px, calc(100dvh - 290px)); min-height: 300px; padding-top: 8px; }
+  #shopModal .shopKeeperArt img { filter: drop-shadow(0 12px 18px #180e1677); }
+  #shopModal .shopKeeperIdentity { left: 12px; top: 18px; text-shadow: 0 2px 8px #160e0e; }
+  #shopModal .shopGoodsPanel { border: 1px solid #b5946040; border-radius: 14px; background: linear-gradient(135deg, #34292af2, #272126f2); }
+  #shopDialogue { width: calc(100% - 16px); margin: 8px 8px 12px; background: #2c2225e8; }
+  #shopLeaveBtn { background: #332621cc; }
+}
 @media (prefers-reduced-motion: reduce) {
   #shopModal .shopKeeperArt img { transition: none; }
 }
