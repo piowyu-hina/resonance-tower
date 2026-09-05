@@ -1374,6 +1374,12 @@ async function testDesktopHome(browser) {
     assert.ok(door.rightSide && door.hit, 'exit is a clickable door hotspot');
     assert.equal(await page.locator('#homeBackBtn').textContent(), '出門');
     assert.equal(await page.locator('#homeGrowthBtn > img').count(), 0, 'no resident guide portrait');
+    await page.locator('#homeGrowthBtn').hover();
+    assert.equal(await page.evaluate(() => {
+      const scene = document.querySelector('#homeView').getBoundingClientRect();
+      const hint = document.querySelector('#homeGrowthBtn small').getBoundingClientRect();
+      return hint.left >= scene.left && hint.right <= scene.right && hint.top >= scene.top && hint.bottom <= scene.bottom;
+    }), true, 'cultivation hint stays inside the home scene');
     await page.evaluate(async () => {
       const { gameState, RESONANCE_STATES } = await import('./js/state.js');
       gameState.resonanceState.xiaochu = RESONANCE_STATES.CONTRACTED;

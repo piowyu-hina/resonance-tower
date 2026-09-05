@@ -68,6 +68,8 @@
   .homeSceneActive #homeBackBtn > span::after,
   .homeSceneActive #homeMenu .homeFacilityBtn b::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 44px; height: 1px; background: linear-gradient(90deg, transparent, #f6cf8c 25%, #f6cf8c 75%, transparent); transition: width .2s; }
   .homeSceneActive #homeMenu .homeFacilityBtn small { font-size: 14px; color: #f4dfbc; line-height: 1.5; max-width: 280px; padding: 3px 12px; text-align: center; text-shadow: 0 1px 4px #21160f, 0 0 8px #21160f; background: radial-gradient(ellipse, #30271eb0, transparent 75%); opacity: 0; transition: opacity .18s; }
+  /* Keep the cultivation hint inside the scene, even on smaller desktops. */
+  .homeSceneActive #homeMenu #homeGrowthBtn small { position: absolute; left: 100%; top: 50%; transform: translateY(-50%); width: 216px; text-align: left; }
   .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible):not(:disabled) small { opacity: 1; }
   .homeSceneActive #homeBackBtn:is(:hover, :focus-visible):not(:disabled) > span::after,
   .homeSceneActive #homeMenu .homeFacilityBtn:is(:hover, :focus-visible, .storyRequired) b::after { width: 72px; }
