@@ -873,6 +873,8 @@ async function testBattleArtUnclipped(browser) {
       (await import('./js/ui-main.js')).render();
     });
     const art = page.locator('#partySide .portrait > img');
+    assert.equal(await art.getAttribute('src'), 'assets/characters/xiaochu_battle_v2.png');
+    await art.evaluate(img => img.decode());
     // A wide illustration must extend beyond the frame at full height.
     const metrics = await art.evaluate(async img => {
       img.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="180" height="160"><rect width="180" height="160" fill="gold"/></svg>');
