@@ -483,6 +483,7 @@ export function render() {
   app.classList.toggle('homeSceneActive', atHomeSurface && overlayUiState.homeMode === 'menu');
   const atRegionSurface = gameState.phase === PHASES.PREP_FLOOR && !gameState.partyLocked && overlayUiState.prepLocation === 'regions';
   app.classList.toggle('regionSceneActive', atRegionSurface);
+  app.classList.toggle('expeditionSceneActive', inPrep && !atVillageSurface && !atHomeSurface && !atRegionSurface);
   const visibleSurface = !inPrep
     ? document.getElementById('combatView')
     : atVillageSurface
@@ -622,10 +623,12 @@ export function renderPrepView() {
     const inParty = gameState.party.includes(c.id);
     const unlocked = isCharUnlocked(c.id);
     // once locked, only the chosen party is even shown - nothing else to pick
-    refs.card.style.display = (!gameState.partyLocked || inParty) ? '' : 'none';
+    refs.card.style.display = unlocked && (!gameState.partyLocked || inParty) ? '' : 'none';
     refs.card.classList.toggle('inParty', inParty);
     refs.card.classList.toggle('runLocked', gameState.partyLocked);
     refs.card.classList.toggle('charLocked', !unlocked);
+    refs.card.setAttribute('aria-pressed', String(inParty));
+    refs.card.disabled = !unlocked || gameState.partyLocked;
     refs.lockReq.textContent = unlockReqText(c.id);
     refs.lvl.textContent = c.level;
     refs.portrait.src = characterPortraitPath(c.id);
@@ -637,6 +640,7 @@ export function renderRegionContext() {
   const region = localizedRegionDef(gameState.floor);
   const inBossPrep = gameState.phase === PHASES.PREP_BOSS;
   const isRuinsBoss = inBossPrep && gameState.expeditionMode === 'ruins';
+  document.getElementById('expeditionView').classList.toggle('ruinsPreparation', isRuinsBoss);
   const tagHTML = values => values.map(value => `<span>${value}</span>`).join('');
   document.getElementById('forestRegionName').textContent = region.name;
   document.getElementById('forestRegionLevel').textContent = t('format.recommendedLevel', {

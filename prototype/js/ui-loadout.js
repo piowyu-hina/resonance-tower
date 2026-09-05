@@ -1,5 +1,5 @@
 import { CHAR_DEFS, localizedItemDef, ITEM_DEFS } from './constants.js';
-import { gameState, calcDef, xpToNext, PHASES, isPrepPhase, characterPortraitPath, characterActionCooldown } from './state.js';
+import { gameState, calcDef, xpToNext, PHASES, isPrepPhase, characterPortraitPath, characterFullArtPath, characterActionCooldown } from './state.js';
 import { t, formatLocaleNumber } from './i18n.js';
 import { closeOtherOverlays } from './ui-overlays.js';
 import { render } from './ui-main.js';
@@ -262,6 +262,10 @@ export function renderExpeditionSelectedSummary() {
   const summary = document.getElementById('expeditionSelectedSummary');
   if (!summary) return;
   const character = gameState.roster.find(member => gameState.party.includes(member.id));
+  const hero = document.getElementById('expeditionHeroPortrait');
+  const heroPath = characterFullArtPath(character?.id || 'wuming');
+  if (hero.getAttribute('src') !== heroPath) hero.src = heroPath;
+  document.getElementById('expeditionView').classList.toggle('noDeployment', !character);
   if (!character) {
     summary.innerHTML = `<div class="expeditionEmptySelection">${t('loadout.notSelected')}</div>`;
     return;
@@ -280,7 +284,21 @@ export function renderExpeditionSelectedSummary() {
         <div><small>${t('loadout.potion')}</small><div class="quickSlot combatItemQuickSlot" role="button" tabindex="0"></div></div>
         <div><small>${t('loadout.charm')}</small><div class="quickSlot activeQuickSlot"></div></div>
       </div>
+      <div class="expeditionTechniquePreview">
+        ${[...def.skills, def.action].map(skill => `<span tabindex="0" role="img" aria-label="${skill.name}：${skill.desc}"><img src="assets/skills/${skill.img}.png" alt=""></span>`).join('')}
+      </div>
     </div>`;
+  summary.querySelectorAll('.expeditionTechniquePreview > span').forEach((icon, index) => {
+    const action = index === def.skills.length;
+    const skill = action ? def.action : def.skills[index];
+    if (action) attachCharacterActionTooltip(icon, skill, character);
+    else attachSkillTooltip(icon, skill);
+    icon.addEventListener('focus', () => {
+      const rect = icon.getBoundingClientRect();
+      showTooltipContent(action ? characterActionTooltipHTML(skill, character) : skillTooltipHTML(skill), { clientX: rect.left, clientY: rect.bottom });
+    });
+    icon.addEventListener('blur', hideTooltip);
+  });
   const combatSlot = summary.querySelector('.combatItemQuickSlot');
   combatSlot.innerHTML = loadoutItemHTML(gameState.equippedCombatItemId, '＋', t('picker.potion'));
   combatSlot.classList.toggle('equipped', !!gameState.equippedCombatItemId);

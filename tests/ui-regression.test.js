@@ -1504,12 +1504,70 @@ async function testDesktopVillage(browser) {
   }
 }
 
+async function testExpeditionDeparture(browser) {
+  for (const width of [1024, 1440]) {
+    const page = await openView(browser, 'expedition');
+    await page.setViewportSize({ width, height: width === 1024 ? 720 : 1000 });
+    await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      gameState.unlockedChars.add('xiaochu');
+      gameState.party = ['wuming'];
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('expeditionSceneActive')), true);
+    const xiaochu = page.locator('.expeditionCharacter').filter({ has: page.locator('.nm', { hasText: '小初' }) });
+    await xiaochu.click();
+    assert.equal(await xiaochu.getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('#expeditionHeroPortrait').getAttribute('src'), 'assets/characters/xiaochu_full.png');
+    assert.equal(await page.locator('.expeditionTechniquePreview img').count(), 4);
+    await page.locator('.expeditionTechniquePreview > span').first().focus();
+    assert.equal(await page.locator('#tooltip').isVisible(), true);
+    await page.locator('#expeditionSelectedSummary .combatItemQuickSlot').click();
+    assert.equal(await page.locator('#combatItemPicker').evaluate(el => el.classList.contains('open')), true);
+    await page.keyboard.press('Escape');
+    await page.locator('#expeditionSelectedSummary .activeQuickSlot').click();
+    assert.equal(await page.locator('#charmPicker').evaluate(el => el.classList.contains('open')), true);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => {
+      const loadout = document.querySelector('.expeditionLoadoutBlock').getBoundingClientRect();
+      const action = document.querySelector('#actionArea').getBoundingClientRect();
+      return loadout.bottom < action.top && document.documentElement.scrollWidth <= window.innerWidth;
+    }), true, 'loadout and departure do not overlap or overflow');
+    await page.locator('#expeditionHeroPortrait').evaluate(img => img.decode());
+    if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/expedition-departure-${width}.png`), fullPage: true });
+    await page.evaluate(async () => {
+      (await import('./js/state.js')).gameState.party = [];
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.equal(await page.locator('#startBtn').isDisabled(), true, 'empty selection cannot depart');
+    await page.evaluate(async () => {
+      const { gameState, PHASES } = await import('./js/state.js');
+      gameState.party = ['wuming'];
+      gameState.partyLocked = true;
+      gameState.phase = PHASES.PREP_BOSS;
+      gameState.expeditionMode = 'ruins';
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.equal(await page.locator('#prepRoster').isVisible(), false);
+    assert.equal(await page.locator('#expeditionRegionLevel').textContent(), '???');
+    assert.equal(await page.locator('#expeditionView').evaluate(el => el.classList.contains('ruinsPreparation')), true);
+    assert.equal(await page.locator('#startBtn').isEnabled(), true);
+    assertNoRuntimeErrors(page, 'expedition departure redesign');
+    await page.close();
+  }
+}
+
 (async () => {
   const server = await startServer();
   const { port } = server.address();
   prototypeUrl = `http://127.0.0.1:${port}/index.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    if (process.argv.includes('--expedition-only')) {
+      await testExpeditionDeparture(browser);
+      console.log('ui-regression.test.js: expedition departure assertions passed');
+      return;
+    }
     await testDesktopHome(browser);
     if (process.argv.includes('--home-only')) {
       console.log('ui-regression.test.js: desktop home assertions passed');
@@ -1553,6 +1611,7 @@ async function testDesktopVillage(browser) {
       return;
     }
     await testMajorViewsRender(browser);
+    await testExpeditionDeparture(browser);
     await testJournalNavigation(browser);
     await testJournalLayout(browser);
     await testDungeonEntry(browser);

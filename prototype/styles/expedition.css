@@ -1,0 +1,79 @@
+/* Desktop departure scene. Existing preparation controls remain the source of truth. */
+.expeditionHero { display: none; }
+.expeditionTechniquePreview { display: none; }
+@media (min-width: 960px) {
+  #app.expeditionSceneActive { position: relative; width: min(1600px, calc(100vw - 48px)); min-width: 900px; padding: 0; border: 1px solid #b99c6940; border-radius: 14px; background: #25231e; box-shadow: 0 24px 70px #0007; }
+  .expeditionSceneActive #header { position: absolute; z-index: 5; inset: 0 0 auto; margin: 0; padding: 14px 28px; border: 0; background: linear-gradient(#171710b8, transparent); pointer-events: none; }
+  .expeditionSceneActive #header button { pointer-events: auto; }
+  .expeditionSceneActive .brandCopy b { color: #f5e7ca; font-size: 16px; }
+  .expeditionSceneActive .brandCopy small { font-size: 9px !important; }
+  .expeditionSceneActive #bagBtn, .expeditionSceneActive #debugToggleBtn { color: #f2dfbe; border: 0; background: transparent; box-shadow: none; }
+  .expeditionSceneActive #debugPanel { position: absolute; z-index: 10; top: 70px; left: 18px; right: 18px; }
+  .expeditionSceneActive #prepView { margin: 0; padding: 0; border: 0; background: none; }
+  .expeditionSceneActive #expeditionView { position: relative; height: clamp(760px, calc(100dvh - 48px), 900px); padding: 0; border-radius: 14px; isolation: isolate; background: linear-gradient(90deg, #19231c50, #171c16a8 54%, #191d18e8), linear-gradient(0deg, #171a16ef, transparent 60%), url('../assets/backgrounds/expedition-trail.png') center / cover; }
+  #app.expeditionSceneActive #expeditionView::before { content: ''; position: absolute; z-index: -1; left: 56%; right: 3%; top: 112px; bottom: 30px; border: 1px solid #c8ad7352; border-radius: 3px 28px 3px 3px; background: linear-gradient(145deg, #443d30ed, #25251ff5 60%); box-shadow: 0 16px 42px #0005, inset 0 0 0 6px #e9c88906; }
+  #expeditionView .homeTopbar { position: absolute; top: 88px; left: 4%; right: 4%; display: block; margin: 0; padding: 0; border: 0; }
+  #app #expeditionView #expeditionBackBtn { padding: 0 0 12px; color: #e8d6b4; background: none; border: 0; box-shadow: none; font-size: 14px; }
+  #expeditionView .homeTopbar > div { margin-top: 9px; max-width: 51%; }
+  #app #expeditionView #prepHeading { color: #ffedcd; font: 600 clamp(24px, 2.4vw, 36px)/1.3 Georgia, 'Noto Serif TC', serif; letter-spacing: .12em; text-shadow: 0 3px 12px #0008; }
+  #app #expeditionView #prepMsg { margin-top: 10px; color: #dbcdb7; font-size: 14px; line-height: 1.7; font-style: normal; }
+  #expeditionView .expeditionHero { position: absolute; display: block; left: 4%; width: 48%; top: 204px; bottom: 160px; pointer-events: none; }
+  #expeditionHeroPortrait { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 14px 22px #050a0780); }
+  #expeditionView.noDeployment #expeditionHeroPortrait { opacity: .35; filter: saturate(.35) drop-shadow(0 10px 20px #0008); }
+  #expeditionView > .expeditionStepLabel { position: absolute; left: 59%; top: 138px; margin: 0; font-size: 14px; color: #d1b786; letter-spacing: .15em; }
+  #expeditionView .expeditionStepLabel > span { display: none; }
+  #expeditionView #expeditionRegionBrief { position: absolute; left: 59%; right: 6%; top: 173px; display: grid; grid-template-columns: 100px 1fr; gap: 16px; margin: 0; padding: 0 0 24px; border: 0; border-bottom: 1px solid #d4b67a38; border-radius: 0; background: none; }
+  #expeditionView #expeditionRegionImage { width: 100px; height: 96px; object-fit: contain; filter: drop-shadow(0 6px 12px #0005); }
+  #expeditionView .expeditionRegionMain { align-content: center; gap: 9px; }
+  #expeditionView .regionBriefKicker { color: #b9ab91; font-size: 12px; letter-spacing: .12em; }
+  #expeditionView .expeditionRegionMain b { color: #ffe6b7; font: 600 clamp(23px, 2vw, 30px)/1.3 Georgia, 'Noto Serif TC', serif; letter-spacing: .08em; }
+  #expeditionView .expeditionRegionMain small { color: #d0c6b6; font-size: 14px; line-height: 1.6; }
+  #expeditionView .expeditionRegionFacts { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; margin-top: 4px; }
+  #expeditionView .expeditionRegionFacts > span { padding: 0; border: 0; background: none; gap: 6px; }
+  #expeditionView .expeditionRegionFacts > span:last-child { grid-column: 1 / -1; }
+  #expeditionView .expeditionRegionFacts small { color: #b8a98e; font-size: 13px; }
+  #expeditionView .expeditionRegionFacts b { color: #f0e5d3; font-size: 16px; line-height: 1.5; white-space: normal; overflow: visible; }
+  #expeditionView .homeRosterShell { position: static; padding: 0; margin: 0; border: 0; background: none; box-shadow: none; }
+  #expeditionView #expeditionCharacterHeading { position: absolute; left: 4%; bottom: 120px; margin: 0; font-size: 13px; color: #d3c5ab; }
+  #expeditionView #prepRoster { position: absolute; left: 4%; width: 48%; bottom: 28px; display: flex; gap: 9px; overflow-x: auto; padding: 5px 3px 10px; scrollbar-width: thin; scrollbar-color: #b99c6970 transparent; }
+  #expeditionView .expeditionCharacter { flex: 0 0 136px; min-height: 76px; grid-template-columns: 48px 1fr; gap: 2px 9px; padding: 8px; border: 1px solid #bca77c45; border-radius: 4px; background: #1c241fe6; box-shadow: none; transform: none; }
+  #expeditionView .expeditionCharacter.inParty { border-color: #eed39a; background: linear-gradient(120deg, #65533b, #30382b); box-shadow: inset 0 -2px #e4c083; }
+  #expeditionView .expeditionCharacter:hover:not(:disabled) { border-color: #f5dca3; background: #4b4c38; }
+  #expeditionView .expeditionCharacter .portrait { width: 48px; height: 56px; border-radius: 2px; outline: 0; box-shadow: none; background: transparent; }
+  #expeditionView .expeditionCharacter .nm { font-size: 17px; color: #fff0d8; }
+  #expeditionView .expeditionCharacter .lvlTag { font-size: 13px; color: #c7bda9; }
+  #expeditionView .expeditionCharacter .selectedBadge { display: none; }
+  #expeditionView .expeditionCharacter .lockOverlay { font-size: 12px; }
+  #expeditionView .expeditionCharacter .lockReq { font-size: 11px; }
+  #expeditionView #expeditionSelectedSummary { display: contents; }
+  #expeditionView .expeditionSelectedIdentity { position: absolute; left: 6%; bottom: 164px; padding: 12px 20px 12px 14px; border-left: 2px solid #e5c587; background: linear-gradient(90deg, #1c241ddd, transparent); }
+  #expeditionView .expeditionSelectedIdentity > img { display: none; }
+  #expeditionView .expeditionSelectedIdentity > div { gap: 5px; }
+  #expeditionView .expeditionSelectedIdentity small { color: #dec591; font-size: 12px; letter-spacing: .15em; }
+  #expeditionView .expeditionSelectedIdentity b { color: #fff0d8; font: 600 30px/1.2 Georgia, 'Noto Serif TC', serif; letter-spacing: .16em; }
+  #expeditionView .expeditionSelectedIdentity span { color: #e0d2ba; font-size: 15px; }
+  #expeditionView .expeditionLoadoutBlock { position: absolute; top: 490px; left: 59%; right: 6%; padding: 0; border: 0; gap: 18px; }
+  #expeditionView .expeditionLoadoutBlock .expeditionStepLabel { color: #dbc59d; font-size: 14px; letter-spacing: .12em; }
+  #expeditionView .expeditionLoadout { gap: 30px; }
+  #expeditionView .expeditionLoadout > div { display: flex; flex-direction: row-reverse; gap: 12px; align-items: center; }
+  #expeditionView .expeditionLoadout small { font-size: 15px; color: #e4d7bf; }
+  #expeditionView .expeditionLoadout .quickSlot { width: 58px; height: 58px; border-color: #b69c685e; background-color: #191e19; border-radius: 5px; }
+  #expeditionView .expeditionEmptySelection { position: absolute; left: 59%; right: 6%; top: 500px; padding: 20px 0; font-size: 16px; line-height: 1.8; color: #d7c5a4; }
+  #app #expeditionView #actionArea { position: absolute; left: 59%; right: 6%; bottom: 56px; width: auto; display: flex; gap: 10px; margin: 0; padding: 20px 0 0; border-color: #d4b67a38; }
+  #app #expeditionView #startBtn { min-height: 58px; border: 1px solid #f0d291; border-radius: 4px; color: #34291a; background: linear-gradient(115deg, #f0d39a, #bd9251); box-shadow: 0 8px 22px #0004, inset 0 1px #fff3; font-size: 19px; letter-spacing: .18em; }
+  #app #expeditionView #startBtn:hover:not(:disabled) { background: linear-gradient(115deg, #ffe6b4, #d3a966); transform: translateY(-1px); }
+  #app #expeditionView #startBtn:disabled { background: #4c473a; color: #b4a58a; border-color: #867451; box-shadow: none; }
+  #app #expeditionView #startBtn { flex: 1; }
+  #app #expeditionView #retreatBtn { flex: 0 1 auto; }
+  #app #expeditionView #retreatBtn { min-height: 58px; padding: 10px 14px; border: 1px solid #b69c6870; border-radius: 4px; background: transparent; box-shadow: none; color: #e4d4b7; font-size: 15px; }
+  #expeditionView button:focus-visible, #expeditionView [role='button']:focus-visible { outline: 2px solid #ffe4a9; outline-offset: 4px; }
+  #app #expeditionView #expeditionBackBtn { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 0 12px !important; }
+  #app #expeditionView #expeditionBackBtn:hover { color: #fff0cf; }
+  .expeditionSceneActive #expeditionView.ruinsPreparation { background-image: linear-gradient(90deg, #101d1c66, #151c1de0), linear-gradient(0deg, #101718ef, transparent 60%), url('../assets/events/ruins_entrance.png'); }
+  #expeditionView .expeditionLoadoutBlock { top: 450px; }
+  #expeditionView .expeditionTechniquePreview { display: flex; gap: 12px; padding-top: 1px; }
+  #expeditionView .expeditionTechniquePreview > span { display: block; width: 48px; height: 48px; border: 1px solid #b49c6b50; border-radius: 5px; background: #191d18; cursor: help; }
+  #expeditionView .expeditionTechniquePreview > span:last-child { margin-left: 8px; border-color: #e2c183a0; }
+  #expeditionView .expeditionTechniquePreview img { width: 100%; height: 100%; object-fit: contain; }
+  #expeditionView .expeditionTechniquePreview > span:is(:hover, :focus-visible) { outline: 2px solid #e5c68e; outline-offset: 3px; }
+}
