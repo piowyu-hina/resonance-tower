@@ -1508,8 +1508,10 @@ async function testExpeditionDeparture(browser) {
   for (const width of [1024, 1440]) {
     const page = await openView(browser, 'regions');
     await page.setViewportSize({ width, height: width === 1024 ? 720 : 1000 });
+    await page.locator('#regionView').evaluate(async el => Promise.all(el.getAnimations().map(animation => animation.finished)));
     const entrance = await page.locator('#regionView').boundingBox();
     await page.locator('#forestRegionBtn b').click();
+    await page.locator('#expeditionView').evaluate(async el => Promise.all(el.getAnimations().map(animation => animation.finished)));
     const preparation = await page.locator('#expeditionView').boundingBox();
     for (const key of ['x', 'y', 'width']) assert.ok(Math.abs(entrance[key] - preparation[key]) < 1, `scene frame ${key} stays aligned on entering preparation`);
     assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-staging\.png/, 'preparation uses its own background, not an enlarged entrance');
