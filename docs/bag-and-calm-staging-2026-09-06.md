@@ -20,6 +20,7 @@ Use case: stylized-concept. Asset: finished 16:9 wide fantasy RPG expedition pre
 
 - 頂排色差修正：主面板與 sticky 標題列共用不透明 `--bag-surface` 暖棕底色，避免標題列形成另一塊色帶；保留分隔細線與捲動置頂。
 - 最上緣殘留亮帶：移除主面板 5px inset 高光，避免被標題列遮住部分後產生不連續內邊；保留 1px 外框及外側陰影。
+- 依紅圈截圖再次確認：剩餘亮線為外框金色描邊及其抗鋸齒像素，改為透明邊框以保留盒模型尺寸；圓角、外陰影、內部細線不變。
 - `styles/inventory.css` 集中新版暖棕、金邊樣式；使用現有 bag.png，不另生成介面圖片。
 - 左側四欄大圖示物品格，保留原本空格與數量；右側為常駐詳情，不必追著浮動 tooltip 閱讀。
 - 點選／Enter／空白鍵查看物品；拖曳換位後保留所選品項。
