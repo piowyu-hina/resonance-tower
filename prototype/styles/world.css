@@ -401,7 +401,7 @@ button.villageLocation:hover .villageLocationCopy::after { color: #efbd61; trans
   background:
     linear-gradient(90deg, rgba(17,20,22,.78), rgba(20,22,24,.46) 48%, rgba(18,19,20,.72)),
     linear-gradient(180deg, rgba(12,14,16,.12), rgba(12,14,16,.62)),
-    url('../assets/backgrounds/home-interior-redraw.png') center / cover no-repeat;
+    url('../assets/backgrounds/home-empty-medieval-simple.png') center / cover no-repeat;
   box-shadow: inset 0 0 70px rgba(0,0,0,.42);
 }
 .homeTopbar {
