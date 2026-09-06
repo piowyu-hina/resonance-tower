@@ -197,7 +197,7 @@ export function showDungeonEntry(onCovered, onComplete = null) {
 
   const region = localizedRegionDef(gameState.floor);
   const art = document.getElementById('dungeonEntryArt');
-  art.src = `assets/ui/${region.image}.png`;
+  art.src = `assets/ui/${region.previewImage || region.image}.png`;
   art.alt = region.name;
   document.getElementById('dungeonEntryName').textContent = region.name;
   document.getElementById('dungeonEntryDescription').textContent = region.description;
