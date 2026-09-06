@@ -1075,7 +1075,7 @@ async function testViewportFit(browser) {
       assert.ok(bounds.x >= -.5 && bounds.y >= -.5 && bounds.x + bounds.width <= width + .5 && bounds.y + bounds.height <= height + .5, `${view}: whole canvas fits ${width}×${height}`);
       near(bounds.width / bounds.height, 16 / 9, 'canvas keeps its aspect ratio');
       const logicalSize = await frame.evaluate(() => [innerWidth, innerHeight]);
-      if (view === 'shop') {
+      if (['shop', 'growth'].includes(view)) {
         // CSS zoom rounds the embedded viewport by at most one logical pixel.
         assert.ok(Math.abs(logicalSize[0] - 1600) <= 1 && Math.abs(logicalSize[1] - 900) <= 1);
       } else assert.deepEqual(logicalSize, [1600, 900]);
@@ -1086,7 +1086,7 @@ async function testViewportFit(browser) {
       const fits = await frame.locator(selector).evaluate((el, tolerance) => {
         const r = el.getBoundingClientRect();
         return r.left >= -tolerance && r.top >= -tolerance && r.right <= innerWidth + tolerance && r.bottom <= innerHeight + tolerance;
-      }, view === 'shop' ? 1 : .5);
+      }, ['shop', 'growth'].includes(view) ? 1 : .5);
       assert.equal(fits, true, `${view}: main surface/control remains inside the logical canvas`);
       if (['village', 'home', 'regions', 'expedition', 'boss'].includes(view)) {
         assert.deepEqual(await frame.locator(selector).evaluate(el => [el.clientWidth, el.clientHeight]), [1536, 864], 'all main scenes use the same 16:9 visible frame');
@@ -1135,7 +1135,7 @@ async function testViewportFit(browser) {
       await page.setViewportSize({ width: 1280, height: 720 });
       await frame.locator('#homeGrowthBtn b').click();
       await frame.locator('#characterDetailOverlay.open').waitFor();
-      await frame.locator('#characterDetailCloseBtn').click();
+      await clickScaledFrame(page, frame, '#characterDetailCloseBtn');
       assert.equal(await frame.locator('#characterDetailOverlay').getAttribute('aria-hidden'), 'true', 'scaled click opens and closes the real panel');
     }
     if (view === 'journal') {
@@ -1656,13 +1656,40 @@ async function testMerchantRaster(browser) {
       assert.equal(await frame.evaluate(async () => (await import('./js/state.js')).gameState.bankedGold), 88);
     }
     await clickScaledFrame(page, frame, '#shopLeaveBtn');
-    await page.waitForFunction(() => !document.documentElement.classList.contains('merchantRasterMode'));
+    await page.waitForFunction(() => !document.documentElement.classList.contains('portraitRasterMode'));
     assert.notEqual(await page.locator('#gameFrame').evaluate(e => getComputedStyle(e).transform), 'none');
   } finally { await page.close(); }
 }
 
+async function testPortraitRaster(browser) {
+  for (const view of ['growth', 'dialogue']) {
+    const page = await browser.newPage({viewport:{width:1920,height:1080}});
+    try {
+      await page.goto(`${prototypeUrl.replace('game.html', 'index.html')}?debug&view=${view}`);
+      const frame = page.frames().find(f => f.url().includes('game.html'));
+      const selector = view === 'growth' ? '#characterDetailOverlay' : '#dialogueOverlay';
+      await frame.locator(selector).waitFor({state:'visible'});
+      await page.waitForTimeout(700);
+      assert.equal(await page.locator('#gameFrame').evaluate(e => getComputedStyle(e).transform), 'none');
+      if (view === 'growth') {
+        assert.equal(await frame.locator('.detailArtFrame img').evaluate(e => e.complete && e.naturalWidth > 0), true);
+        await clickScaledFrame(page, frame, '#homeTab-profile');
+        assert.equal(await frame.locator('#homeTab-profile').getAttribute('aria-selected'), 'true');
+        await clickScaledFrame(page, frame, '#characterDetailCloseBtn');
+        await page.waitForFunction(() => !document.documentElement.classList.contains('portraitRasterMode'));
+      } else {
+        const before = await frame.locator('#dialogueOverlay').innerText();
+        await clickScaledFrame(page, frame, '#dialogueModal');
+        await page.waitForTimeout(350);
+        assert.notEqual(await frame.locator('#dialogueOverlay').innerText(), before);
+      }
+    } finally { await page.close(); }
+  }
+}
+
 async function testMerchantShop(browser) {
   await testMerchantRaster(browser);
+  await testPortraitRaster(browser);
   for (const [width, height] of [[1440, 1000], [390, 844], [320, 568], [844, 390]]) {
     const page = await openView(browser, 'shop');
     await page.setViewportSize({ width, height });

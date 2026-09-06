@@ -3,8 +3,8 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background:
 body { background: radial-gradient(ellipse, #243129, #101514 75%); }
 #viewportStage { position: fixed; inset: 0; overflow: hidden; }
 #gameFrame { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; border: 0; transform-origin: center; transform: translate(-50%, -50%) scale(var(--game-scale, 0)); display: block; }
-/* Re-rasterize shop art at display resolution instead of magnifying an iframe layer. */
+/* Re-rasterize portrait overlays instead of magnifying an iframe layer. */
 @supports (zoom: 1) {
-  .merchantRasterMode #viewportStage { display: flex; align-items: center; justify-content: center; }
-  .merchantRasterMode #gameFrame { position: static; flex-shrink: 0; transform: none; zoom: var(--game-scale, 1); }
+  .portraitRasterMode #viewportStage { display: flex; align-items: center; justify-content: center; }
+  .portraitRasterMode #gameFrame { position: static; flex-shrink: 0; transform: none; zoom: var(--game-scale, 1); }
 }
