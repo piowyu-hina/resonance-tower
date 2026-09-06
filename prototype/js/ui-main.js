@@ -649,6 +649,7 @@ export function renderRegionContext() {
   const region = localizedRegionDef(gameState.floor);
   const inBossPrep = gameState.phase === PHASES.PREP_BOSS;
   const isRuinsBoss = inBossPrep && gameState.expeditionMode === 'ruins';
+  document.getElementById('expeditionView').classList.toggle('bossPreparation', inBossPrep);
   document.getElementById('expeditionView').classList.toggle('ruinsPreparation', isRuinsBoss);
   const tagHTML = values => values.map(value => `<span>${value}</span>`).join('');
   document.getElementById('forestRegionName').textContent = region.name;

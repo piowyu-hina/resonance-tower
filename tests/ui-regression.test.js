@@ -1722,6 +1722,19 @@ async function testExpeditionDeparture(browser) {
     assert.equal(await page.locator('#prepRoster').isVisible(), false);
     assert.equal(await page.locator('#expeditionRegionLevel').textContent(), '???');
     assert.equal(await page.locator('#expeditionView').evaluate(el => el.classList.contains('ruinsPreparation')), true);
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /ruins_battle\.png/, 'ruins boss preparation remains inside the ruins');
+    if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/boss-preparation-ruins-${width}.png`), fullPage: true });
+    await page.evaluate(async () => {
+      (await import('./js/state.js')).gameState.expeditionMode = 'normal';
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /slime_forest_battle\.png/, 'forest boss preparation must not return to village staging');
+    if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/boss-preparation-forest-${width}.png`), fullPage: true });
+    await page.evaluate(async () => {
+      (await import('./js/state.js')).gameState.phase = 'prepFloor';
+      (await import('./js/ui-main.js')).render();
+    });
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-staging\.png/, 'ordinary departure keeps its original staging scene');
     assert.equal(await page.locator('#startBtn').isEnabled(), true);
     assertNoRuntimeErrors(page, 'expedition departure redesign');
     await page.close();
