@@ -10,4 +10,4 @@ html.embeddedGame { width: 100%; height: 100%; overflow: hidden; scrollbar-gutte
 .embeddedGame #villageView .villageLocations { inset: 0; width: 100%; transform: none; }
 .embeddedGame #app.combatSceneActive #combatView { padding: 130px 4% 150px; }
 .embeddedGame #app.combatSceneActive #combatActionBar { bottom: 18px; height: 116px; }
-.embeddedGame .expeditionSceneActive #expeditionView:not(.bossPreparation):not(.ruinsPreparation) { background-image: linear-gradient(90deg, #19231c20, #171c1670 54%, #191d18b0), linear-gradient(0deg, #171a16b0, transparent 60%), url('../assets/backgrounds/expedition-staging-calm.png'); }
+.embeddedGame .expeditionSceneActive #expeditionView:not(.bossPreparation):not(.ruinsPreparation) { background-image: linear-gradient(90deg, #19231c20, #171c1670 54%, #191d18b0), linear-gradient(0deg, #171a16b0, transparent 60%), url('../assets/backgrounds/expedition-staging-refined.png'); }
