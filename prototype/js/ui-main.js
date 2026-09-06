@@ -657,6 +657,9 @@ export function renderRegionContext() {
   document.getElementById('expeditionView').classList.toggle('ruinsPreparation', isRuinsBoss);
   const tagHTML = values => values.map(value => `<span>${value}</span>`).join('');
   document.getElementById('forestRegionName').textContent = region.name;
+  const entryImage = document.getElementById('forestRegionImage');
+  entryImage.src = `assets/ui/${region.previewImage || region.image}.png`;
+  entryImage.alt = region.name;
   document.getElementById('forestRegionLevel').textContent = t('format.recommendedLevel', {
     level: formatLocaleNumber(region.recommendedLevel),
   });
