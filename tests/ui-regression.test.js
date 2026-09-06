@@ -1663,15 +1663,19 @@ async function testMerchantShop(browser) {
       return { bank: gameState.bankedGold, run: gameState.runGold, potions: inventoryItemCount('potion'), crystals: inventoryItemCount('monsterCrystal') };
     });
     assert.deepEqual(await balances(), { bank: 88, run: 7, potions: 1, crystals: 3 });
+    await page.locator('.shopReceipt').waitFor({ state: 'visible' });
+    assert.match(await page.locator('.shopReceipt').textContent(), /\+1/, 'successful purchase has a visible receipt');
     await page.locator('#shopBuyTab').focus();
     await page.keyboard.press('ArrowRight');
     assert.equal(await page.locator('#shopSellTab').getAttribute('aria-selected'), 'true');
     await page.click('#shopSellOneBtn');
     await page.click('#shopSellAllBtn');
     assert.deepEqual(await balances(), { bank: 103, run: 7, potions: 1, crystals: 0 });
+    assert.match(await page.locator('.shopReceipt').textContent(), /\+10/, 'selling the final two crystals reports the actual gold received');
     assert.equal(await page.locator('#shopSellAllBtn').isDisabled(), true);
     await page.click('#shopLeaveBtn');
     assert.equal(await page.locator('#shopOverlay').getAttribute('aria-hidden'), 'true');
+    assert.equal(await page.locator('.shopReceipt').isVisible(), false, 'closing the shop clears transaction feedback');
     await page.evaluate(async () => {
       const { gameState, setPhase, PHASES } = await import('./js/state.js');
       setPhase(PHASES.PREP_BOSS, { force: true });

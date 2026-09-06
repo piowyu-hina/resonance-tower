@@ -1,0 +1,60 @@
+/* The merchant is a place to visit, not a boxed management panel. */
+@media (min-width: 761px) and (min-height: 600px) {
+  #shopOverlay { padding: 24px; background: #17130edf; backdrop-filter: blur(3px); }
+  #shopModal {
+    position: relative; display: block; width: min(1536px, calc(100vw - 48px), calc((100dvh - 48px) * 16 / 9));
+    height: auto; aspect-ratio: 16 / 9; max-height: none; border: 1px solid #b8a17b88; border-radius: 12px;
+    background: linear-gradient(0deg, #17100766, transparent 35%), url('../assets/backgrounds/merchant-stall-quiet.png') center / cover;
+    box-shadow: 0 24px 80px #0008; isolation: isolate;
+  }
+  #shopModal .shopHeader { position: absolute; inset: 0 0 auto; height: 100px; z-index: 4; padding: 20px 26px; margin: 0; border: 0; background: linear-gradient(#17100888, transparent); align-items: flex-start; pointer-events: none; }
+  #shopModal .shopHeading { flex: 1; }
+  #shopTitle { display: inline-block; font-family: Georgia, 'Noto Serif TC', serif; font-size: 28px; letter-spacing: .16em; text-shadow: 0 2px 6px #160f08; }
+  #shopModal .shopHeading small { color: #f1e2c8; text-shadow: 0 2px 4px #170e05; }
+  #shopLeaveBtn { pointer-events: auto; background: #312419d9; border: 1px solid #e0c592aa; box-shadow: 0 3px 12px #0004; }
+  #shopCountdown { background: #312419e8; border: 1px solid #c8a67566; border-radius: 5px; }
+  #shopModal .shopLayout { display: contents; }
+  #shopModal .shopKeeperPanel { position: absolute; inset: 13% 53% 3% 3%; display: block; overflow: visible; background: none; border: 0; }
+  #shopModal .shopKeeperPanel::before { display: none; }
+  #shopModal .shopKeeperIdentity { top: 10%; left: 0; z-index: 2; writing-mode: vertical-rl; text-shadow: 0 2px 5px #24170a; }
+  #shopModal .shopKeeperIdentity small { color: #f3dfb9; font-size: 13px; letter-spacing: .18em; }
+  #shopModal .shopKeeperIdentity b { margin: 0 9px 0 0; color: #fff2d5; font-family: Georgia, 'Noto Serif TC', serif; font-size: 34px; }
+  #shopModal .shopKeeperIdentity b span { margin: 12px 0 0; }
+  #shopModal .shopKeeperArt { position: absolute; inset: 0 0 13% 7%; width: 93%; height: 87%; min-height: 0; padding: 0; }
+  #shopModal .shopKeeperArt img { filter: drop-shadow(0 10px 12px #24160b66); transform-origin: 50% 95%; }
+  #shopModal .shopKeeperArt:hover img { filter: drop-shadow(0 10px 16px #e4b76b66); }
+  #shopDialogue { position: absolute; left: 0; bottom: 0; width: 100%; min-height: 96px; margin: 0; padding: 15px 22px 22px; border-radius: 3px 12px 12px 12px; background: #2b2118ed; border: 1px solid #c6a16a; box-shadow: 0 8px 24px #1a100a55; }
+  #shopDialogue::before { content: ''; position: absolute; top: -8px; left: 50%; width: 14px; height: 14px; background: #2b2118; border-left: 1px solid #c6a16a; border-top: 1px solid #c6a16a; transform: rotate(45deg); }
+  #shopKeeperName { color: #f0ca8c; font-size: 14px; }
+  #shopDialogueText { font-size: 17px; line-height: 1.6; }
+  #shopModal .shopGoodsPanel { position: absolute; inset: 17% 4% 5% 51%; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto minmax(0, 1fr) auto; gap: 18px 16px; padding: 24px 26px 20px 32px; border: 1px solid #e9d2a7; border-left: 9px solid #795137; border-radius: 4px 12px 12px 4px; background: linear-gradient(90deg, #b99b6033, transparent 7%), #eee0c2; box-shadow: 5px 5px 0 #bc9f72, 8px 8px 0 #60452b, 0 18px 35px #1b100c66; }
+  #shopModal .shopGoodsPanel::before { content: ''; position: absolute; left: -9px; top: 8%; bottom: 8%; width: 9px; background: repeating-linear-gradient(0deg, transparent 0 45px, #ddbd82 45px 47px, transparent 47px 80px); pointer-events: none; }
+  #shopModal .shopTabs { border: 0; gap: 8px; }
+  #shopModal .shopTab { min-height: 44px; border: 1px solid #af916355; border-bottom: 2px solid #af916355; border-radius: 4px; font-size: 18px; background: #fffaf02b; }
+  #shopModal .shopTab.active { background: #765238; color: #fff0cc; border-color: #765238; box-shadow: 0 2px 3px #63432722; }
+  #shopWallet { font-size: 21px; border: 0; padding: 6px 0 6px 12px; min-width: 80px; background: none; }
+  #shopModal .shopSection { padding-right: 3px; }
+  #shopModal .shopSectionTitle { margin: 0 0 18px; padding-bottom: 14px; border-bottom: 1px solid #a88a5850; }
+  #shopModal .shopSectionTitle span { font-size: 24px; }
+  #shopBuyList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  #shopModal .shopBuyRow { position: relative; display: flex; flex-direction: column; gap: 12px; align-items: stretch; padding: 16px; min-height: 0; margin: 0; background: linear-gradient(#fffaf2c9, #f6e9cd); border: 1px solid #c1a77b; border-radius: 7px; box-shadow: 0 5px 10px #85663814; transition: border-color .18s, box-shadow .18s; }
+  #shopModal .shopBuyRow + .shopBuyRow { margin: 0; padding-top: 16px; }
+  #shopModal .shopBuyRow:hover { border-color: #896136; box-shadow: 0 6px 15px #8566382b; }
+  #shopModal .shopBuyRow > img { width: 124px; height: 124px; max-width: 100%; align-self: center; padding: 8px; background: radial-gradient(ellipse, #e9cc8d55, transparent 68%); filter: drop-shadow(0 6px 4px #78502133); }
+  #shopModal .shopBuyRow .shopItemCopy { display: flex; flex-direction: column; gap: 9px; flex: 1; }
+  #shopModal .shopBuyRow .shopItemCopy b { font-family: Georgia, 'Noto Serif TC', serif; font-size: 21px; color: #523820; }
+  #shopModal .shopBuyRow .shopItemCopy small { font-size: 15px !important; line-height: 1.6; }
+  #shopModal .shopBuyRow .shopOwned { align-self: flex-start; font-size: 14px !important; }
+  #shopModal .shopBuyRow > button { width: 100%; min-height: 43px; flex: 0 0 auto; font-size: 19px; letter-spacing: .04em; }
+  #shopModal .shopFooter { min-height: 0; }
+  #shopModal .shopSellRow { background: #fff8e8a3; }
+  #shopOverlay.open .shopGoodsPanel { animation: shopLedgerEnter .48s cubic-bezier(.2,.75,.2,1) both; }
+  #shopOverlay.open .shopKeeperArt { animation: shopKeeperEnter .55s cubic-bezier(.2,.75,.2,1) both; }
+}
+.shopReceipt { position: absolute; z-index: 8; right: 6%; bottom: 5%; max-width: 80%; padding: 12px 20px; border: 1px solid #e5c286; border-radius: 6px; color: #fff1cc; background: #3d3024f5; box-shadow: 0 5px 20px #0004; font-size: 18px; pointer-events: none; }
+@keyframes shopLedgerEnter { from { opacity: 0; transform: translateY(18px) rotate(1deg); } to { opacity: 1; transform: none; } }
+@keyframes shopKeeperEnter { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  #shopOverlay.open .shopGoodsPanel, #shopOverlay.open .shopKeeperArt { animation: none; }
+  #shopModal .shopBuyRow { transition: none; }
+}
