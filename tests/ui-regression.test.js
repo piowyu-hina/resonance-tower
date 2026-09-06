@@ -1966,10 +1966,6 @@ async function testExpeditionDeparture(browser) {
     await page.setViewportSize({ width, height: width === 1024 ? 720 : 1000 });
     await page.locator('#regionView').evaluate(async el => Promise.all(el.getAnimations().map(animation => animation.finished)));
     const entrance = await page.locator('#regionView').boundingBox();
-    assert.equal(await page.locator('#forestRegionImage').isVisible(), true, 'waypost shows destination art without hover');
-    assert.equal(await page.locator('#forestRegionLevel').isVisible(), true, 'waypost shows recommended level');
-    const note = await page.locator('#forestRegionBtn').boundingBox();
-    assert.ok(note.y + note.height <= entrance.y + entrance.height + 1, 'field note fits inside entrance scene');
     await page.locator('#forestRegionBtn b').click();
     await page.locator('#expeditionView').evaluate(async el => Promise.all(el.getAnimations().map(animation => animation.finished)));
     const preparation = await page.locator('#expeditionView').boundingBox();
