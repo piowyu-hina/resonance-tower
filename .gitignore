@@ -10,6 +10,7 @@ Desktop.ini
 node_modules/
 
 # Local browser/test artifacts
+.local/
 prototype-*-profile/
 prototype-review*.png
 test-results/

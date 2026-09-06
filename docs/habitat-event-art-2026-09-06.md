@@ -1,5 +1,7 @@
 # 棲息地事件美術整理 — 2026-09-06
 
+> 此為第一輪六張的紀錄；之後依使用者要求，剩餘四張也已重繪，見 `event-art-and-workspace-2026-09-06.md`。以下保留當時的取捨與提示詞。
+
 ## 範圍
 
 使用內建 imagegen 逐張編修；參考各事件原圖與 `prototype/assets/backgrounds/slime-habitat-battle.png`。不更改選項、獎勵、抽取機率、解謎規則及小遊戲素材。原圖保留，新圖使用 `_daylight.png`，避免舊快取與方便比對。

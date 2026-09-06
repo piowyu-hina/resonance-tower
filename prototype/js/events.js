@@ -37,7 +37,7 @@ export const EVENT_DEFS = Object.freeze([
   {
     id: 'ruins-entrance',
     kind: 'choice',
-    image: 'ruins_entrance.png',
+    image: 'ruins_entrance_v2.png',
     title: '遺跡之地',
     description: '璃雪在森林深處發現了一處陌生的遺跡入口。',
     options: [
@@ -69,7 +69,7 @@ export const EVENT_DEFS = Object.freeze([
     id: 'crystal-echo',
     kind: 'puzzle',
     puzzle: 'crystal',
-    image: 'crystal_tree_hollow.png',
+    image: 'crystal_tree_hollow_v2.png',
     title: '樹洞裡的結晶回聲',
     description: '四枚結晶依序亮起，像是在確認來者是否聽得見它們的共鳴。記住光芒出現的順序。',
   },
@@ -77,7 +77,7 @@ export const EVENT_DEFS = Object.freeze([
     id: 'two-color-spores',
     kind: 'puzzle',
     puzzle: 'mushroom',
-    image: 'two_color_spores.png',
+    image: 'two_color_spores_v2.png',
     title: '雙色孢子的菌環',
     description: '菌環裡的光會彼此牽動。讓金色與青色交錯排列，中央必須留下金色。',
   },
@@ -112,7 +112,7 @@ export const EVENT_DEFS = Object.freeze([
   {
     id: 'rain-stone-shelter',
     kind: 'choice',
-    image: 'rain_stone_shelter.png',
+    image: 'rain_stone_shelter_v2.png',
     title: '雨幕下的石棚',
     description: '驟雨把叢林洗成灰藍色。天然石棚暫時擋住雨勢，岩縫間則閃著細小光點。',
     options: [

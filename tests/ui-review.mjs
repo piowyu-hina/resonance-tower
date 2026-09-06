@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import http from 'node:http';
 import path from 'node:path';
 const root = path.resolve('prototype');
-const output = path.resolve('test-results/ui-review', process.argv[2] || 'after');
+const output = path.resolve('.local/test-results/ui-review', process.argv[2] || 'after');
 await fs.mkdir(output, { recursive: true });
 const server = http.createServer(async (req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;

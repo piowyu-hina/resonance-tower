@@ -24,7 +24,7 @@ The user replaced wuming_home.png with a seated Wuming and a complete right-hand
 
 Desktop cultivation uses home-growth.css: warm brown/gold full-art roster, larger typography and icons, and a two-column detail surface with uncropped full art on the left and existing upgrade controls on the right. The art stays visible while long details scroll. No bottom fade. Home-only classes keep expedition details independent. Full-art paths follow equipped skins; skill mechanics, costs, repeat-upgrade handling, locks and plot are unchanged. Asset and entry stylesheet URLs are versioned for the new image/layout.
 
-Validation: the unit suite and full browser regression suite passed. Desktop home checks (1024/1440/1920) cover full-art loading, detail containment, skill selection, return round trip, door hit testing and existing story states. Screenshots: test-results/home-growth-roster-1440.png, home-growth-detail-1440.png. The earlier notes below describe the superseded layout.
+Validation: the unit suite and full browser regression suite passed. Desktop home checks (1024/1440/1920) cover full-art loading, detail containment, skill selection, return round trip, door hit testing and existing story states. Screenshots: .local/test-results/home-growth-roster-1440.png, home-growth-detail-1440.png. The earlier notes below describe the superseded layout.
 
 ## Previous iteration
 
@@ -34,6 +34,6 @@ home.css scopes the scene to homeSceneActive at desktop widths. Entering growth 
 
 Lumi's shop uses merchant_full.png again by user request; merchant.png is retained.
 
-Validation: npm test passed. Additional --home-only browser checks passed at 1024, 1440 and 1920, covering label hit testing, no backdrop blur, growth round trip, following dialogue activation and oath-ready visibility. Screenshots: test-results/home-scene-following-1440.png and home-scene-oath-1440.png.
+Validation: npm test passed. Additional --home-only browser checks passed at 1024, 1440 and 1920, covering label hit testing, no backdrop blur, growth round trip, following dialogue activation and oath-ready visibility. Screenshots: .local/test-results/home-scene-following-1440.png and home-scene-oath-1440.png.
 
 Follow-up checks: --home-only now also verifies no resident guide portrait, contracted portrait hiding, retained daily conversation access and restored portrait when following. --wuming-only verifies the current action asset loads in the growth view; the action definition still points to wuming_action.png. No speculative icon replacement was made without identifying the intended new image.

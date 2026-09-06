@@ -508,7 +508,7 @@ async function testChapter1RuinsFlow(browser) {
   await page.click('#debugToggleBtn');
   await page.click('[data-debug-action="ruins-event"]');
   await page.waitForSelector('#eventOverlay.open');
-  assert.equal(await page.getAttribute('#eventSceneImage', 'src'), 'assets/events/ruins_entrance.png');
+  assert.equal(await page.getAttribute('#eventSceneImage', 'src'), 'assets/events/ruins_entrance_v2.png');
   const click = id => page.evaluate(elId => document.getElementById(elId).click(), id);
   const advanceDialogue = async times => {
     for (let i = 0; i < times; i++) {
@@ -600,7 +600,7 @@ async function testChapter1RuinsFlow(browser) {
     start: '挑戰首領',
     step: '戰前情報',
     regionImageVisible: true,
-    regionImage: 'assets/events/ruins_entrance.png',
+    regionImage: 'assets/events/ruins_entrance_v2.png',
     region: '???',
     description: '???',
     boss: '???',
@@ -815,10 +815,10 @@ async function testEventArtwork(browser) {
     'floating-bubbles': 'floating_slime_bubbles_daylight.png',
     'broken-ancient-aqueduct': 'broken_ancient_aqueduct_daylight.png',
     'slime-trail-fork': 'slime_trail_fork_daylight.png',
-    'ruins-entrance': 'ruins_entrance.png',
-    'rain-stone-shelter': 'rain_stone_shelter.png',
-    'two-color-spores': 'two_color_spores.png',
-    'crystal-echo': 'crystal_tree_hollow.png',
+    'ruins-entrance': 'ruins_entrance_v2.png',
+    'rain-stone-shelter': 'rain_stone_shelter_v2.png',
+    'two-color-spores': 'two_color_spores_v2.png',
+    'crystal-echo': 'crystal_tree_hollow_v2.png',
   };
   for (const viewport of [{ width: 1600, height: 900 }, { width: 1280, height: 720 }]) {
     for (const [id, filename] of Object.entries(expected)) {
@@ -1088,7 +1088,7 @@ async function testViewportFit(browser) {
         }), true, 'labels remain visible and hit-testable in the shared scene frame');
       }
       if (process.argv.includes('--resize-only') && ['village', 'boss', 'growth'].includes(view)) {
-        await page.screenshot({ path: path.resolve(__dirname, `../test-results/resize-${view}-${width}.png`) });
+        await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/resize-${view}-${width}.png`) });
       }
     }
     if (view === 'village') {
@@ -1271,7 +1271,7 @@ async function testCombatScene(browser) {
     assert.equal(await page.locator('#bossArena').evaluate(arena => [...arena.querySelectorAll('.goo')].every(el =>
       el.offsetWidth >= 44 && el.offsetLeft >= 0 && el.offsetTop >= 0 &&
       el.offsetLeft + el.offsetWidth <= arena.clientWidth && el.offsetTop + el.offsetHeight <= arena.clientHeight)), true);
-    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-slime.png'), fullPage: true });
+    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../.local/test-results/combat-redesign-slime.png'), fullPage: true });
     await page.locator('#bossArena .goo').first().press('Enter');
     while (await page.locator('#bossArena .goo').count()) {
       // Pulsing targets intentionally never become "stable" for locator.click.
@@ -1295,7 +1295,7 @@ async function testCombatScene(browser) {
     assert.equal((await geometry()).enemiesClear, true, 'summons do not push boss skills into the arena');
     if (width === 1440) {
       await page.waitForTimeout(700);
-      await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-summons.png'), fullPage: true });
+      await page.screenshot({ path: path.resolve(__dirname, '../.local/test-results/combat-redesign-summons.png'), fullPage: true });
     }
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
@@ -1308,7 +1308,7 @@ async function testCombatScene(browser) {
     assert.equal(await page.locator('#bossArena').isVisible(), false);
     assert.equal((await geometry()).enemiesFit, true);
     await page.locator('#monsterSide img').evaluateAll(images => Promise.all(images.map(img => img.decode())));
-    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-mobs.png'), fullPage: true });
+    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../.local/test-results/combat-redesign-mobs.png'), fullPage: true });
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       gameState.unlockedChars.add('xiaochu');
@@ -1324,7 +1324,7 @@ async function testCombatScene(browser) {
     assert.equal(await page.locator('.commandState').textContent(), '冷卻中');
     await page.mouse.move(10, 10);
     await page.locator('.charActionButton').evaluate(el => el.blur());
-    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-xiaochu.png'), fullPage: true });
+    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../.local/test-results/combat-redesign-xiaochu.png'), fullPage: true });
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       gameState.expeditionMode = 'ruins';
@@ -1351,7 +1351,7 @@ async function testCombatScene(browser) {
     assert.equal(await page.locator('#monsterSide .atkBar').evaluate(el => el.style.width), '50%');
     assert.match(await page.locator('.arenaCaption b').textContent(), /剩餘 1 枚/);
     assert.match(await page.locator('.arenaCaption small').textContent(), /3 秒/);
-    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-ruins.png'), fullPage: true });
+    if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../.local/test-results/combat-redesign-ruins.png'), fullPage: true });
     const beforeResult = await page.locator('#combatView').boundingBox();
     for (const phase of ['victory', 'defeat']) {
       await page.evaluate(async phase => {
@@ -1437,8 +1437,8 @@ async function testXiaochuDaily(browser) {
   assert.equal(await button.isEnabled(), true);
   assert.equal(await button.evaluate(el => el.classList.contains('storyRequired')), false);
   if (process.argv.includes('--daily-only')) {
-    fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
-    await page.screenshot({ path: path.resolve(__dirname, '../test-results/xiaochu-daily-home.png') });
+    fs.mkdirSync(path.resolve(__dirname, '../.local/test-results'), { recursive: true });
+    await page.screenshot({ path: path.resolve(__dirname, '../.local/test-results/xiaochu-daily-home.png') });
   }
   for (const [index, id] of ['xiaochu_daily_practice', 'xiaochu_daily_chair', 'xiaochu_daily_departure'].entries()) {
     await page.evaluate(async () => (await import('./js/story.js')).talkToXiaochu());
@@ -1474,7 +1474,7 @@ async function testXiaochuDaily(browser) {
   assert.equal(await button.isVisible(), false);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
   if (process.argv.includes('--daily-only')) {
-    await page.screenshot({ path: path.resolve(__dirname, '../test-results/xiaochu-daily-mobile.png') });
+    await page.screenshot({ path: path.resolve(__dirname, '../.local/test-results/xiaochu-daily-mobile.png') });
   }
   const blocked = await page.evaluate(async () => {
     const { gameState, setResonanceState, RESONANCE_STATES } = await import('./js/state.js');
@@ -1508,10 +1508,10 @@ async function testWumingSkills(browser) {
       assert.ok(await img.evaluate(el => el.naturalWidth > 0));
     }
     if (process.argv.includes('--wuming-only')) {
-      fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
+      fs.mkdirSync(path.resolve(__dirname, '../.local/test-results'), { recursive: true });
       await page.locator('.growthCard[data-line="action"]').scrollIntoViewIfNeeded();
       await page.waitForTimeout(350);
-      await page.screenshot({ path: path.resolve(__dirname, `../test-results/wuming-skills-${width}.png`) });
+      await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/wuming-skills-${width}.png`) });
     }
     const state = await page.evaluate(async () => {
       const { setCharacterDetailOpen } = await import('./js/ui-character.js');
@@ -1584,8 +1584,8 @@ async function testDialogueSizing(browser) {
       if (width >= 960) assert.equal(layout.overflow, false);
       if (width === 390) assert.ok(layout.portraitHeight > 390, 'mobile story characters are enlarged');
       if (process.argv.includes('--entry-story-only')) {
-        fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
-        await page.screenshot({ path: path.resolve(__dirname, `../test-results/story-larger-${speaker}-${width}.png`) });
+        fs.mkdirSync(path.resolve(__dirname, '../.local/test-results'), { recursive: true });
+        await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/story-larger-${speaker}-${width}.png`) });
       }
     }
     assertNoRuntimeErrors(page, 'responsive story portraits');
@@ -1627,9 +1627,9 @@ async function testMerchantShop(browser) {
     await page.locator('.shopKeeperArt').click();
     assert.notEqual(await page.locator('#shopDialogueText').textContent(), greeting);
     if (process.argv.includes('--shop-only')) {
-      fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
+      fs.mkdirSync(path.resolve(__dirname, '../.local/test-results'), { recursive: true });
       await page.locator('#shopModal').evaluate(el => { el.scrollTop = 0; });
-      await page.screenshot({ path: path.resolve(__dirname, `../test-results/merchant-shop-${width}.png`) });
+      await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/merchant-shop-${width}.png`) });
     }
     await page.locator('.shopBuyRow[data-item-id="potion"] button').click();
     const balances = () => page.evaluate(async () => {
@@ -1700,8 +1700,8 @@ async function testDesktopHome(browser) {
       assert.equal(layout.blur, 'none');
     }
     if (process.argv.includes('--home-only')) {
-      fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
-      await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-oath-${width}.png`) });
+      fs.mkdirSync(path.resolve(__dirname, '../.local/test-results'), { recursive: true });
+      await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/home-scene-oath-${width}.png`) });
     }
     await page.click('#homeGrowthBtn b');
     assert.equal(await page.locator('#homeGrowthView').count(), 0, 'no intermediate roster page');
@@ -1727,7 +1727,7 @@ async function testDesktopHome(browser) {
         contained: getComputedStyle(el.querySelector('.detailArtFrame img')).objectFit === 'contain' };
     });
     assert.ok(detailLayout.fits && !detailLayout.overflow && detailLayout.contained, 'home detail fits desktop and preserves full art');
-    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-detail-${width}.png`) });
+    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/home-growth-detail-${width}.png`) });
     await page.locator('.growthCard[data-line="action"]').click();
     assert.ok(await page.locator('.growthInspectorHead h3').textContent());
     for (const height of [720, 900]) {
@@ -1743,7 +1743,7 @@ async function testDesktopHome(browser) {
       assert.ok(await page.locator('.homeGrowthExplanation').evaluate(el => el.clientHeight >= 24), 'long descriptions retain a readable scroll area');
       await page.locator('.homeGrowthExplanation').evaluate(el => { el.scrollTop = el.scrollHeight; });
       assert.equal(await page.locator('#growthUpgradeBtn').isVisible(), true);
-      if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-growth-pinned-${width}-${height}.png`) });
+      if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/home-growth-pinned-${width}-${height}.png`) });
     }
     assert.equal(await page.locator('#homeTab-growth').getAttribute('aria-selected'), 'true');
     assert.equal(await page.locator('.detailPortraitColumn #characterDetailName').textContent(), '璃雪');
@@ -1778,7 +1778,7 @@ async function testDesktopHome(browser) {
     assert.match(await page.locator('.detailArtFrame img').getAttribute('src'), /lixue_full\.png$/);
     assert.equal(await page.locator('[data-skin-id="wuming_default"]').getAttribute('aria-pressed'), 'true');
     assert.match(await page.locator('[data-skin-id="wuming_default"]').textContent(), /初始外觀/);
-    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-appearance-${width}.png`) });
+    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/home-appearance-${width}.png`) });
     await page.locator('.skinOption').first().click();
     assert.equal(await page.locator('#homeTab-profile').getAttribute('aria-selected'), 'true', 'equipping preserves active tab');
     await page.locator('#homeTab-profile').focus();
@@ -1830,7 +1830,7 @@ async function testDesktopHome(browser) {
     await page.locator('#characterDetailOverlay').waitFor({ state: 'hidden' });
     assert.equal(await page.locator('#characterDetailOverlay').isVisible(), false);
     await page.waitForTimeout(650);
-    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-contracted-${width}.png`) });
+    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/home-scene-contracted-${width}.png`) });
     assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), false);
     await page.evaluate(async () => {
       const { gameState, RESONANCE_STATES } = await import('./js/state.js');
@@ -1841,7 +1841,7 @@ async function testDesktopHome(browser) {
     assert.equal(await page.locator('#xiaochuTalkBtn > img').isVisible(), true, 'following Xiaochu remains visible');
     assert.equal(await page.locator('#xiaochuTalkBtn').isVisible(), true);
     await page.waitForTimeout(650);
-    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/home-scene-following-${width}.png`) });
+    if (process.argv.includes('--home-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/home-scene-following-${width}.png`) });
     await page.locator('#xiaochuTalkBtn').focus();
     await page.keyboard.press('Enter');
     assert.equal(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), 'dialogue');
@@ -1886,11 +1886,11 @@ async function testDesktopVillage(browser) {
     assert.deepEqual(await page.locator('#villageView').boundingBox(), beforeDebug, 'debug panel does not shift the village');
     await page.click('#debugToggleBtn');
     if (process.argv.includes('--village-only')) {
-      fs.mkdirSync(path.resolve(__dirname, '../test-results'), { recursive: true });
-      await page.screenshot({ path: path.resolve(__dirname, `../test-results/village-scene-${width}.png`) });
+      fs.mkdirSync(path.resolve(__dirname, '../.local/test-results'), { recursive: true });
+      await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/village-scene-${width}.png`) });
       await page.locator('#townShopBtn').hover();
       await page.waitForTimeout(250);
-      await page.screenshot({ path: path.resolve(__dirname, `../test-results/village-scene-hover-${width}.png`) });
+      await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/village-scene-hover-${width}.png`) });
     }
     await page.click('#townShopBtn b');
     assert.equal(await page.getAttribute('#shopOverlay', 'aria-hidden'), 'false');
@@ -1920,7 +1920,7 @@ async function testDesktopVillage(browser) {
     await page.locator('#homeGuideHina img').evaluate(img => img.decode());
     assert.equal(await page.getAttribute('#homeGuideHina img', 'src'), 'assets/characters/guider.png');
     if (process.argv.includes('--village-only')) {
-      await page.screenshot({ path: path.resolve(__dirname, `../test-results/village-scene-guide-${width}.png`) });
+      await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/village-scene-guide-${width}.png`) });
     }
     assert.equal(await page.locator('#homeLocationBtn').evaluate(el => getComputedStyle(el).position), 'absolute');
     await page.click('#homeLocationBtn');
@@ -1992,7 +1992,7 @@ async function testExpeditionDeparture(browser) {
       return loadout.bottom < action.top && document.documentElement.scrollWidth <= window.innerWidth;
     }), true, 'loadout and departure do not overlap or overflow');
     await page.locator('#expeditionHeroPortrait').evaluate(img => img.decode());
-    if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/expedition-departure-${width}.png`), fullPage: true });
+    if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/expedition-departure-${width}.png`), fullPage: true });
     await page.evaluate(async () => {
       (await import('./js/state.js')).gameState.party = [];
       (await import('./js/ui-main.js')).render();
@@ -2010,13 +2010,13 @@ async function testExpeditionDeparture(browser) {
     assert.equal(await page.locator('#expeditionRegionLevel').textContent(), '???');
     assert.equal(await page.locator('#expeditionView').evaluate(el => el.classList.contains('ruinsPreparation')), true);
     assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /ruins_battle\.png/, 'ruins boss preparation remains inside the ruins');
-    if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/boss-preparation-ruins-${width}.png`), fullPage: true });
+    if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/boss-preparation-ruins-${width}.png`), fullPage: true });
     await page.evaluate(async () => {
       (await import('./js/state.js')).gameState.expeditionMode = 'normal';
       (await import('./js/ui-main.js')).render();
     });
     assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /slime-habitat-battle\.png/, 'forest boss preparation must not return to village staging');
-    if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/boss-preparation-forest-${width}.png`), fullPage: true });
+    if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/boss-preparation-forest-${width}.png`), fullPage: true });
     await page.evaluate(async () => {
       (await import('./js/state.js')).gameState.phase = 'prepFloor';
       (await import('./js/ui-main.js')).render();

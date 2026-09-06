@@ -18,7 +18,7 @@
 
 ## 試產結果
 
-使用 imagegen 技能的內建工具，沒有呼叫付費 API／CLI。試產預覽儲存在 `output/imagegen/status-evasion-preview.png`，不接入正式遊戲。
+使用 imagegen 技能的內建工具，沒有呼叫付費 API／CLI。試產預覽儲存在 `.local/art-drafts/imagegen/status-evasion-preview.png`，不接入正式遊戲。
 
 檢查 PNG IHDR：1254×1254、color type 2（RGB），無 tRNS；沒有透明通道。棋盤格已烘焙進圖像，故不使用，也不程式去背。
 

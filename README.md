@@ -28,3 +28,13 @@ npm test
 - `prototype/assets/`：角色、怪物、場景與 UI 圖片。
 - `tests/`：Node.js 單元測試與 Edge UI 回歸測試。
 - `design.md`：目前玩法、介面與技術決策的主要規格。
+
+## 本機工作資料
+
+- `story/`：核准劇本；回歸測試會讀取，並非廢棄資料。
+- `docs/`：設計決策、驗證與產圖提示詞紀錄。
+- `.local/art-drafts/`：尚未採用的產圖草稿（原 `output/`）。
+- `.local/debug_screenshot/`：手動回報問題的截圖（原根目錄同名資料夾）。
+- `.local/test-results/`：測試與 UI 檢查工具的截圖輸出。
+
+`.local/` 不提交 Git。既有草稿與截圖只搬移、未刪除；正式遊戲圖片仍放在 `prototype/assets/`。`node_modules/` 是測試依賴，不是遊戲美術或廢棄資料。

@@ -15,7 +15,7 @@
 
 - `tests/ui-press.test.js`：資源耗盡、鬆手、失焦、隱藏、移除、dispose、鍵盤等長按生命週期。
 - `tests/ui-regression.test.js`：升級後冷卻遮罩、加速行動條、操作狀態限制、狀態排序、技能說明、键盤升級與關閉面板停止消耗。
-- `tests/ui-review.mjs`：檢查截圖存於忽略版控的 `test-results/ui-review/`；`--skills-only` 可重拍本輪小初 UI。
+- `tests/ui-review.mjs`：檢查截圖存於忽略版控的 `.local/test-results/ui-review/`；`--skills-only` 可重拍本輪小初 UI。
 
 ## 暫不擴大處理
 

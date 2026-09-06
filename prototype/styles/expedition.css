@@ -69,7 +69,7 @@
   #expeditionView button:focus-visible, #expeditionView [role='button']:focus-visible { outline: 2px solid #ffe4a9; outline-offset: 4px; }
   #app #expeditionView #expeditionBackBtn { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 0 12px !important; }
   #app #expeditionView #expeditionBackBtn:hover { color: #fff0cf; }
-  .expeditionSceneActive #expeditionView.ruinsPreparation { background-image: linear-gradient(90deg, #101d1c66, #151c1de0), linear-gradient(0deg, #101718ef, transparent 60%), url('../assets/events/ruins_entrance.png'); }
+  .expeditionSceneActive #expeditionView.ruinsPreparation { background-image: linear-gradient(90deg, #101d1c66, #151c1de0), linear-gradient(0deg, #101718ef, transparent 60%), url('../assets/events/ruins_entrance_v2.png'); }
   #expeditionView .expeditionLoadoutBlock { top: 450px; }
   #expeditionView .expeditionTechniquePreview { display: flex; gap: 22px; padding-top: 20px; margin-top: 4px; border-top: 1px solid #d4b67a38; }
   #expeditionView .expeditionSkillGroup { display: grid; gap: 12px; }

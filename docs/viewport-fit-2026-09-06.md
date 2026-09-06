@@ -39,4 +39,4 @@
 - 滾輪捲動手記長目錄和背包長清單，外層不跟著捲動。
 - 首領動畫播放期間切換尺寸，演出正常結束並回到 combat。
 
-完整回歸仍驗證 game.html 的原有功能；外層整合測試也加入完整套件。視覺檢查工具 `tests/ui-review.mjs` 保留針對邏輯畫布的原尺寸檢查，縮放截圖由 `--resize-only` 產生於 `test-results/resize-*.png`。
+完整回歸仍驗證 game.html 的原有功能；外層整合測試也加入完整套件。視覺檢查工具 `tests/ui-review.mjs` 保留針對邏輯畫布的原尺寸檢查，縮放截圖由 `--resize-only` 產生於 `.local/test-results/resize-*.png`。
