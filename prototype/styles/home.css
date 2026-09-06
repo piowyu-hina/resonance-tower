@@ -26,7 +26,7 @@
     aspect-ratio: 1672 / 941;
     border: 0;
     border-radius: 0;
-    background: linear-gradient(180deg, #20180f0d 70%, #20180f40), url('../assets/backgrounds/home-empty-medieval-simple.png') center / 100% 100% no-repeat;
+    background: linear-gradient(180deg, #20180f0d 70%, #20180f40), url('../assets/backgrounds/home-lixue-cloth.png') center / 100% 100% no-repeat;
     box-shadow: none;
   }
   .homeSceneActive .homeTopbar { position: absolute; z-index: 2; inset: 0; display: block; padding: 0; margin: 0; border: 0; pointer-events: none; }
