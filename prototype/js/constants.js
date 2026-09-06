@@ -319,7 +319,7 @@ export const MAX_IMPLEMENTED_FLOOR = 1; // raise this when floor 2 content is re
 export const REGION_DEFS = {
   1: {
     localeKey: 'region.slimeForest',
-    name: '史萊姆叢林',
+    name: '史萊姆棲息地',
     description: '史萊姆棲息的近郊叢林',
     image: 'slime_forest',
     previewImage: 'slime-forest-colony',

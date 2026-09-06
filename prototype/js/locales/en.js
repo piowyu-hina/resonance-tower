@@ -48,7 +48,7 @@ export default {
   'region.threats': 'Main Threats',
   'region.drops': 'Possible Drops',
   'region.choose': 'Choose This Region',
-  'region.slimeForest.name': 'Slime Forest',
+  'region.slimeForest.name': 'Slime Habitat',
   'region.slimeForest.description': 'A nearby woodland inhabited by slimes',
   'region.slimeForest.threat.slow': 'Slow',
   'region.slimeForest.threat.sleep': 'Sleep',

@@ -45,7 +45,7 @@ export default {
   'region.threats': '主要威脅',
   'region.drops': '可能掉落',
   'region.choose': '選擇此區域',
-  'region.slimeForest.name': '史萊姆叢林',
+  'region.slimeForest.name': '史萊姆棲息地',
   'region.slimeForest.description': '史萊姆棲息的近郊叢林',
   'region.slimeForest.threat.slow': '緩速',
   'region.slimeForest.threat.sleep': '睡眠',
