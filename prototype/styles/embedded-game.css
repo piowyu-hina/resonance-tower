@@ -3,8 +3,12 @@ html.embeddedGame { width: 100%; height: 100%; overflow: hidden; scrollbar-gutte
 .embeddedGame body { width: 100%; height: 100%; min-height: 0; overflow: hidden; }
 .embeddedGame #debugPanel { max-height: 75vh; overflow-y: auto; }
 .embeddedGame .inventoryHeader { position: sticky; top: -12px; z-index: 2; padding-block: 10px; background: #272b31; }
-/* Village experiment: use the same visible frame as combat, with cover art.
-   Hotspots follow the covered artwork's coordinates, not the cropped frame. */
-.embeddedGame #app.villageActive { width: min(1600px, calc(100vw - 48px)); }
-.embeddedGame #villageView { --village-height: clamp(880px, calc(100dvh - 48px), 960px); height: var(--village-height); aspect-ratio: auto; background-size: cover; overflow: hidden; }
-.embeddedGame #villageView .villageLocations { inset: 0 auto 0 50%; width: max(100%, calc(var(--village-height) * 1672 / 941)); transform: translateX(-50%); }
+/* One 16:9 scene frame within the fixed 1600 x 900 logical viewport. */
+.embeddedGame body { padding: 18px 0; }
+.embeddedGame #app:is(.villageActive, .homeSceneActive, .regionSceneActive, .expeditionSceneActive, .combatSceneActive) { width: 1536px; min-width: 0; }
+.embeddedGame #app :is(#villageView, #homeView, #regionView, #expeditionView, #combatView) { height: 864px; min-height: 0; aspect-ratio: 16 / 9; background-size: cover; }
+.embeddedGame #villageView { overflow: hidden; }
+.embeddedGame #villageView .villageLocations { inset: 0; width: 100%; transform: none; }
+.embeddedGame #app.combatSceneActive #combatView { padding: 130px 4% 150px; }
+.embeddedGame #app.combatSceneActive #combatActionBar { bottom: 18px; height: 116px; }
+.embeddedGame .expeditionSceneActive #expeditionView:not(.bossPreparation):not(.ruinsPreparation) { background-image: linear-gradient(90deg, #19231c20, #171c1670 54%, #191d18b0), linear-gradient(0deg, #171a16b0, transparent 60%), url('../assets/backgrounds/expedition-staging-wide.png'); }

@@ -967,8 +967,8 @@ async function testViewportFit(browser) {
       await page.waitForTimeout(80);
       const bounds = await page.locator('#gameFrame').boundingBox();
       assert.ok(bounds.x >= -.5 && bounds.y >= -.5 && bounds.x + bounds.width <= width + .5 && bounds.y + bounds.height <= height + .5, `${view}: whole canvas fits ${width}×${height}`);
-      near(bounds.width / bounds.height, 1.44, 'canvas keeps its aspect ratio');
-      assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [1440, 1000]);
+      near(bounds.width / bounds.height, 16 / 9, 'canvas keeps its aspect ratio');
+      assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [1600, 900]);
       assert.equal(await frame.evaluate(() => window.resizeAuditToken), token, 'resize must not reload the game');
       for (const context of [page, frame]) {
         assert.equal(await context.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.documentElement.scrollHeight <= innerHeight), true, `${view}: no document overflow`);
@@ -978,8 +978,22 @@ async function testViewportFit(browser) {
         return r.left >= -.5 && r.top >= -.5 && r.right <= innerWidth + .5 && r.bottom <= innerHeight + .5;
       });
       assert.equal(fits, true, `${view}: main surface/control remains inside the logical canvas`);
-      if (view === 'village' || view === 'boss') {
-        assert.deepEqual(await frame.locator(selector).evaluate(el => [el.clientWidth, el.clientHeight]), [1392, 952], 'village and combat use the same visible frame');
+      if (['village', 'home', 'regions', 'expedition', 'boss'].includes(view)) {
+        assert.deepEqual(await frame.locator(selector).evaluate(el => [el.clientWidth, el.clientHeight]), [1536, 864], 'all main scenes use the same 16:9 visible frame');
+      }
+      if (view === 'boss') {
+        assert.equal(await frame.evaluate(() => {
+          const rect = selector => document.querySelector(selector).getBoundingClientRect();
+          const commands = rect('#combatActionBar');
+          return ['#bossArena', '#partySide .charCard', '#monsterSide .boss'].every(selector => rect(selector).bottom <= commands.top);
+        }), true, 'battle cards and clickable arena stay above the command bar');
+      }
+      if (view === 'expedition') {
+        assert.equal(await frame.evaluate(() => {
+          const rect = selector => document.querySelector(selector).getBoundingClientRect();
+          return rect('.expeditionTechniquePreview').bottom < rect('#actionArea').top &&
+            rect('#expeditionHeroPortrait').bottom <= rect('#prepRoster').top;
+        }), true, 'departure skills and portrait remain clear of bottom controls');
       }
       if (view === 'village') {
         assert.equal(await frame.evaluate(() => {
@@ -990,7 +1004,7 @@ async function testViewportFit(browser) {
             return label.left >= scene.left && label.right <= scene.right && label.bottom <= scene.bottom &&
               el.contains(document.elementFromPoint(label.x + label.width / 2, label.y + label.height / 2));
           });
-        }), true, 'labels remain visible and hit-testable after cover cropping');
+        }), true, 'labels remain visible and hit-testable in the shared scene frame');
       }
       if (process.argv.includes('--resize-only') && ['village', 'boss', 'growth'].includes(view)) {
         await page.screenshot({ path: path.resolve(__dirname, `../test-results/resize-${view}-${width}.png`) });
@@ -1043,7 +1057,7 @@ async function testViewportFit(browser) {
       await page.waitForTimeout(200);
       assert.ok(await frame.locator('#inventoryModal').evaluate(el => el.scrollTop) > 0);
       const close = await frame.locator('#inventoryCloseBtn').evaluate(el => el.getBoundingClientRect().top);
-      assert.ok(close >= 0 && close < 1000, 'inventory close button stays visible while content scrolls');
+      assert.ok(close >= 0 && close < 900, 'inventory close button stays visible while content scrolls');
     }
     if (view === 'boss') {
       await frame.locator('#combatLogToggleBtn').click();
@@ -1065,7 +1079,7 @@ async function testViewportFit(browser) {
         await page.setViewportSize({ width, height });
         await page.waitForTimeout(100);
         assert.equal(await frame.locator('#bossIntroOverlay').getAttribute('aria-hidden'), 'false');
-        assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [1440, 1000]);
+        assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [1600, 900]);
       }
       await frame.waitForFunction(() => document.getElementById('bossIntroOverlay').getAttribute('aria-hidden') === 'true');
       assert.equal(await frame.evaluate(async () => (await import('./js/state.js')).gameState.phase), 'combat');
