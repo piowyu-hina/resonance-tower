@@ -1,6 +1,6 @@
 /* Travel bag: roomy item pockets and a persistent inspection area. */
 #inventoryOverlay { background: #100d09b8; backdrop-filter: blur(5px); }
-#inventoryModal { --bag-surface: #30251c; width: min(1080px, calc(100vw - 48px)); max-height: calc(100dvh - 64px); padding: 0 32px 32px; border: 1px solid #aa8957; border-radius: 12px; background: var(--bag-surface); color: #eddfc8; box-shadow: 0 28px 90px #000a, inset 0 0 0 5px #c6a76e0b; scrollbar-color: #99794b #241d17; transform: translateY(8px); }
+#inventoryModal { --bag-surface: #30251c; width: min(1080px, calc(100vw - 48px)); max-height: calc(100dvh - 64px); padding: 0 32px 32px; border: 1px solid #aa8957; border-radius: 12px; background: var(--bag-surface); color: #eddfc8; box-shadow: 0 28px 90px #000a; scrollbar-color: #99794b #241d17; transform: translateY(8px); }
 #inventoryModal .inventoryHeader { position: sticky; top: 0; z-index: 5; min-height: 104px; margin: 0 -1px; gap: 18px; border-bottom: 1px solid #bc975c4d; background: var(--bag-surface); }
 .inventoryBagArt { width: 70px; height: 76px; object-fit: contain; filter: drop-shadow(0 6px 6px #0006); }
 #inventoryTitle { color: #ffe5b5; font: 600 30px/1.2 Georgia, 'Noto Serif TC', serif; letter-spacing: .16em; }
