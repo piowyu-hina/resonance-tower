@@ -668,7 +668,8 @@ export function renderRegionContext() {
   const brief = document.getElementById('expeditionRegionBrief');
   brief.setAttribute('aria-label', inBossPrep ? t('expedition.step.bossIntel') : t('expedition.currentRegion'));
   document.getElementById('expeditionRegionStepText').textContent = t(inBossPrep ? 'expedition.step.bossIntel' : 'expedition.step.region');
-  image.src = isRuinsBoss ? 'assets/events/ruins_entrance.png' : `assets/ui/${region.image}.png`;
+  const regionArt = !inBossPrep && region.previewImage ? region.previewImage : region.image;
+  image.src = isRuinsBoss ? 'assets/events/ruins_entrance.png' : `assets/ui/${regionArt}.png`;
   image.alt = isRuinsBoss ? '???' : region.name;
   document.getElementById('expeditionRegionName').textContent = isRuinsBoss ? '???' : region.name;
   document.getElementById('expeditionRegionDescription').textContent = isRuinsBoss ? '???' : region.description;
