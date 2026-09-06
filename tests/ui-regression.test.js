@@ -1074,15 +1074,19 @@ async function testViewportFit(browser) {
       const bounds = await page.locator('#gameFrame').boundingBox();
       assert.ok(bounds.x >= -.5 && bounds.y >= -.5 && bounds.x + bounds.width <= width + .5 && bounds.y + bounds.height <= height + .5, `${view}: whole canvas fits ${width}×${height}`);
       near(bounds.width / bounds.height, 16 / 9, 'canvas keeps its aspect ratio');
-      assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [1600, 900]);
+      const logicalSize = await frame.evaluate(() => [innerWidth, innerHeight]);
+      if (view === 'shop') {
+        // CSS zoom rounds the embedded viewport by at most one logical pixel.
+        assert.ok(Math.abs(logicalSize[0] - 1600) <= 1 && Math.abs(logicalSize[1] - 900) <= 1);
+      } else assert.deepEqual(logicalSize, [1600, 900]);
       assert.equal(await frame.evaluate(() => window.resizeAuditToken), token, 'resize must not reload the game');
       for (const context of [page, frame]) {
         assert.equal(await context.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.documentElement.scrollHeight <= innerHeight), true, `${view}: no document overflow`);
       }
-      const fits = await frame.locator(selector).evaluate(el => {
+      const fits = await frame.locator(selector).evaluate((el, tolerance) => {
         const r = el.getBoundingClientRect();
-        return r.left >= -.5 && r.top >= -.5 && r.right <= innerWidth + .5 && r.bottom <= innerHeight + .5;
-      });
+        return r.left >= -tolerance && r.top >= -tolerance && r.right <= innerWidth + tolerance && r.bottom <= innerHeight + tolerance;
+      }, view === 'shop' ? 1 : .5);
       assert.equal(fits, true, `${view}: main surface/control remains inside the logical canvas`);
       if (['village', 'home', 'regions', 'expedition', 'boss'].includes(view)) {
         assert.deepEqual(await frame.locator(selector).evaluate(el => [el.clientWidth, el.clientHeight]), [1536, 864], 'all main scenes use the same 16:9 visible frame');
@@ -1120,7 +1124,7 @@ async function testViewportFit(browser) {
       await page.setViewportSize({ width: 1280, height: 720 });
       await frame.locator('#townShopBtn b').click();
       assert.equal(await frame.locator('#shopOverlay').getAttribute('aria-hidden'), 'false');
-      await frame.locator('#shopLeaveBtn').click();
+      await clickScaledFrame(page, frame, '#shopLeaveBtn');
       await frame.locator('#expeditionLocationBtn b').click();
       assert.equal(await frame.locator('#regionView').isVisible(), true);
       await frame.locator('#regionBackBtn').click();
@@ -1618,7 +1622,47 @@ async function testDialogueSizing(browser) {
   }
 }
 
+// Native screen-coordinate input avoids Playwright's zoomed-iframe locator offset.
+async function clickScaledFrame(page, frame, selector) {
+  const r = await frame.locator(selector).evaluate(el => {
+    const r = el.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+  const box = await page.locator('#gameFrame').boundingBox();
+  await page.mouse.click(box.x + r.x * box.width / 1600, box.y + r.y * box.height / 900);
+}
+
+async function testMerchantRaster(browser) {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${prototypeUrl.replace('game.html', 'index.html')}?debug&view=shop`);
+    const frame = page.frames().find(f => f.url().includes('game.html'));
+    await frame.locator('#shopModal').waitFor({ state: 'visible' });
+    await page.waitForTimeout(700);
+    for (const [width, height] of [[1366, 768], [1920, 1080]]) {
+      await page.setViewportSize({ width, height });
+      await page.waitForTimeout(150);
+      assert.equal(await page.locator('#gameFrame').evaluate(e => getComputedStyle(e).transform), 'none');
+      const logicalSize = await frame.evaluate(() => [innerWidth, innerHeight]);
+      assert.ok(Math.abs(logicalSize[0] - 1600) <= 1 && Math.abs(logicalSize[1] - 900) <= 1);
+      const box = await page.locator('#gameFrame').boundingBox();
+      assert.ok(box.x >= -1 && box.y >= -1 && box.x + box.width <= width + 1 && box.y + box.height <= height + 1);
+      await frame.evaluate(async () => {
+        const { gameState } = await import('./js/state.js');
+        gameState.bankedGold = 100;
+        (await import('./js/ui-commerce.js')).renderShopView();
+      });
+      await clickScaledFrame(page, frame, '.shopBuyRow[data-item-id="potion"] button');
+      assert.equal(await frame.evaluate(async () => (await import('./js/state.js')).gameState.bankedGold), 88);
+    }
+    await clickScaledFrame(page, frame, '#shopLeaveBtn');
+    await page.waitForFunction(() => !document.documentElement.classList.contains('merchantRasterMode'));
+    assert.notEqual(await page.locator('#gameFrame').evaluate(e => getComputedStyle(e).transform), 'none');
+  } finally { await page.close(); }
+}
+
 async function testMerchantShop(browser) {
+  await testMerchantRaster(browser);
   for (const [width, height] of [[1440, 1000], [390, 844], [320, 568], [844, 390]]) {
     const page = await openView(browser, 'shop');
     await page.setViewportSize({ width, height });

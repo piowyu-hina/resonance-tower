@@ -58,6 +58,15 @@ document.getElementById('shopOverlay').addEventListener('click', event => {
     receiptTimer = setTimeout(clearReceipt, 2000);
   });
 });
-new MutationObserver(() => {
-  if (document.getElementById('shopOverlay').getAttribute('aria-hidden') === 'true') clearReceipt();
-}).observe(document.getElementById('shopOverlay'), {attributes:true, attributeFilter:['aria-hidden']});
+function syncShopRasterMode() {
+  const open = document.getElementById('shopOverlay').getAttribute('aria-hidden') !== 'true';
+  if (!open) clearReceipt();
+  // Direct game.html and cross-origin embeds do not own the outer viewport.
+  try {
+    if (window.parent !== window && window.parent.document.getElementById('gameFrame')?.contentWindow === window) {
+      window.parent.document.documentElement.classList.toggle('merchantRasterMode', open);
+    }
+  } catch { /* The embedding page controls its own rendering. */ }
+}
+new MutationObserver(syncShopRasterMode).observe(document.getElementById('shopOverlay'), {attributes:true, attributeFilter:['aria-hidden']});
+syncShopRasterMode();
