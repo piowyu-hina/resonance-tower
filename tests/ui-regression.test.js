@@ -978,9 +978,34 @@ async function testViewportFit(browser) {
         return r.left >= -.5 && r.top >= -.5 && r.right <= innerWidth + .5 && r.bottom <= innerHeight + .5;
       });
       assert.equal(fits, true, `${view}: main surface/control remains inside the logical canvas`);
+      if (view === 'village' || view === 'boss') {
+        assert.deepEqual(await frame.locator(selector).evaluate(el => [el.clientWidth, el.clientHeight]), [1392, 952], 'village and combat use the same visible frame');
+      }
+      if (view === 'village') {
+        assert.equal(await frame.evaluate(() => {
+          const scene = document.getElementById('villageView').getBoundingClientRect();
+          return ['homeLocationBtn', 'townShopBtn', 'expeditionLocationBtn'].every(id => {
+            const el = document.getElementById(id);
+            const label = el.querySelector('b').getBoundingClientRect();
+            return label.left >= scene.left && label.right <= scene.right && label.bottom <= scene.bottom &&
+              el.contains(document.elementFromPoint(label.x + label.width / 2, label.y + label.height / 2));
+          });
+        }), true, 'labels remain visible and hit-testable after cover cropping');
+      }
       if (process.argv.includes('--resize-only') && ['village', 'boss', 'growth'].includes(view)) {
         await page.screenshot({ path: path.resolve(__dirname, `../test-results/resize-${view}-${width}.png`) });
       }
+    }
+    if (view === 'village') {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await frame.locator('#townShopBtn b').click();
+      assert.equal(await frame.locator('#shopOverlay').getAttribute('aria-hidden'), 'false');
+      await frame.locator('#shopLeaveBtn').click();
+      await frame.locator('#expeditionLocationBtn b').click();
+      assert.equal(await frame.locator('#regionView').isVisible(), true);
+      await frame.locator('#regionBackBtn').click();
+      await frame.locator('#homeLocationBtn b').click();
+      assert.equal(await frame.locator('#homeView').isVisible(), true);
     }
     if (view === 'home') {
       await page.setViewportSize({ width: 1280, height: 720 });

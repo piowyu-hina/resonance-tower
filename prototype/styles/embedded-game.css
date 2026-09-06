@@ -3,3 +3,8 @@ html.embeddedGame { width: 100%; height: 100%; overflow: hidden; scrollbar-gutte
 .embeddedGame body { width: 100%; height: 100%; min-height: 0; overflow: hidden; }
 .embeddedGame #debugPanel { max-height: 75vh; overflow-y: auto; }
 .embeddedGame .inventoryHeader { position: sticky; top: -12px; z-index: 2; padding-block: 10px; background: #272b31; }
+/* Village experiment: use the same visible frame as combat, with cover art.
+   Hotspots follow the covered artwork's coordinates, not the cropped frame. */
+.embeddedGame #app.villageActive { width: min(1600px, calc(100vw - 48px)); }
+.embeddedGame #villageView { --village-height: clamp(880px, calc(100dvh - 48px), 960px); height: var(--village-height); aspect-ratio: auto; background-size: cover; overflow: hidden; }
+.embeddedGame #villageView .villageLocations { inset: 0 auto 0 50%; width: max(100%, calc(var(--village-height) * 1672 / 941)); transform: translateX(-50%); }
