@@ -297,7 +297,7 @@ async function testBossTransition(browser) {
   });
   const beforeEntry = await entryTimers();
   assert.equal(await page.locator('.bossCinemaScene').isVisible(), true, 'boss intro has its own scene layer');
-  assert.match(await page.locator('.bossCinemaScene').evaluate(el => getComputedStyle(el).backgroundImage), /slime_forest_battle/);
+  assert.match(await page.locator('.bossCinemaScene').evaluate(el => getComputedStyle(el).backgroundImage), /slime-habitat-battle/);
   await page.locator('#bossIntroOverlay').click({ position: { x: 20, y: 20 } });
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#bossIntroOverlay').getAttribute('aria-hidden'), 'false', 'intro cannot be skipped');
@@ -1968,7 +1968,7 @@ async function testExpeditionDeparture(browser) {
       (await import('./js/state.js')).gameState.expeditionMode = 'normal';
       (await import('./js/ui-main.js')).render();
     });
-    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /slime_forest_battle\.png/, 'forest boss preparation must not return to village staging');
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /slime-habitat-battle\.png/, 'forest boss preparation must not return to village staging');
     if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../test-results/boss-preparation-forest-${width}.png`), fullPage: true });
     await page.evaluate(async () => {
       (await import('./js/state.js')).gameState.phase = 'prepFloor';

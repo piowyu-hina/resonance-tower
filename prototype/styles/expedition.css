@@ -89,6 +89,6 @@
   #app.expeditionSceneActive #expeditionView::before { box-shadow: 0 16px 42px #0005, inset 0 0 0 6px #e9c88906, inset 0 1px #efd09c20; }
   #expeditionView .expeditionRegionFacts { row-gap: 18px; }
   /* Boss preparation happens inside the expedition, never back at the village. */
-  .expeditionSceneActive #expeditionView.bossPreparation { background-image: linear-gradient(90deg, #19231c20, #171c1670 54%, #191d18b0), linear-gradient(0deg, #171a16b0, transparent 60%), url('../assets/backgrounds/slime_forest_battle.png'); }
+  .expeditionSceneActive #expeditionView.bossPreparation { background-image: linear-gradient(90deg, #19231c20, #171c1670 54%, #191d18b0), linear-gradient(0deg, #171a16b0, transparent 60%), url('../assets/backgrounds/slime-habitat-battle.png'); }
   .expeditionSceneActive #expeditionView.bossPreparation.ruinsPreparation { background-image: linear-gradient(90deg, #101d1c44, #151c1dbb), linear-gradient(0deg, #101718bf, transparent 60%), url('../assets/backgrounds/ruins_battle.png'); }
 }

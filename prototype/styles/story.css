@@ -15,7 +15,7 @@
   transition: opacity .18s ease-out, visibility 0s linear .2s;
 }
 #dialogueOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; cursor: pointer; transition-delay: 0s; }
-#dialogueOverlay.forestDialogue { background: linear-gradient(#07100d88, #07100ddd), url('../assets/backgrounds/slime_forest_battle.png') center / cover no-repeat; backdrop-filter: none; }
+#dialogueOverlay.forestDialogue { background: linear-gradient(#07100d88, #07100ddd), url('../assets/backgrounds/slime-habitat-battle.png') center / cover no-repeat; backdrop-filter: none; }
 #dialogueOverlay.homeDialogue { background: linear-gradient(#20140c44, #120c08aa), url('../assets/backgrounds/lixue_home.png') center / cover no-repeat; backdrop-filter: none; }
 /* Actors are siblings of the scrolling dialogue box, never its clipped children. */
 #storySlime { position: absolute; right: 8%; bottom: calc(100% + 32px); width: clamp(120px, 18vw, 190px); aspect-ratio: 1; pointer-events: none; }
