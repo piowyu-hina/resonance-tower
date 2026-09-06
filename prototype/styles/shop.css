@@ -75,6 +75,45 @@
 #shopModal .shopSellActions button:hover:not(:disabled), #shopModal .shopBuyRow > button:hover:not(:disabled) { background: #956b43; border-color: #f0c894; }
 #shopModal .shopFooter { margin-top: 0; }
 #shopAutoLeaveBtn { min-height: 42px; font-size: 14px; border-color: #80634f; background: #413234; }
+/* Warm catalogue: a stable desktop spread, with independently scrollable goods. */
+@media (min-width: 761px) and (min-height: 600px) {
+  #shopModal { width: min(1180px, calc(100vw - 64px)); height: min(760px, calc(100dvh - 64px)); display: flex; flex-direction: column; overflow: hidden; border-radius: 14px; border-color: #b99966; background: #352b25; }
+  #shopModal .shopHeader { flex: 0 0 auto; padding: 18px 26px; background: #352b25; border-bottom-color: #ba986947; backdrop-filter: none; }
+  #shopModal .shopHeading small { color: #c4b29a; font-size: 14px; }
+  #shopLeaveBtn { background: #ffffff08; border-color: #b69b7066; color: #eedbb9; }
+  #shopModal .shopLayout { display: grid; grid-template-columns: 44% 56%; flex: 1; min-height: 0; }
+  #shopModal .shopKeeperPanel { min-height: 0; background: radial-gradient(ellipse at 50% 40%, #94704e66, transparent 70%), #3d3028; border-right: 1px solid #ac875c; }
+  #shopModal .shopKeeperPanel::before { inset: 18px 22px 128px; border-color: #d8bb8540; border-radius: 180px 180px 8px 8px; }
+  #shopModal .shopKeeperIdentity { top: 25px; left: 26px; }
+  #shopModal .shopKeeperIdentity small { font-size: 13px; }
+  #shopModal .shopKeeperArt { flex: 1; min-height: 0; height: auto; padding: 12px 4px 0; }
+  #shopDialogue { flex: 0 0 auto; width: calc(100% - 36px); margin: 8px 18px 18px; min-height: 100px; padding: 13px 17px 22px; text-align: left; background: #2d241f; border-color: #b5966466; border-radius: 8px; }
+  #shopDialogue:hover { background: #392c23; }
+  #shopDialogueText { font-size: 16px; }
+  #shopModal .shopGoodsPanel { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr) auto; align-content: stretch; gap: 24px 16px; min-height: 0; padding: 28px; background: linear-gradient(115deg, #f0e4cd, #e6d5b7); color: #493929; box-shadow: inset 8px 0 18px #72542c10; }
+  #shopWallet { grid-column: 2; grid-row: 1; align-self: center; padding: 8px 12px; min-width: 90px; background: #fff8e780; border: 1px solid #b79b6c; color: #65491e; font-size: 20px; }
+  #shopModal .shopTabs { grid-column: 1; grid-row: 1; border-color: #b4986b66; align-self: stretch; }
+  #shopModal .shopTab { min-height: 48px; color: #806d55; font-size: 19px; }
+  #shopModal .shopTab.active { color: #49341d; border-bottom-color: #886137; background: linear-gradient(0deg, #a77d3320, transparent); }
+  #shopModal .shopSection { grid-column: 1 / -1; grid-row: 2; min-height: 0; overflow-y: auto; scrollbar-color: #b2976f transparent; padding: 0 4px 4px 0; }
+  #shopModal .shopSectionTitle { gap: 6px; margin-bottom: 20px; }
+  #shopModal .shopSectionTitle span { font-family: Georgia, 'Noto Serif TC', serif; font-size: 23px; color: #513a23; letter-spacing: .08em; }
+  #shopModal .shopSectionTitle small { color: #7c6851; font-size: 14px !important; }
+  #shopModal .shopBuyRow, #shopModal .shopSellRow { grid-template-columns: 84px minmax(0, 1fr) auto; gap: 12px 16px; padding: 22px 18px; min-height: 156px; background: #fffaf078; border: 1px solid #bfa77e; border-radius: 8px; box-shadow: 0 3px 0 #ad906619; }
+  #shopModal .shopBuyRow + .shopBuyRow { margin-top: 16px; padding-top: 22px; border-color: #bfa77e; }
+  #shopModal .shopBuyRow > img, #shopModal .shopSellRow > img { width: 80px; height: 80px; grid-row: 1 / 3; align-self: center; filter: drop-shadow(0 4px 5px #76542d30); }
+  #shopModal .shopItemCopy { grid-column: 2 / -1; }
+  #shopModal .shopItemCopy b { font-size: 19px; color: #483321; }
+  #shopModal .shopItemCopy small { color: #72604e; font-size: 15px !important; line-height: 1.65; }
+  #shopModal .shopOwned, #shopModal #shopMonsterCrystalQty { grid-column: 2; grid-row: 2; align-self: center; color: #7d6850; font-size: 14px; }
+  #shopModal .shopBuyRow > button { grid-column: 3; grid-row: 2; width: 100px; }
+  #shopModal .shopSellActions { grid-column: 2 / -1; }
+  #shopModal .shopBuyRow > button, #shopModal .shopSellActions button { border-color: #8a653d; background: #765436; border-radius: 5px; color: #fff4d8; }
+  #shopModal .shopBuyRow > button:disabled, #shopModal .shopSellActions button:disabled { opacity: 1; background: #d9ccb6; border-color: #c1ae8e; color: #857760; box-shadow: none; }
+  #shopModal .shopFooter { grid-column: 1 / -1; grid-row: 3; }
+  #shopAutoLeaveBtn { color: #60472e; background: #eadbbf; border-color: #b49a72; }
+  #shopModal button:focus-visible { outline: 2px solid #bd803a; outline-offset: 3px; }
+}
 @media (max-width: 760px) {
   #shopOverlay { padding: 10px; }
   #shopModal { width: calc(100vw - 20px); max-width: none; max-height: calc(100dvh - 20px); padding: 0; border-radius: 14px; }
