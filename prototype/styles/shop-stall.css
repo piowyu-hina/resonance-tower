@@ -21,8 +21,8 @@
   #shopModal .shopKeeperIdentity b { margin: 0 9px 0 0; color: #fff2d5; font-family: Georgia, 'Noto Serif TC', serif; font-size: 34px; }
   #shopModal .shopKeeperIdentity b span { margin: 12px 0 0; }
   #shopModal .shopKeeperArt { position: absolute; inset: 0 0 13% 7%; width: 93%; height: 87%; min-height: 0; padding: 0; }
-  #shopModal .shopKeeperArt img { filter: drop-shadow(0 10px 12px #24160b66); transform-origin: 50% 95%; }
-  #shopModal .shopKeeperArt:hover img { filter: drop-shadow(0 10px 16px #e4b76b66); }
+  #shopModal .shopKeeperArt img { filter: none; transform-origin: 50% 95%; }
+  #shopModal .shopKeeperArt:hover img { filter: none; }
   #shopOverlay.expeditionMerchant #shopModal { background-image: linear-gradient(0deg, #17100766, transparent 35%), url('../assets/backgrounds/merchant-roadside-quiet.png'); }
   #shopOverlay.expeditionMerchant .shopKeeperArt { inset: auto auto 13% 11%; width: 82%; height: 74%; }
   #shopDialogue { position: absolute; left: 0; bottom: 0; width: 100%; min-height: 96px; margin: 0; padding: 15px 22px 22px; border-radius: 3px 12px 12px 12px; background: #2b2118ed; border: 1px solid #c6a16a; box-shadow: 0 8px 24px #1a100a55; }
@@ -51,7 +51,9 @@
   #shopModal .shopFooter { min-height: 0; }
   #shopModal .shopSellRow { background: #fff8e8a3; }
   #shopOverlay.open .shopGoodsPanel { animation: shopLedgerEnter .48s cubic-bezier(.2,.75,.2,1) both; }
-  #shopOverlay.open .shopKeeperArt { animation: shopKeeperEnter .55s cubic-bezier(.2,.75,.2,1) both; }
+  #shopOverlay.open .shopKeeperArt { animation: shopKeeperEnter .55s cubic-bezier(.2,.75,.2,1) backwards; }
+  /* Release the identity transform after entry instead of retaining a scaled layer. */
+  #shopOverlay.open #shopModal { transform: none; }
 }
 .shopReceipt { position: absolute; z-index: 8; right: 6%; bottom: 5%; max-width: 80%; padding: 12px 20px; border: 1px solid #e5c286; border-radius: 6px; color: #fff1cc; background: #3d3024f5; box-shadow: 0 5px 20px #0004; font-size: 18px; pointer-events: none; }
 @keyframes shopLedgerEnter { from { opacity: 0; transform: translateY(18px) rotate(1deg); } to { opacity: 1; transform: none; } }
