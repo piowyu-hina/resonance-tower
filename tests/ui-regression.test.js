@@ -1078,6 +1078,12 @@ async function testViewportFit(browser) {
       assert.equal(await frame.evaluate(() => scrollY), 0);
     }
     if (view === 'inventory') {
+      assert.equal(await frame.evaluate(() => {
+        const modal = document.getElementById('inventoryModal');
+        const header = modal.querySelector('.inventoryHeader');
+        const m = modal.getBoundingClientRect(), h = header.getBoundingClientRect();
+        return Math.abs(h.left - m.left - modal.clientLeft) < .1 && Math.abs(h.width - modal.clientWidth) < .1;
+      }), true, 'sticky header background spans the inner frame without side seams');
       await frame.evaluate(async () => {
         const state = (await import('./js/state.js')).gameState;
         state.inventory = [{ itemId: 'potion', qty: 2 }, { itemId: 'skillBook', qty: 3 }, null];
