@@ -259,6 +259,49 @@ async function testDungeonEntry(browser) {
   await page.close();
 }
 
+async function testBossIntroCover(browser) {
+  for (const variant of ['slime', 'ruins']) {
+    const page = await openView(browser, 'boss');
+    try {
+      const samples = await page.evaluate(async variant => {
+        const hooks = window.__debugHooks;
+        hooks.gameState.phase = 'prepBoss';
+        hooks.gameState.expeditionMode = variant === 'ruins' ? 'ruins' : 'normal';
+        hooks.gameState.mobsCleared = hooks.MOBS_PER_FLOOR;
+        hooks.overlayUiState.prepLocation = 'expedition';
+        hooks.render();
+        hooks.gameState.startBtnEl.click();
+        const overlay = document.getElementById('bossIntroOverlay');
+        const samples = [];
+        const start = performance.now();
+        const sample = () => {
+          const c = getComputedStyle(overlay), r = overlay.getBoundingClientRect();
+          samples.push({opacity:c.opacity, display:c.display, background:c.backgroundColor,
+            covered:r.left <= 0 && r.top <= 0 && r.right >= innerWidth && r.bottom >= innerHeight,
+            phase:hooks.gameState.phase});
+        };
+        sample();
+        await new Promise(resolve => {
+          function tick() { sample(); if (performance.now() - start < 450) requestAnimationFrame(tick); else resolve(); }
+          requestAnimationFrame(tick);
+        });
+        return samples;
+      }, variant);
+      assert.ok(samples.length > 2);
+      for (const sample of samples) {
+        assert.equal(sample.opacity, '1', `${variant}: intro covers combat from its first frame`);
+        assert.equal(sample.display, 'flex');
+        assert.match(sample.background, /^rgb\(/, 'curtain background is opaque');
+        assert.equal(sample.covered, true);
+        assert.equal(sample.phase, 'bossIntro', 'combat stays paused during entry');
+      }
+      await page.waitForFunction(() => window.__debugHooks.gameState.phase === 'combat', null, {timeout:6500});
+      assert.equal(await page.locator('#bossIntroOverlay').getAttribute('aria-hidden'), 'true');
+      assertNoRuntimeErrors(page, `${variant} entry cover`);
+    } finally { await page.close(); }
+  }
+}
+
 async function testBossTransition(browser) {
   const page = await openView(browser, 'expedition');
   await page.evaluate(() => {
@@ -2135,6 +2178,12 @@ async function testExpeditionDeparture(browser) {
   prototypeUrl = `http://127.0.0.1:${port}/game.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    if (process.argv.includes('--boss-entry-only')) {
+      await testBossIntroCover(browser);
+      await testBossTransition(browser);
+      console.log('ui-regression.test.js: boss entry cover and transition assertions passed');
+      return;
+    }
     if (process.argv.includes('--event-art-only')) {
       await testEventArtwork(browser);
       await testEventInteractions(browser);
@@ -2205,6 +2254,7 @@ async function testExpeditionDeparture(browser) {
     await testJournalNavigation(browser);
     await testJournalLayout(browser);
     await testDungeonEntry(browser);
+    await testBossIntroCover(browser);
     await testBossTransition(browser);
     await testSameSpeakerDialogue(browser);
     await testOverlayExclusivity(browser);

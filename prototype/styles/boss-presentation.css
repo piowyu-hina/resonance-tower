@@ -1,5 +1,8 @@
 /* Existing art, cinematic layers. Timings remain owned by the managed intro. */
 #bossIntroOverlay { background: #071311; isolation: isolate; }
+/* Combat is prepared synchronously before entry. Cover it from the first
+   frame; only the departing curtain may fade to reveal the paused arena. */
+#bossIntroOverlay.open:not(.leaving) { animation: none; opacity: 1; }
 .bossCinemaScene { position: absolute; z-index: -3; inset: -7%; background: linear-gradient(90deg, #061511b0, #06151120 60%, #06151190), url('../assets/backgrounds/slime-habitat-battle-quiet.png') center / cover; }
 .bossCinemaScene::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse, transparent 25%, #020a0be0 90%); }
 #bossIntroOverlay.open .bossCinemaScene { animation: bossSceneApproach 5.5s ease-out both; }
