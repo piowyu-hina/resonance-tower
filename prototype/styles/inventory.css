@@ -1,0 +1,32 @@
+/* Travel bag: roomy item pockets and a persistent inspection area. */
+#inventoryOverlay { background: #100d09b8; backdrop-filter: blur(5px); }
+#inventoryModal { width: min(1080px, calc(100vw - 48px)); max-height: calc(100dvh - 64px); padding: 0 32px 32px; border: 1px solid #aa8957; border-radius: 12px; background: linear-gradient(120deg, #382b20, #241d17 70%); color: #eddfc8; box-shadow: 0 28px 90px #000a, inset 0 0 0 5px #c6a76e0b; scrollbar-color: #99794b #241d17; transform: translateY(8px); }
+#inventoryModal .inventoryHeader { position: sticky; top: 0; z-index: 5; min-height: 104px; margin: 0 -1px; gap: 18px; border-bottom: 1px solid #bc975c4d; background: #31261dfc; }
+.inventoryBagArt { width: 70px; height: 76px; object-fit: contain; filter: drop-shadow(0 6px 6px #0006); }
+#inventoryTitle { color: #ffe5b5; font: 600 30px/1.2 Georgia, 'Noto Serif TC', serif; letter-spacing: .16em; }
+#inventoryModal #inventoryCloseBtn { flex: 0 0 44px; width: 44px; height: 44px; border: 1px solid #b59360; border-radius: 5px; background: #473525; color: #f9dfb4; font-size: 27px; box-shadow: inset 0 0 0 3px #d2b47b0c; }
+#inventoryCloseBtn:hover { filter: brightness(1.2); }
+#inventoryModal .inventoryNote { margin: 20px 0 24px; color: #c0ad91; font-size: 15px; }
+.inventoryWorkspace { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 30px; align-items: start; }
+#inventoryGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+#inventoryGrid .inventorySlot { min-height: 132px; padding: 12px 8px 10px; gap: 9px; border: 1px solid #9c805348; border-radius: 6px; background: linear-gradient(135deg, #4c3b2a, #30271f); box-shadow: inset 0 1px #e9c98b12; transition: border-color .15s, background .15s; }
+#inventoryGrid .inventorySlot img { width: 68px; height: 68px; filter: drop-shadow(0 5px 6px #0007); }
+#inventoryGrid .inventoryItemName { padding: 0; text-align: center; color: #f4e6cf; font-size: 14px; line-height: 1.4; }
+#inventoryGrid .inventoryQty { top: 7px; right: 8px; bottom: auto; padding: 2px 4px; border-radius: 3px; color: #ffe1a5; background: #20190fc9; font-size: 14px; }
+#inventoryGrid .inventorySlot.empty { background: #17130f50; border-style: dashed; opacity: .55; box-shadow: none; }
+#inventoryGrid .inventorySlot.selected, #inventoryGrid .inventorySlot:not(.empty):hover { border-color: #ebc789; background: linear-gradient(135deg, #685034, #3c3022); box-shadow: inset 0 0 0 2px #e9c48115; }
+#inventoryGrid .inventorySlot.dragTarget { border-color: #ffe4a2; background: #74603e; opacity: 1; }
+#inventoryDetail { position: sticky; top: 126px; min-height: 420px; padding: 26px 24px; border: 1px solid #af8c584a; border-radius: 6px 22px 6px 6px; background: linear-gradient(160deg, #57432de0, #201a14); box-shadow: inset 0 0 0 5px #edd39806; }
+.inventoryDetailArt { display: block; width: 150px; height: 150px; margin: 0 auto 25px; object-fit: contain; filter: drop-shadow(0 12px 12px #0006); }
+#inventoryDetail .ttName { padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid #be9c6650; color: #ffe3b0; font: 600 24px/1.4 Georgia, 'Noto Serif TC', serif; }
+#inventoryDetail .ttStat, #inventoryDetail p { margin: 10px 0; color: #d5c4a8; font-size: 15px; line-height: 1.8; overflow-wrap: anywhere; }
+#inventoryDetail .ttStat:last-child { margin-top: 20px; color: #f2e2c8; }
+#inventoryModal :focus-visible { outline: 2px solid #ffe2a2; outline-offset: 3px; }
+@media (max-width: 700px) {
+  #inventoryModal { width: calc(100vw - 24px); padding: 0 16px 20px; }
+  .inventoryWorkspace { grid-template-columns: 1fr; gap: 18px; }
+  #inventoryGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  #inventoryGrid .inventorySlot { min-height: 110px; }
+  #inventoryGrid .inventorySlot img { width: 54px; height: 54px; }
+  #inventoryDetail { position: static; min-height: 0; }
+}

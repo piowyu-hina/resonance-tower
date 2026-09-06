@@ -39,7 +39,7 @@ const { t, resolveLocale, setLocale, initI18n } = await import('../prototype/js/
 const zhHant = (await import('../prototype/js/locales/zh-Hant.js')).default;
 const en = (await import('../prototype/js/locales/en.js')).default;
 
-assert.equal(t('header.bag'), '物品庫');
+assert.equal(t('header.bag'), '背包');
 assert.equal(t('format.page', { current: 2, total: 5 }), '2／5');
 assert.equal(t('missing.translation'), 'missing.translation');
 assert.equal(resolveLocale('zh-TW'), 'zh-Hant');
@@ -51,8 +51,8 @@ assert.equal(t('journal.next'), 'Next Page');
 setLocale('zh-Hant');
 assert.equal(documentMock.title, '共鳴之塔｜Resonance Tower');
 assert.equal(documentMock.documentElement.lang, 'zh-Hant');
-assert.equal(translatedElement.textContent, '物品庫');
-assert.equal(translatedElement.attributes['aria-label'], '開啟物品庫');
+assert.equal(translatedElement.textContent, '背包');
+assert.equal(translatedElement.attributes['aria-label'], '開啟背包');
 
 const html = fs.readFileSync(path.join(root, 'prototype/game.html'), 'utf8');
 const markerPattern = /data-i18n(?:-(?:aria-label|alt|placeholder))?="([^"]+)"/g;

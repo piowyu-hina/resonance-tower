@@ -4,6 +4,7 @@
 .bossCinemaScene::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse, transparent 25%, #020a0be0 90%); }
 #bossIntroOverlay.open .bossCinemaScene { animation: bossSceneApproach 5.5s ease-out both; }
 .bossCinemaBars { position: absolute; z-index: 5; inset: 0; pointer-events: none; border-block: clamp(35px, 8vh, 90px) solid #030909; }
+#bossIntroOverlay:not(.ruinsMasterIntro) .bossCinemaBars { display: none; }
 .bossCinemaDust { position: absolute; z-index: -1; inset: 10%; pointer-events: none; background: radial-gradient(circle at 12% 30%, #95e5d8 0 2px, transparent 4px), radial-gradient(circle at 76% 60%, #c3f0c7 0 3px, transparent 5px), radial-gradient(circle at 38% 82%, #c3f0c7 0 2px, transparent 4px), radial-gradient(circle at 88% 20%, #8dddda 0 2px, transparent 4px); opacity: 0; }
 #bossIntroOverlay.open .bossCinemaDust { animation: bossMotes 4s ease-out .8s both; }
 /* One continuous approach / landing / settle timeline. No competing idle

@@ -156,6 +156,8 @@ export default {
   'shop.supplies': 'Travel Supplies',
   'shop.suppliesDesc': 'Prepare for your next battle',
   'inventory.title': 'Bag',
+  'inventory.hint': 'Select an item to inspect it. Drag to rearrange.',
+  'inventory.empty': 'Your bag is empty. Bring back something from your travels.',
   'inventory.storage': 'Storage',
   'inventory.close': 'Close bag',
   'inventory.unsecured': 'This Run ×{quantity}',

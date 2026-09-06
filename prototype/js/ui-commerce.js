@@ -3,12 +3,27 @@ import { gameState } from './state.js';
 import { t, formatLocaleNumber } from './i18n.js';
 import { shopUiState, SHOP_DIALOGUE_KEYS } from './ui-character.js';
 import { buyShopItem, sellMonsterCrystals, toggleShopAutoLeave, leaveShop, resetShopIdleTimer, shopGold } from './shop.js';
-import { attachItemTooltip, inventoryItemCount, hideTooltip } from './ui-loadout.js';
+import { attachItemTooltip, itemTooltipHTML, inventoryItemCount, hideTooltip } from './ui-loadout.js';
 import { closeOtherOverlays } from './ui-overlays.js';
 
 // Drag-reorder state for the inventory grid - purely a UI concern local to
 // this file's drag handlers, not shared game state.
 let inventoryDragFrom = null;
+let inventorySelectedItem = null;
+
+function showInventoryDetail(entry) {
+  const detail = document.getElementById('inventoryDetail');
+  const item = entry && localizedItemDef(entry.itemId);
+  inventorySelectedItem = item ? entry.itemId : null;
+  document.querySelectorAll('#inventoryGrid .inventorySlot').forEach(slot => {
+    const selected = !!item && slot.dataset.itemId === entry.itemId;
+    slot.classList.toggle('selected', selected);
+    if (slot.hasAttribute('role')) slot.setAttribute('aria-pressed', String(selected));
+  });
+  detail.innerHTML = item
+    ? `<img class="inventoryDetailArt" src="assets/item/${item.img}.png" alt="">${itemTooltipHTML(item, entry)}`
+    : `<img class="inventoryDetailArt emptyBagArt" src="assets/ui/bag.png" alt=""><p>${t('inventory.empty')}</p>`;
+}
 
 export function renderShopDialogue() {
   if (shopUiState.lastShopDialogueMode !== gameState.shopMode) {
@@ -181,12 +196,22 @@ export function renderItemGrid(grid) {
     if (!entry) return;
     const item = localizedItemDef(entry.itemId);
     if (!item || entry.qty <= 0) return;
+    slot.dataset.itemId = entry.itemId;
+    slot.tabIndex = 0;
+    slot.setAttribute('role', 'button');
+    slot.setAttribute('aria-label', `${item.name} ×${entry.qty}`);
+    slot.addEventListener('click', () => showInventoryDetail(entry));
+    slot.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        showInventoryDetail(entry);
+      }
+    });
     slot.innerHTML = `
       <img src="assets/item/${item.img}.png" alt="${item.name}" draggable="false">
       <span class="inventoryQty">×${entry.qty}</span>
       <span class="inventoryItemName">${item.name}</span>
     `;
-    if (entry.itemId !== 'coin') attachItemTooltip(slot, item, entry);
   });
 }
 
@@ -213,6 +238,8 @@ export function renderInventory() {
   syncCoinItem();
   document.getElementById('inventoryTitle').textContent = t('inventory.title');
   renderItemGrid(document.getElementById('inventoryGrid'));
+  const entries = gameState.inventory.filter(entry => entry && entry.qty > 0 && localizedItemDef(entry.itemId));
+  showInventoryDetail(entries.find(entry => entry.itemId === inventorySelectedItem) || entries[0]);
 }
 
 export function setInventoryOpen(open) {

@@ -20,8 +20,9 @@
 <link rel="stylesheet" href="styles/scene-interactions.css?v=20260906-2">
 <link rel="stylesheet" href="styles/expedition.css?v=20260906-boss7">
 <link rel="stylesheet" href="styles/combat-scene.css?v=20260906-1">
-<link rel="stylesheet" href="styles/boss-presentation.css?v=20260906-king2">
-<link rel="stylesheet" href="styles/embedded-game.css?v=20260906-wide1">
+<link rel="stylesheet" href="styles/boss-presentation.css?v=20260906-full3">
+<link rel="stylesheet" href="styles/embedded-game.css?v=20260906-calm2">
+<link rel="stylesheet" href="styles/inventory.css?v=20260906-1">
 </head>
 <body>
 
@@ -280,10 +281,15 @@
 <div id="inventoryOverlay" aria-hidden="true">
   <div id="inventoryModal" role="dialog" aria-modal="true" aria-labelledby="inventoryTitle">
     <div class="inventoryHeader">
+      <img src="assets/ui/bag.png" alt="" class="inventoryBagArt">
       <span id="inventoryTitle">背包</span>
       <button id="inventoryCloseBtn" aria-label="關閉背包" data-i18n-aria-label="inventory.close">×</button>
     </div>
-    <div id="inventoryGrid"></div>
+    <p class="inventoryNote" data-i18n="inventory.hint">點選查看物品，拖曳調整位置。</p>
+    <div class="inventoryWorkspace">
+      <div id="inventoryGrid"></div>
+      <aside id="inventoryDetail" aria-live="polite"></aside>
+    </div>
   </div>
 </div>
 

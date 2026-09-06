@@ -1079,6 +1079,19 @@ async function testViewportFit(browser) {
     }
     if (view === 'inventory') {
       await frame.evaluate(async () => {
+        const state = (await import('./js/state.js')).gameState;
+        state.inventory = [{ itemId: 'potion', qty: 2 }, { itemId: 'skillBook', qty: 3 }, null];
+        (await import('./js/ui-commerce.js')).renderInventory();
+      });
+      await frame.locator('#inventoryGrid [data-item-id="skillBook"]').click();
+      assert.match(await frame.locator('#inventoryDetail').textContent(), /技能書/);
+      await frame.locator('#inventoryGrid [data-item-id="potion"]').focus();
+      await page.keyboard.press('Enter');
+      assert.match(await frame.locator('#inventoryDetail').textContent(), /治療藥水/);
+      await frame.locator('#inventoryGrid [data-item-id="potion"]').dragTo(frame.locator('#inventoryGrid [data-slot-index="2"]'));
+      assert.equal(await frame.evaluate(async () => (await import('./js/state.js')).gameState.inventory[2].itemId), 'potion');
+      assert.equal(await frame.locator('#inventoryGrid [data-item-id="potion"]').getAttribute('aria-pressed'), 'true');
+      await frame.evaluate(async () => {
         (await import('./js/state.js')).gameState.inventory = [{ itemId: 'potion', qty: 1 }];
         (await import('./js/ui-commerce.js')).renderInventory();
       });
@@ -1116,6 +1129,7 @@ async function testViewportFit(browser) {
         assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [1600, 900]);
       }
       await page.waitForTimeout(2700);
+      assert.equal(await frame.locator('#bossIntroOverlay .bossCinemaBars').isVisible(), false, 'slime king fills the canvas without letterbox bars');
       assert.equal(await frame.locator('.bossIntroPortrait').evaluate(el => {
         const r = el.getBoundingClientRect();
         return el.complete && el.naturalWidth > 0 && r.top >= innerHeight * .08 && r.bottom <= innerHeight * .92 &&
