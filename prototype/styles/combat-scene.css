@@ -15,8 +15,8 @@
   .combatSceneActive #goldLabel { font-size: 15px; color: #e4c58d; }
   .combatSceneActive #bagBtn, .combatSceneActive #debugToggleBtn { background: transparent; border: 0; box-shadow: none; color: #edddbe; }
   .combatSceneActive #debugPanel { position: absolute; z-index: 25; top: 68px; left: 18px; right: 18px; }
-  #app.combatSceneActive #combatView { position: relative; min-height: 880px; height: clamp(880px, calc(100dvh - 48px), 960px); padding: 144px 4% 168px; border: 0; border-radius: 12px; overflow: hidden; background: linear-gradient(0deg, #111b18ed, #13221b10 65%, #10211c33), url('../assets/backgrounds/slime-habitat-battle.png') center / cover no-repeat; box-shadow: none; }
-  #app.combatSceneActive.ruinsActive #combatView { background: linear-gradient(0deg, #151a18f2, #17202120 65%, #111a1c50), url('../assets/backgrounds/ruins_battle.png') center / cover no-repeat; }
+  #app.combatSceneActive #combatView { position: relative; min-height: 880px; height: clamp(880px, calc(100dvh - 48px), 960px); padding: 144px 4% 168px; border: 0; border-radius: 12px; overflow: hidden; background: linear-gradient(0deg, #111b18ed, #13221b10 65%, #10211c33), url('../assets/backgrounds/slime-habitat-battle-quiet.png') center / cover no-repeat; box-shadow: none; }
+  #app.combatSceneActive.ruinsActive #combatView { background: linear-gradient(0deg, #151a18f2, #17202120 65%, #111a1c50), url('../assets/backgrounds/ruins-battle-quiet.png') center / cover no-repeat; }
   #combatView .combatColumns { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.3fr); gap: 6%; height: 100%; }
   #combatView .battleColumn { position: static; display: flex; flex-direction: column; min-height: 0; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; }
   #combatView .columnHeading { min-height: 24px; padding: 0 0 8px; margin: 0 0 12px; border: 0; color: #ecdbbc; text-shadow: 0 2px 5px #000; }

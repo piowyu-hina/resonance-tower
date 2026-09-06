@@ -8,12 +8,12 @@
   .regionSceneActive #bagBtn, .regionSceneActive #debugToggleBtn { border: 0; background: transparent; box-shadow: none; color: #f2dfbe; }
   .regionSceneActive #debugPanel { position: absolute; z-index: 21; top: 72px; left: 18px; right: 18px; }
   .regionSceneActive #prepView { margin: 0; padding: 0; border: 0; background: none; }
-  .regionSceneActive #regionView { position: relative; aspect-ratio: 1672 / 941; min-height: 0; padding: 0; background: linear-gradient(180deg, #15180e1a 45%, #15130da6), url('../assets/backgrounds/expedition-trail.png') center / 100% 100% no-repeat; border-radius: 12px; }
+  .regionSceneActive #regionView { position: relative; aspect-ratio: 1672 / 941; min-height: 0; padding: 0; background: linear-gradient(180deg, #15180e1a 45%, #15130da6), url('../assets/backgrounds/expedition-trail-quiet.png') center / 100% 100% no-repeat; border-radius: 12px; }
   .regionSceneActive #regionView .homeTopbar { position: absolute; inset: 0; margin: 0; padding: 0; pointer-events: none; }
   .regionSceneActive #regionView .homeTopbar > div { position: absolute; top: 15%; left: 4%; text-shadow: 0 2px 8px #15170b; }
   .regionSceneActive #regionView .prepHeading { color: #ffedca; font-family: Georgia, 'Noto Serif TC', serif; font-size: 32px !important; letter-spacing: .12em; }
   .regionSceneActive #regionView .prepMsg { color: #efe1c7; font-size: 16px; margin-top: 8px; }
-  .regionSceneActive #regionBackBtn { position: absolute; left: 0%; top: 30%; width: 13%; height: 25%; pointer-events: auto; }
+  .regionSceneActive #regionBackBtn { position: absolute; left: 12%; top: 36%; width: 14%; height: 28%; pointer-events: auto; }
   .regionSceneActive #regionView .regionGrid { position: absolute; inset: 0; display: block; pointer-events: none; }
   .regionSceneActive #regionView #forestRegionBtn { position: absolute; left: 63%; top: 36%; width: 21%; height: 18%; min-height: 0; pointer-events: auto; }
   .regionSceneActive #regionView .regionArt,

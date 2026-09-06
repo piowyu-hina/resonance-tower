@@ -508,7 +508,7 @@ async function testChapter1RuinsFlow(browser) {
   await page.click('#debugToggleBtn');
   await page.click('[data-debug-action="ruins-event"]');
   await page.waitForSelector('#eventOverlay.open');
-  assert.equal(await page.getAttribute('#eventSceneImage', 'src'), 'assets/events/ruins_entrance_v2.png');
+  assert.equal(await page.getAttribute('#eventSceneImage', 'src'), 'assets/events/ruins-entrance-quiet.png');
   const click = id => page.evaluate(elId => document.getElementById(elId).click(), id);
   const advanceDialogue = async times => {
     for (let i = 0; i < times; i++) {
@@ -529,12 +529,12 @@ async function testChapter1RuinsFlow(browser) {
 
   await page.click('[data-event-action="choice"][data-option-index="0"]');
   await page.waitForFunction(() => window.__debugHooks.gameState.expeditionMode === 'ruins', null, { timeout: 3000 });
-  await page.waitForFunction(() => getComputedStyle(document.getElementById('combatView')).backgroundImage.includes('ruins_battle.png'), null, { timeout: 2000 });
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('combatView')).backgroundImage.includes('ruins-battle-quiet.png'), null, { timeout: 2000 });
   assert.deepEqual(await page.evaluate(() => ({
     chapter: window.__debugHooks.gameState.chapter1State,
     count: window.__debugHooks.gameState.ruinsKillCount,
     ruinMobs: window.__debugHooks.gameState.monsters.every(monster => monster.defId.startsWith('ruins')),
-    ruinsBackground: getComputedStyle(document.getElementById('combatView')).backgroundImage.includes('ruins_battle.png'),
+    ruinsBackground: getComputedStyle(document.getElementById('combatView')).backgroundImage.includes('ruins-battle-quiet.png'),
   })), { chapter: 'ruins', count: 0, ruinMobs: true, ruinsBackground: true });
   await page.waitForSelector('.ruinsLeaveButton');
 
@@ -600,7 +600,7 @@ async function testChapter1RuinsFlow(browser) {
     start: '挑戰首領',
     step: '戰前情報',
     regionImageVisible: true,
-    regionImage: 'assets/events/ruins_entrance_v2.png',
+    regionImage: 'assets/events/ruins-entrance-quiet.png',
     region: '???',
     description: '???',
     boss: '???',
@@ -683,7 +683,7 @@ async function testChapter1RuinsFlow(browser) {
     phase: window.__debugHooks.storyState.dialoguePhase,
     playing: document.getElementById('heavenTransition').classList.contains('playing'),
     arrival: document.getElementById('heavenTransition').classList.contains('arrival'),
-    backdrop: getComputedStyle(document.getElementById('dialogueOverlay')).backgroundImage.includes('heaven_sanctuary.png'),
+    backdrop: getComputedStyle(document.getElementById('dialogueOverlay')).backgroundImage.includes('heaven-sanctuary-quiet.png'),
     corridor: getComputedStyle(document.querySelector('.heavenTransitionCorridor')).backgroundImage.includes('teleport_corridor.png'),
     corridorFit: getComputedStyle(document.querySelector('.heavenTransitionCorridor')).backgroundSize,
     veilRepeat: getComputedStyle(document.querySelector('.heavenTransitionVeil')).backgroundRepeat,
@@ -809,16 +809,16 @@ async function openEvent(browser, eventId) {
 
 async function testEventArtwork(browser) {
   const expected = {
-    'abandoned-camp': 'abandoned_camp_daylight.png',
-    'flattened-herbs': 'flattened_herbs_daylight.png',
-    'sealed-supply-crate': 'slime_sealed_supply_crate_daylight.png',
-    'floating-bubbles': 'floating_slime_bubbles_daylight.png',
-    'broken-ancient-aqueduct': 'broken_ancient_aqueduct_daylight.png',
-    'slime-trail-fork': 'slime_trail_fork_daylight.png',
-    'ruins-entrance': 'ruins_entrance_v2.png',
-    'rain-stone-shelter': 'rain_stone_shelter_v2.png',
-    'two-color-spores': 'two_color_spores_v2.png',
-    'crystal-echo': 'crystal_tree_hollow_v2.png',
+    'abandoned-camp': 'abandoned-camp-quiet.png',
+    'flattened-herbs': 'flattened-herbs-quiet.png',
+    'sealed-supply-crate': 'sealed-supply-crate-quiet.png',
+    'floating-bubbles': 'floating-bubbles-quiet.png',
+    'broken-ancient-aqueduct': 'broken-aqueduct-quiet.png',
+    'slime-trail-fork': 'slime-trail-fork-quiet.png',
+    'ruins-entrance': 'ruins-entrance-quiet.png',
+    'rain-stone-shelter': 'rain-stone-shelter-quiet.png',
+    'two-color-spores': 'two-color-spores-quiet.png',
+    'crystal-echo': 'crystal-tree-hollow-quiet.png',
   };
   for (const viewport of [{ width: 1600, height: 900 }, { width: 1280, height: 720 }]) {
     for (const [id, filename] of Object.entries(expected)) {
@@ -1819,10 +1819,11 @@ async function testDesktopHome(browser) {
     const door = await page.locator('#homeBackBtn').evaluate(el => {
       const r = el.getBoundingClientRect();
       const scene = document.querySelector('#homeView').getBoundingClientRect();
-      return { rightSide: r.left > scene.left + scene.width * .8,
+      // The adopted simple medieval room places its door at 55%–74%.
+      return { onDoor: r.left >= scene.left + scene.width * .54 && r.right <= scene.left + scene.width * .75,
         hit: el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) };
     });
-    assert.ok(door.rightSide && door.hit, 'exit is a clickable door hotspot');
+    assert.ok(door.onDoor && door.hit, 'exit is a clickable door hotspot');
     assert.equal(await page.locator('#homeBackBtn').textContent(), '出門');
     assert.equal(await page.locator('#homeGrowthBtn > img').count(), 0, 'no resident guide portrait');
     await page.locator('#homeGrowthBtn').hover();
@@ -1965,7 +1966,7 @@ async function testExpeditionDeparture(browser) {
     await page.locator('#expeditionView').evaluate(async el => Promise.all(el.getAnimations().map(animation => animation.finished)));
     const preparation = await page.locator('#expeditionView').boundingBox();
     for (const key of ['x', 'y', 'width']) assert.ok(Math.abs(entrance[key] - preparation[key]) < 1, `scene frame ${key} stays aligned on entering preparation`);
-    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-staging\.png/, 'preparation uses its own background, not an enlarged entrance');
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-staging-quiet\.png/, 'preparation uses its own background, not an enlarged entrance');
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       gameState.unlockedChars.add('xiaochu');
@@ -2034,19 +2035,19 @@ async function testExpeditionDeparture(browser) {
     assert.equal(await page.locator('#prepRoster').isVisible(), false);
     assert.equal(await page.locator('#expeditionRegionLevel').textContent(), '???');
     assert.equal(await page.locator('#expeditionView').evaluate(el => el.classList.contains('ruinsPreparation')), true);
-    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /ruins_battle\.png/, 'ruins boss preparation remains inside the ruins');
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /ruins-battle-quiet\.png/, 'ruins boss preparation remains inside the ruins');
     if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/boss-preparation-ruins-${width}.png`), fullPage: true });
     await page.evaluate(async () => {
       (await import('./js/state.js')).gameState.expeditionMode = 'normal';
       (await import('./js/ui-main.js')).render();
     });
-    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /slime-habitat-battle\.png/, 'forest boss preparation must not return to village staging');
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /slime-habitat-battle-quiet\.png/, 'forest boss preparation must not return to village staging');
     if (process.argv.includes('--expedition-only')) await page.screenshot({ path: path.resolve(__dirname, `../.local/test-results/boss-preparation-forest-${width}.png`), fullPage: true });
     await page.evaluate(async () => {
       (await import('./js/state.js')).gameState.phase = 'prepFloor';
       (await import('./js/ui-main.js')).render();
     });
-    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-staging\.png/, 'ordinary departure keeps its original staging scene');
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-staging-quiet\.png/, 'ordinary departure keeps its original staging scene');
     assert.equal(await page.locator('#startBtn').isEnabled(), true);
     assertNoRuntimeErrors(page, 'expedition departure redesign');
     await page.close();

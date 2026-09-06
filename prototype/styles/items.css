@@ -346,7 +346,7 @@
   background:
     linear-gradient(90deg, rgba(15,28,28,.55), rgba(17,25,25,.26) 50%, rgba(29,19,22,.56)),
     linear-gradient(180deg, rgba(9,14,15,.08), rgba(9,13,14,.58)),
-    url('../assets/backgrounds/slime-habitat-battle.png') center / cover no-repeat;
+    url('../assets/backgrounds/slime-habitat-battle-quiet.png') center / cover no-repeat;
   box-shadow: inset 0 0 64px rgba(2,8,9,.46);
 }
 #app.ruinsActive #combatView {
@@ -354,7 +354,7 @@
   background:
     linear-gradient(90deg, rgba(10,21,23,.64), rgba(13,20,21,.28) 50%, rgba(27,20,17,.62)),
     linear-gradient(180deg, rgba(5,10,11,.08), rgba(6,10,11,.62)),
-    url('../assets/backgrounds/ruins_battle.png') center / cover no-repeat;
+    url('../assets/backgrounds/ruins-battle-quiet.png') center / cover no-repeat;
   box-shadow: inset 0 0 72px rgba(1,6,7,.58);
 }
 .battleColumn { display: flex; flex-direction: column; border-width: 1px; box-shadow: 0 10px 24px rgba(0,0,0,.2); }
@@ -466,9 +466,9 @@ button:focus-visible,
   #combatView { background: rgba(12,17,18,.9); }
   .combatColumns { grid-template-columns: 1fr; gap: 0; }
   .battleColumn { min-height: 0; }
-  .enemyColumn { order: 1; margin-bottom: 8px; background: linear-gradient(rgba(35,24,28,.66), rgba(25,25,30,.84)), url('../assets/backgrounds/slime-habitat-battle.png') right center / cover no-repeat; }
-  .partyColumn { order: 2; background: linear-gradient(rgba(22,38,39,.65), rgba(21,28,32,.84)), url('../assets/backgrounds/slime-habitat-battle.png') left center / cover no-repeat; }
-  #app.ruinsActive .enemyColumn { background: linear-gradient(rgba(31,25,22,.7), rgba(21,24,25,.86)), url('../assets/backgrounds/ruins_battle.png') right center / cover no-repeat; }
-  #app.ruinsActive .partyColumn { background: linear-gradient(rgba(18,32,33,.68), rgba(18,25,27,.86)), url('../assets/backgrounds/ruins_battle.png') left center / cover no-repeat; }
+  .enemyColumn { order: 1; margin-bottom: 8px; background: linear-gradient(rgba(35,24,28,.66), rgba(25,25,30,.84)), url('../assets/backgrounds/slime-habitat-battle-quiet.png') right center / cover no-repeat; }
+  .partyColumn { order: 2; background: linear-gradient(rgba(22,38,39,.65), rgba(21,28,32,.84)), url('../assets/backgrounds/slime-habitat-battle-quiet.png') left center / cover no-repeat; }
+  #app.ruinsActive .enemyColumn { background: linear-gradient(rgba(31,25,22,.7), rgba(21,24,25,.86)), url('../assets/backgrounds/ruins-battle-quiet.png') right center / cover no-repeat; }
+  #app.ruinsActive .partyColumn { background: linear-gradient(rgba(18,32,33,.68), rgba(18,25,27,.86)), url('../assets/backgrounds/ruins-battle-quiet.png') left center / cover no-repeat; }
   .partyColumn #combatActionBar { position: sticky; z-index: 20; bottom: max(6px, env(safe-area-inset-bottom)); }
 }
