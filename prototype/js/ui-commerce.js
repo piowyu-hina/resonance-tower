@@ -89,6 +89,7 @@ export function renderShopView() {
   const shopOpen = gameState.activeOverlay === 'shop';
   const overlay = document.getElementById('shopOverlay');
   overlay.classList.toggle('open', shopOpen);
+  overlay.classList.toggle('expeditionMerchant', shopOpen && gameState.shopMode === 'dungeon');
   overlay.setAttribute('aria-hidden', String(!shopOpen));
   if (!shopOpen) {
     shopUiState.wasShopOpen = false;

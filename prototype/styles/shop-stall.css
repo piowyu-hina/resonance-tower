@@ -23,6 +23,8 @@
   #shopModal .shopKeeperArt { position: absolute; inset: 0 0 13% 7%; width: 93%; height: 87%; min-height: 0; padding: 0; }
   #shopModal .shopKeeperArt img { filter: drop-shadow(0 10px 12px #24160b66); transform-origin: 50% 95%; }
   #shopModal .shopKeeperArt:hover img { filter: drop-shadow(0 10px 16px #e4b76b66); }
+  #shopOverlay.expeditionMerchant #shopModal { background-image: linear-gradient(0deg, #17100766, transparent 35%), url('../assets/backgrounds/merchant-roadside-quiet.png'); }
+  #shopOverlay.expeditionMerchant .shopKeeperArt { inset: auto auto 13% 11%; width: 82%; height: 74%; }
   #shopDialogue { position: absolute; left: 0; bottom: 0; width: 100%; min-height: 96px; margin: 0; padding: 15px 22px 22px; border-radius: 3px 12px 12px 12px; background: #2b2118ed; border: 1px solid #c6a16a; box-shadow: 0 8px 24px #1a100a55; }
   #shopDialogue::before { content: ''; position: absolute; top: -8px; left: 50%; width: 14px; height: 14px; background: #2b2118; border-left: 1px solid #c6a16a; border-top: 1px solid #c6a16a; transform: rotate(45deg); }
   #shopKeeperName { color: #f0ca8c; font-size: 14px; }
