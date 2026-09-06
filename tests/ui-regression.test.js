@@ -946,7 +946,41 @@ async function testCombatAndGrowthAudit(browser) {
   }
 }
 
+async function testEncounterStageFit(browser) {
+  for (const [width, height] of [[1280, 720], [1920, 1080]]) {
+    const page = await browser.newPage({ viewport: { width, height } });
+    await page.goto(`${prototypeUrl.replace('game.html', 'index.html')}?debug`);
+    const frame = page.frames().find(frame => frame.url().includes('game.html'));
+    await frame.evaluate(async () => (await import('./js/story.js')).startDialogue('xiaochu_encounter'));
+    for (let i = 0; i <= 12; i++) {
+      await frame.waitForFunction(() => !window.__debugHooks.storyState.lineEffectLocked);
+      if (i < 12) {
+        for (const id of ['storyWuming', ...(i > 0 && i < 11 ? ['storySlime'] : [])]) {
+          assert.equal(await frame.locator(`#${id}`).evaluate(el => {
+            const r = el.getBoundingClientRect();
+            const img = el.querySelector('img');
+            if (!img.complete || !img.naturalWidth || r.top < 0 || r.left < 0 || r.right > innerWidth || r.bottom > innerHeight) return false;
+            // isVisible() alone passes even when an ancestor clips the entire actor.
+            for (let p = el.parentElement; p; p = p.parentElement) {
+              const css = getComputedStyle(p), bounds = p.getBoundingClientRect();
+              if (css.overflowY !== 'visible' && (r.top < bounds.top || r.bottom > bounds.bottom)) return false;
+              if (css.overflowX !== 'visible' && (r.left < bounds.left || r.right > bounds.right)) return false;
+            }
+            return true;
+          }), true, `${id} is loaded, on-screen and not clipped at encounter line ${i}`);
+        }
+      } else {
+        assert.equal(await frame.locator('#storySlime').isVisible(), false);
+        assert.equal(await frame.locator('#storyWuming').isVisible(), false);
+      }
+      await frame.evaluate(async () => (await import('./js/story.js')).advanceDialogue());
+    }
+    await page.close();
+  }
+}
+
 async function testViewportFit(browser) {
+  await testEncounterStageFit(browser);
   const sizes = [[1280, 720], [1366, 768], [1440, 900], [1920, 1080]];
   const views = [['village', '#villageView'], ['home', '#homeView'], ['regions', '#regionView'],
     ['expedition', '#expeditionView'], ['boss', '#combatView'], ['growth', '#characterDetailCloseBtn'],
@@ -1081,6 +1115,14 @@ async function testViewportFit(browser) {
         assert.equal(await frame.locator('#bossIntroOverlay').getAttribute('aria-hidden'), 'false');
         assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [1600, 900]);
       }
+      await page.waitForTimeout(2700);
+      assert.equal(await frame.locator('.bossIntroPortrait').evaluate(el => {
+        const r = el.getBoundingClientRect();
+        return el.complete && el.naturalWidth > 0 && r.top >= innerHeight * .08 && r.bottom <= innerHeight * .92 &&
+          r.left >= 0 && r.right <= innerWidth && getComputedStyle(el).animationName === 'slimeKingApproach';
+      }), true, 'new king reveal is loaded, clear of cinema bars and uses one continuous motion');
+      await frame.locator('#bossIntroOverlay').click({ position: { x: 20, y: 20 } });
+      assert.equal(await frame.locator('#bossIntroOverlay').getAttribute('aria-hidden'), 'false', 'new presentation cannot be skipped');
       await frame.waitForFunction(() => document.getElementById('bossIntroOverlay').getAttribute('aria-hidden') === 'true');
       assert.equal(await frame.evaluate(async () => (await import('./js/state.js')).gameState.phase), 'combat');
     }
