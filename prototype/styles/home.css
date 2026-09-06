@@ -26,7 +26,7 @@
     aspect-ratio: 1672 / 941;
     border: 0;
     border-radius: 0;
-    background: linear-gradient(180deg, #20180f0d 70%, #20180f40), url('../assets/backgrounds/lixue_home.png?v=20260906-seated') center / 100% 100% no-repeat;
+    background: linear-gradient(180deg, #20180f0d 70%, #20180f40), url('../assets/backgrounds/home-interior-redraw.png') center / 100% 100% no-repeat;
     box-shadow: none;
   }
   .homeSceneActive .homeTopbar { position: absolute; z-index: 2; inset: 0; display: block; padding: 0; margin: 0; border: 0; pointer-events: none; }
@@ -54,8 +54,8 @@
   .homeSceneActive #homeGrowthBtn { left: 12%; top: 39%; width: 17%; height: 46%; }
   .homeSceneActive #xiaochuTalkBtn { left: 37%; top: 20%; width: 25%; height: 65%; }
   .homeSceneActive #xiaochuTalkBtn.soulConversation { left: 37%; top: 80%; width: 25%; height: 12%; }
-  .homeSceneActive #travelJournalBtn { left: 64%; top: 73%; width: 12%; height: 12%; }
-  .homeSceneActive #contractFacilityBtn { left: 63%; top: 26%; width: 8.5%; height: 41%; }
+  .homeSceneActive #travelJournalBtn { left: 76%; top: 67%; width: 14%; height: 12%; }
+  .homeSceneActive #contractFacilityBtn { left: 58%; top: 23%; width: 12%; height: 35%; }
   .homeSceneActive #homeMenu .homeFacilityBtn > img { position: absolute; inset: 0; width: 100%; height: 93%; max-width: none; max-height: none; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 8px 14px #160c084d); }
   .homeSceneActive #travelJournalBtn > img, .homeSceneActive #contractFacilityBtn > img { display: none; }
   .homeSceneActive #homeMenu .homeFacilityBtn > span:not(.homeGuideHina) { position: absolute; top: 94%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 290px; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
