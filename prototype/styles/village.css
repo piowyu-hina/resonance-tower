@@ -70,7 +70,7 @@
   border: 0;
   border-radius: 0;
   isolation: isolate;
-  background: #776d50 url('../assets/backgrounds/village-square-home-matched.png') center / 100% 100% no-repeat;
+  background: #776d50 url('../assets/backgrounds/village-square-courtyard.png') center / 100% 100% no-repeat;
 }
 #villageView::after {
   content: '';
@@ -102,9 +102,9 @@
   animation: none;
   text-align: center;
 }
-#villageView #homeLocationBtn { left: 3%; top: 21%; width: 33%; height: 52%; }
-#villageView #townShopBtn { left: 40%; top: 28%; width: 32%; height: 56%; }
-#villageView #expeditionLocationBtn { left: 73%; top: 16%; width: 25%; height: 58%; }
+#villageView #homeLocationBtn { left: 5%; top: 14%; width: 36%; height: 54%; }
+#villageView #townShopBtn { left: 68%; top: 20%; width: 31%; height: 65%; }
+#villageView #expeditionLocationBtn { left: 45%; top: 36%; width: 16%; height: 28%; }
 #villageView .villageLocationCopy {
   position: absolute;
   top: 94%;
