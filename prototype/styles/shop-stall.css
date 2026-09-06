@@ -51,9 +51,9 @@
   #shopModal .shopFooter { min-height: 0; }
   #shopModal .shopSellRow { background: #fff8e8a3; }
   #shopOverlay.open .shopGoodsPanel { animation: shopLedgerEnter .48s cubic-bezier(.2,.75,.2,1) both; }
-  #shopOverlay.open .shopKeeperArt { animation: shopKeeperEnter .55s cubic-bezier(.2,.75,.2,1) backwards; }
+  #shopModal .shopKeeperArt, #shopOverlay.open .shopKeeperArt { animation: none; transform: none; }
   /* Release the identity transform after entry instead of retaining a scaled layer. */
-  #shopOverlay.open #shopModal { transform: none; }
+  #shopModal, #shopOverlay.open #shopModal { transform: none; transition: opacity .21s ease-out; }
 }
 .shopReceipt { position: absolute; z-index: 8; right: 6%; bottom: 5%; max-width: 80%; padding: 12px 20px; border: 1px solid #e5c286; border-radius: 6px; color: #fff1cc; background: #3d3024f5; box-shadow: 0 5px 20px #0004; font-size: 18px; pointer-events: none; }
 @keyframes shopLedgerEnter { from { opacity: 0; transform: translateY(18px) rotate(1deg); } to { opacity: 1; transform: none; } }
