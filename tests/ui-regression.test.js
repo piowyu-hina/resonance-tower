@@ -1966,7 +1966,7 @@ async function testExpeditionDeparture(browser) {
     await page.locator('#expeditionView').evaluate(async el => Promise.all(el.getAnimations().map(animation => animation.finished)));
     const preparation = await page.locator('#expeditionView').boundingBox();
     for (const key of ['x', 'y', 'width']) assert.ok(Math.abs(entrance[key] - preparation[key]) < 1, `scene frame ${key} stays aligned on entering preparation`);
-    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-staging-quiet\.png/, 'preparation uses its own background, not an enlarged entrance');
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-trail-quiet\.png/, 'preparation reuses the entrance artwork');
     await page.evaluate(async () => {
       const { gameState } = await import('./js/state.js');
       gameState.unlockedChars.add('xiaochu');
@@ -2047,7 +2047,7 @@ async function testExpeditionDeparture(browser) {
       (await import('./js/state.js')).gameState.phase = 'prepFloor';
       (await import('./js/ui-main.js')).render();
     });
-    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-staging-quiet\.png/, 'ordinary departure keeps its original staging scene');
+    assert.match(await page.locator('#expeditionView').evaluate(el => getComputedStyle(el).backgroundImage), /expedition-trail-quiet\.png/, 'ordinary departure reuses the entrance artwork');
     assert.equal(await page.locator('#startBtn').isEnabled(), true);
     assertNoRuntimeErrors(page, 'expedition departure redesign');
     await page.close();

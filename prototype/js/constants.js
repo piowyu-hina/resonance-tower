@@ -322,7 +322,7 @@ export const REGION_DEFS = {
     name: '史萊姆棲息地',
     description: '史萊姆棲息的近郊叢林',
     image: 'slime_forest',
-    previewImage: 'slime-forest-colony',
+    previewImage: 'slime-habitat-quiet',
     recommendedLevel: 1,
     threats: ['緩速', '睡眠', '魅惑'],
     threatLocaleIds: ['slow', 'sleep', 'charm'],
