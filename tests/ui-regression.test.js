@@ -807,6 +807,53 @@ async function openEvent(browser, eventId) {
   return page;
 }
 
+async function testEventArtwork(browser) {
+  const expected = {
+    'abandoned-camp': 'abandoned_camp_daylight.png',
+    'flattened-herbs': 'flattened_herbs_daylight.png',
+    'sealed-supply-crate': 'slime_sealed_supply_crate_daylight.png',
+    'floating-bubbles': 'floating_slime_bubbles_daylight.png',
+    'broken-ancient-aqueduct': 'broken_ancient_aqueduct_daylight.png',
+    'slime-trail-fork': 'slime_trail_fork_daylight.png',
+    'ruins-entrance': 'ruins_entrance.png',
+    'rain-stone-shelter': 'rain_stone_shelter.png',
+    'two-color-spores': 'two_color_spores.png',
+    'crystal-echo': 'crystal_tree_hollow.png',
+  };
+  for (const viewport of [{ width: 1600, height: 900 }, { width: 1280, height: 720 }]) {
+    for (const [id, filename] of Object.entries(expected)) {
+      const page = await browser.newPage({ viewport });
+      const errors = [];
+      page.on('pageerror', error => errors.push(error.message));
+      await page.goto(`${prototypeUrl.replace('game.html', 'index.html')}?debug&event=${id}`);
+      const frame = page.frames().find(item => item.url().includes('game.html'));
+      await frame.waitForSelector('#eventOverlay.open');
+      const art = frame.locator('#eventSceneImage');
+      await art.evaluate(image => image.decode());
+      assert.equal(await art.getAttribute('src'), `assets/events/${filename}`);
+      const rendered = await art.evaluate(image => ({
+        fit: getComputedStyle(image).objectFit,
+        transform: getComputedStyle(image).transform,
+        backdrop: getComputedStyle(image.parentElement, '::before').backgroundImage,
+        width: image.naturalWidth,
+      }));
+      assert.ok(rendered.width > 0);
+      assert.equal(rendered.fit, 'contain', `${id}: show entire event composition`);
+      assert.equal(rendered.transform, 'none', `${id}: no zoom cropping`);
+      assert.ok(rendered.backdrop.includes(filename), `${id}: backdrop must use the current art`);
+      await page.waitForTimeout(350);
+      const bounds = await frame.locator('#eventModal').boundingBox();
+      assert.ok(bounds.x >= 0 && bounds.y >= 0 && bounds.x + bounds.width <= viewport.width + 1
+        && bounds.y + bounds.height <= viewport.height + 1, `${id}: modal fits viewport`);
+      const skip = frame.locator('#eventSkipBtn');
+      await skip.click();
+      await frame.waitForFunction(() => document.getElementById('eventOverlay').getAttribute('aria-hidden') === 'true');
+      assert.deepEqual(errors, [], `${id}: no runtime errors`);
+      await page.close();
+    }
+  }
+}
+
 async function waitForEventToFinish(page, label) {
   await page.waitForFunction(() => document.getElementById('eventOverlay').getAttribute('aria-hidden') === 'true', null, { timeout: 3000 });
   assert.equal(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), null, `${label} must release the active overlay`);
@@ -1987,6 +2034,12 @@ async function testExpeditionDeparture(browser) {
   prototypeUrl = `http://127.0.0.1:${port}/game.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    if (process.argv.includes('--event-art-only')) {
+      await testEventArtwork(browser);
+      await testEventInteractions(browser);
+      console.log('ui-regression.test.js: event artwork and interaction assertions passed');
+      return;
+    }
     if (process.argv.includes('--resize-only')) {
       await testViewportFit(browser);
       console.log('ui-regression.test.js: viewport fit assertions passed');
@@ -2056,6 +2109,7 @@ async function testExpeditionDeparture(browser) {
     await testOverlayExclusivity(browser);
     await testChapter1RuinsFlow(browser);
     await testXiaochuEncounterFlow(browser);
+    await testEventArtwork(browser);
     await testEventInteractions(browser);
     console.log('ui-regression.test.js: all browser assertions passed');
   } finally {

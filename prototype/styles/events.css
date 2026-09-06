@@ -22,10 +22,10 @@
 }
 
 #eventModal {
-  width: min(980px, 100%);
+  width: min(1180px, 100%);
   height: min(690px, calc(100vh - 44px));
   display: grid;
-  grid-template-columns: minmax(310px, .82fr) minmax(430px, 1.18fr);
+  grid-template-columns: minmax(310px, 1.08fr) minmax(430px, 1fr);
   overflow: hidden;
   border: 1px solid #5b665e;
   border-radius: 18px;
@@ -47,27 +47,34 @@
   min-height: 0;
   overflow: hidden;
   background: #101517;
+  isolation: isolate;
+}
+
+.eventScene::before {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  z-index: -1;
+  background: var(--event-art) center / cover no-repeat;
+  filter: blur(20px) brightness(.36) saturate(.65);
+  pointer-events: none;
 }
 
 #eventSceneImage {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
-  filter: saturate(.9) brightness(.8);
-  transform: scale(1.025);
-  transition: transform 8s ease-out;
+  object-fit: contain;
+  filter: saturate(.96) brightness(.98);
 }
 
-#eventOverlay.open #eventSceneImage { transform: scale(1.07); }
+#eventOverlay.open #eventSceneImage { transform: none; }
 
 .eventSceneShade {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, transparent 56%, rgba(12, 16, 18, .68)),
-    linear-gradient(0deg, rgba(5, 9, 10, .76), transparent 40%),
-    radial-gradient(circle at 45% 38%, transparent 30%, rgba(4, 7, 8, .4));
+    linear-gradient(0deg, rgba(5, 9, 10, .76), transparent 24%, transparent 80%, rgba(5, 9, 10, .2));
   pointer-events: none;
 }
 

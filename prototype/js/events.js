@@ -48,7 +48,7 @@ export const EVENT_DEFS = Object.freeze([
   {
     id: 'abandoned-camp',
     kind: 'choice',
-    image: 'abandoned_camp.png',
+    image: 'abandoned_camp_daylight.png',
     title: '餘火未熄的營地',
     description: '林間留著一座剛被遺棄的營地。餘火、行囊與散落的銅扣，各自只能帶走一份收穫。',
     options: [
@@ -61,7 +61,7 @@ export const EVENT_DEFS = Object.freeze([
     id: 'flattened-herbs',
     kind: 'puzzle',
     puzzle: 'herb',
-    image: 'flattened_herbs.png',
+    image: 'flattened_herbs_daylight.png',
     title: '被踩亂的藥草圃',
     description: '幾株外形相近的藥草倒伏在泥地上。旅人手記只留下一句辨識方式。',
   },
@@ -84,7 +84,7 @@ export const EVENT_DEFS = Object.freeze([
   {
     id: 'slime-trail-fork',
     kind: 'choice',
-    image: 'slime_trail_fork.png',
+    image: 'slime_trail_fork_daylight.png',
     title: '分岔的黏液足跡',
     description: '兩道黏液痕跡在樹根前分開：一道微微發亮，另一道濃得幾乎發黑。',
     options: [
@@ -97,7 +97,7 @@ export const EVENT_DEFS = Object.freeze([
     id: 'floating-bubbles',
     kind: 'puzzle',
     puzzle: 'bubble',
-    image: 'floating_slime_bubbles.png',
+    image: 'floating_slime_bubbles_daylight.png',
     title: '漂浮的黏液泡',
     description: '黏液泡裡封著不同份量的魔力。挑選數枚泡泡，讓總量恰好符合中央的刻度。',
   },
@@ -105,7 +105,7 @@ export const EVENT_DEFS = Object.freeze([
     id: 'sealed-supply-crate',
     kind: 'puzzle',
     puzzle: 'crate',
-    image: 'slime_sealed_supply_crate.png',
+    image: 'slime_sealed_supply_crate_daylight.png',
     title: '被黏液封住的補給箱',
     description: '箱蓋上的三枚轉輪仍能活動。旁邊刻著一行模糊的提示：生長、流動，而後凝結。',
   },
@@ -125,7 +125,7 @@ export const EVENT_DEFS = Object.freeze([
     id: 'broken-ancient-aqueduct',
     kind: 'puzzle',
     puzzle: 'pipe',
-    image: 'broken_ancient_aqueduct.png',
+    image: 'broken_ancient_aqueduct_daylight.png',
     title: '斷流的古老水渠',
     description: '泉水在崩裂的石盤前停了下來，另一端的藥草正逐漸枯萎。轉動水渠，重新接起水流。',
   },
@@ -275,9 +275,11 @@ export function startEventById(eventId, onComplete = null) {
   art.hidden = !def.image;
   if (def.image) {
     art.src = `assets/events/${def.image}`;
+    art.parentElement.style.setProperty('--event-art', `url("${art.src}")`);
     art.alt = def.title;
   } else {
     art.removeAttribute('src');
+    art.parentElement.style.removeProperty('--event-art');
     art.alt = '';
   }
   const modal = document.getElementById('eventModal');
