@@ -827,7 +827,11 @@ function resolveEvent(outcome) {
   const modal = document.getElementById('eventModal');
   modal.classList.add('resolved', `result-${outcome.tone}`);
   const feedback = document.getElementById('eventFeedback');
-  feedback.textContent = outcome.message;
+  const resultHeading = document.createElement('b');
+  resultHeading.textContent = '事件結果';
+  const resultMessage = document.createElement('span');
+  resultMessage.textContent = outcome.message;
+  feedback.replaceChildren(resultHeading, resultMessage);
   feedback.className = outcome.tone;
   document.getElementById('eventSkipBtn').disabled = true;
   document.querySelectorAll('#eventChallenge button').forEach(button => { button.disabled = true; });

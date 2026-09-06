@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="styles/items.css?v=20260906-habitat">
 <link rel="stylesheet" href="styles/story.css?v=20260906-habitat">
 <link rel="stylesheet" href="styles/world.css?v=20260906-lixue1">
-<link rel="stylesheet" href="styles/events.css?v=20260906-puzzle-readability">
+<link rel="stylesheet" href="styles/events.css?v=20260906-event-result">
 <link rel="stylesheet" href="styles/journal.css?v=20260905-2">
 <link rel="stylesheet" href="styles/shop.css?v=20260906-restored2">
 <link rel="stylesheet" href="styles/village.css?v=20260905-4">
@@ -312,8 +312,10 @@
         <button id="eventSkipBtn" type="button">略過</button>
       </header>
       <p id="eventDescription"></p>
-      <div id="eventChallenge"></div>
-      <div id="eventFeedback" role="status" aria-live="polite"></div>
+      <div class="eventInteraction">
+        <div id="eventChallenge"></div>
+        <div id="eventFeedback" role="status" aria-live="polite" aria-atomic="true"></div>
+      </div>
       <div class="eventIdle">
         <div class="eventIdleCopy">未操作 <b id="eventCountdown">15</b> 秒後繼續前進</div>
         <div class="eventIdleTrack"><i id="eventIdleBar"></i></div>

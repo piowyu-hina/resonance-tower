@@ -855,6 +855,22 @@ async function testEventArtwork(browser) {
 }
 
 async function waitForEventToFinish(page, label) {
+  await page.waitForSelector('#eventModal.resolved');
+  const resultLayout = await page.locator('#eventFeedback').evaluate(feedback => {
+    const bounds = feedback.getBoundingClientRect();
+    const area = feedback.closest('.eventInteraction').getBoundingClientRect();
+    return {
+      heading: feedback.querySelector('b')?.textContent,
+      message: feedback.querySelector('span')?.textContent,
+      contained: bounds.left >= area.left - 1 && bounds.right <= area.right + 1
+        && bounds.top >= area.top - 1 && bounds.bottom <= area.bottom + 1,
+      disabled: [...document.querySelectorAll('#eventChallenge button')].every(button => button.disabled),
+    };
+  });
+  assert.equal(resultLayout.heading, '事件結果');
+  assert.ok(resultLayout.message, `${label}: outcome text is present`);
+  assert.ok(resultLayout.contained, `${label}: result card stays inside the interaction area`);
+  assert.ok(resultLayout.disabled, `${label}: resolved choices cannot award twice`);
   await page.waitForFunction(() => document.getElementById('eventOverlay').getAttribute('aria-hidden') === 'true', null, { timeout: 3000 });
   assert.equal(await page.evaluate(() => window.__debugHooks.gameState.activeOverlay), null, `${label} must release the active overlay`);
   assertNoRuntimeErrors(page, label);
