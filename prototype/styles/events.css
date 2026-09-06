@@ -409,6 +409,14 @@
 }
 
 /* Choices and puzzle instructions are gameplay text, not decorative captions. */
+.mushroomGoalReference { flex: 0 0 auto; display: grid; justify-items: center; gap: 6px; }
+.mushroomGoalReference b { color: #dccb9e; font-size: 12px; font-weight: 600; }
+.mushroomGoal { width: 62px; gap: 3px; padding: 6px; }
+.mushroomInstructions, .eventPuzzleHeading, .bubbleReadout { font-size: 14px; }
+.crateDials button { min-height: 146px; gap: 5px; }
+.crateDials button b { font-size: 15px; font-weight: 600; letter-spacing: .12em; }
+#eventChallenge button:focus-visible, #eventSkipBtn:focus-visible { outline: 2px solid #eed49b; outline-offset: 3px; }
+.eventTinyBtn { min-height: 34px; font-size: 12px; }
 .eventKicker { font-size: 12px; color: #a8bab0; }
 #eventSkipBtn { min-height: 40px; font-size: 14px; }
 #eventDescription { font-size: 15px; color: #c1cac5; }

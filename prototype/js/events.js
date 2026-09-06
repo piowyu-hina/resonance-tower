@@ -11,6 +11,7 @@ const MUSHROOM_TARGET = Object.freeze([
 ]);
 const MUSHROOM_LABELS = ['沉睡', '青色', '金色'];
 const CRATE_SYMBOLS = ['❧', '●', '◆', '☼'];
+const CRATE_SYMBOL_LABELS = ['葉片', '水滴', '結晶', '日輪'];
 const CRATE_TARGET = Object.freeze([0, 1, 2]);
 const PIPE_DIRECTIONS = Object.freeze(['up', 'right', 'down', 'left']);
 const PIPE_DIRECTION_LABELS = Object.freeze({ up: '上', right: '右', down: '下', left: '左' });
@@ -441,8 +442,11 @@ function renderMushroomPuzzle() {
   document.getElementById('eventChallenge').innerHTML = `
     <div class="mushroomInstructions">
       <span>點擊會依序切換沉睡、青色、金色，也會影響上下左右。</span>
-      <span class="mushroomGoal" aria-label="目標排列">
-        ${MUSHROOM_TARGET.map(state => `<i class="state-${state}"></i>`).join('')}
+      <span class="mushroomGoalReference">
+        <b>目標排列</b>
+        <span class="mushroomGoal" role="img" aria-label="目標排列：金青金、青金青、金青金">
+          ${MUSHROOM_TARGET.map(state => `<i class="state-${state}"></i>`).join('')}
+        </span>
       </span>
     </div>
     <div class="mushroomGrid" aria-label="雙色孢子謎題">
@@ -470,8 +474,8 @@ function renderCratePuzzle() {
     <div class="crateClue"><span>生長</span><i>→</i><span>流動</span><i>→</i><span>凝結</span></div>
     <div class="crateDials" aria-label="補給箱符號鎖">
       ${runtime.challenge.symbols.map((symbolIndex, index) => `
-        <button type="button" data-event-action="crate-dial" data-index="${index}" aria-label="切換第 ${index + 1} 枚符號">
-          <span>${CRATE_SYMBOLS[symbolIndex]}</span><small>點擊切換</small>
+        <button type="button" data-event-action="crate-dial" data-index="${index}" aria-label="第 ${index + 1} 枚：${CRATE_SYMBOL_LABELS[symbolIndex]}，點擊切換">
+          <span aria-hidden="true">${CRATE_SYMBOLS[symbolIndex]}</span><b>${CRATE_SYMBOL_LABELS[symbolIndex]}</b><small>點擊切換</small>
         </button>
       `).join('')}
     </div>
@@ -480,8 +484,11 @@ function renderCratePuzzle() {
 }
 
 function updateCratePuzzle() {
-  document.querySelectorAll('.crateDials button span').forEach((label, index) => {
-    label.textContent = CRATE_SYMBOLS[runtime.challenge.symbols[index]];
+  document.querySelectorAll('.crateDials button').forEach((button, index) => {
+    const symbolIndex = runtime.challenge.symbols[index];
+    button.querySelector('span').textContent = CRATE_SYMBOLS[symbolIndex];
+    button.querySelector('b').textContent = CRATE_SYMBOL_LABELS[symbolIndex];
+    button.setAttribute('aria-label', `第 ${index + 1} 枚：${CRATE_SYMBOL_LABELS[symbolIndex]}，點擊切換`);
   });
 }
 

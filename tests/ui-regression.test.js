@@ -891,12 +891,21 @@ async function testEventInteractions(browser) {
   await waitForEventToFinish(page, 'bubble puzzle');
 
   page = await openEvent(browser, 'two-color-spores');
+  assert.equal(await page.locator('.mushroomGoalReference b').textContent(), '目標排列');
+  assert.equal(await page.locator('.mushroomGoal i').count(), 9);
   for (const index of [0, 0, 4, 4, 8, 8]) {
     await page.click(`[data-event-action="mushroom"][data-index="${index}"]`);
   }
   await waitForEventToFinish(page, 'mushroom puzzle');
 
   page = await openEvent(browser, 'sealed-supply-crate');
+  const firstDial = page.locator('[data-event-action="crate-dial"][data-index="0"]');
+  for (const label of ['葉片', '水滴', '結晶', '日輪']) {
+    assert.equal(await firstDial.locator('b').textContent(), label);
+    assert.ok((await firstDial.getAttribute('aria-label')).includes(label));
+    await firstDial.click();
+  }
+  assert.equal(await firstDial.locator('b').textContent(), '葉片', 'dial labels wrap with the symbol');
   await page.click('[data-event-action="crate-dial"][data-index="1"]');
   await page.click('[data-event-action="crate-dial"][data-index="2"]', { clickCount: 2 });
   await page.click('[data-event-action="crate-confirm"]');
