@@ -3,6 +3,7 @@ import { gameState, calcDef, xpToNext, PHASES, isPrepPhase, characterPortraitPat
 import { t, formatLocaleNumber } from './i18n.js';
 import { closeOtherOverlays } from './ui-overlays.js';
 import { render } from './ui-main.js';
+import { growthLineValue } from './growth-values.js';
 
 export function charTooltipHTML(id) {
   const c = gameState.roster.find(r => r.id === id);
@@ -18,10 +19,13 @@ export function charTooltipHTML(id) {
   `;
 }
 
-export function skillTooltipHTML(skill) {
+export function skillTooltipHTML(skill, character = null) {
+  const index = character ? CHAR_DEFS[character.id].skills.indexOf(skill) : -1;
+  const current = index >= 0 ? growthLineValue(character, `skill${index}`, character.lineLevels?.[`skill${index}`] || 0) : '';
   return `
     <div class="ttName">${skill.name}</div>
     <div class="ttStat">冷卻：${skill.cd} 秒</div>
+    ${current ? `<div class="ttStat">目前效果：${current}</div><div class="ttStat">以下為基礎說明：</div>` : ''}
     <div class="ttStat">${skill.desc}</div>
   `;
 }
@@ -31,6 +35,7 @@ export function characterActionTooltipHTML(action, character = null) {
   return `
     <div class="ttName">${action.name}</div>
     <div class="ttStat">冷卻：${cooldown.toFixed(1)} 秒</div>
+    ${character ? `<div class="ttStat">目前效果：${growthLineValue(character, 'action', character.lineLevels?.action || 0)}</div>` : ''}
     <div class="ttStat">基礎效果：${action.desc}</div>
   `;
 }
@@ -59,8 +64,8 @@ export function monsterTooltipHTML(m) {
   if (!m) return '';
   return `
     <div class="ttName">${m.name}　Lv.${m.displayLevel ?? m.level}</div>
-    <div class="ttStat">HP ${Math.max(0, m.hp)}/${m.maxHp}</div>
-    <div class="ttStat">攻擊 ${m.atk}</div>
+    <div class="ttStat">HP ${m.storyBoss ? '???' : `${Math.max(0, m.hp)}/${m.maxHp}`}</div>
+    <div class="ttStat">攻擊 ${m.storyBoss ? '???' : m.atk}</div>
   `;
 }
 
@@ -110,16 +115,16 @@ export function attachMonsterTooltip(el, m) {
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-export function attachSkillTooltip(el, skill) {
+export function attachSkillTooltip(el, skill, character = null) {
   el.tabIndex = 0;
   if (!el.hasAttribute('role')) el.setAttribute('role', 'img');
   if (!el.hasAttribute('aria-label')) el.setAttribute('aria-label', skill.name);
   el.addEventListener('focus', () => {
     const rect = el.getBoundingClientRect();
-    showTooltipContent(skillTooltipHTML(skill), { clientX: rect.left, clientY: rect.bottom });
+    showTooltipContent(skillTooltipHTML(skill, character), { clientX: rect.left, clientY: rect.bottom });
   });
   el.addEventListener('blur', hideTooltip);
-  el.addEventListener('mouseenter', (e) => showTooltipContent(skillTooltipHTML(skill), e));
+  el.addEventListener('mouseenter', (e) => showTooltipContent(skillTooltipHTML(skill, character), e));
   el.addEventListener('mousemove', positionTooltip);
   el.addEventListener('mouseleave', hideTooltip);
 }
@@ -310,7 +315,7 @@ export function renderExpeditionSelectedSummary() {
     const action = index === def.skills.length;
     const skill = action ? def.action : def.skills[index];
     if (action) attachCharacterActionTooltip(icon, skill, character);
-    else attachSkillTooltip(icon, skill);
+    else attachSkillTooltip(icon, skill, character);
   });
   const combatSlot = summary.querySelector('.combatItemQuickSlot');
   combatSlot.innerHTML = loadoutItemHTML(gameState.equippedCombatItemId, '＋', t('picker.potion'));

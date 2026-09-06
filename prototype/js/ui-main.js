@@ -1,4 +1,4 @@
-import { CHAR_DEFS, RARITY_DEFS, regionName, localizedRegionDef, MOBS_PER_FLOOR, SOLO_PARTY_LIMIT, GOO_SKILL_CD_MS, ITEM_DEFS, RUINS_KILL_TARGET } from './constants.js';
+import { CHAR_DEFS, RARITY_DEFS, regionName, localizedRegionDef, MOBS_PER_FLOOR, SOLO_PARTY_LIMIT, GOO_SKILL_CD_MS, ITEM_DEFS, RUINS_KILL_TARGET, RUINS_LORD_SPIKE_TRAVEL_MS } from './constants.js';
 import {
   gameState, PHASES, isPrepPhase, isCombatSurfacePhase, contractStoryLocked, isCharUnlocked,
   characterPortraitPath, characterBattlePortraitPath, equippedSkin, unlockReqText, aliveMonsters,
@@ -233,9 +233,9 @@ export function buildBattleRoster() {
     partySideEl.appendChild(card);
 
     const portraitEl = card.querySelector('.portrait');
-    attachTextTooltip(card.querySelector('.atkLabel'), '行動倒數', '進度填滿後進行下一次行動');
+    attachTextTooltip(card.querySelector('.atkLabel'), '行動倒數', '進度填滿後進行下一次行動；睡眠時該次用來醒來，魅惑時改為攻擊友軍');
     const skillIconEls = Array.from(card.querySelectorAll('.skillIcon'));
-    skillIconEls.forEach((iconEl, i) => attachSkillTooltip(iconEl, def.skills[i]));
+    skillIconEls.forEach((iconEl, i) => attachSkillTooltip(iconEl, def.skills[i], gameState.roster.find(c => c.id === id)));
     gameState.charEls[id] = {
       card,
       portraitEl,
@@ -414,7 +414,11 @@ export function buildMonsterCards() {
     monsterSideEl.appendChild(card);
 
     const portraitEl = card.querySelector('.portrait');
-    attachTextTooltip(card.querySelector('.atkLabel'), '行動倒數', '進度填滿後進行下一次行動');
+    const actionLabel = card.querySelector('.atkLabel');
+    const showActionInfo = event => showTooltipContent(`<div class="ttName">${m.storyBoss && m.pendingSpikeMs > 0 ? '岩刺處理中' : '行動倒數'}</div><div class="ttStat">${m.storyBoss && m.pendingSpikeMs > 0 ? '首領正在施放岩刺；此條顯示本次處理進度，期間不會插入另一招' : '進度填滿後進行下一次行動'}</div>`, event);
+    actionLabel.addEventListener('mouseenter', showActionInfo);
+    actionLabel.addEventListener('mousemove', positionTooltip);
+    actionLabel.addEventListener('mouseleave', hideTooltip);
     gameState.monsterEls[m.id] = {
       card,
       portraitEl,
@@ -679,6 +683,14 @@ export function renderCombatView() {
   const boss = gameState.monsters.find(m => m.isBoss);
   document.getElementById('combatView').classList.toggle('bossBattle', !!boss);
   document.getElementById('bossArena').classList.toggle('active', !!boss);
+  const arena = document.getElementById('bossArena');
+  const spikes = boss?.storyBoss && boss.pendingSpikeMs > 0;
+  const goo = !!gameState.activeGooBatch;
+  arena.dataset.mechanic = spikes ? 'spikes' : goo ? 'goo' : 'idle';
+  const remaining = spikes ? boss.pendingSpikes.filter(spike => spike.active).length : gameState.activeGoos.length;
+  const remainingMs = spikes ? boss.pendingSpikeMs : goo ? Math.max(0, ...gameState.activeGoos.map(g => g.msLeft)) : 0;
+  arena.querySelector('.arenaCaption b').textContent = spikes ? `岩刺突襲 · 剩餘 ${remaining} 枚` : goo ? `黏液陣 · 剩餘 ${remaining} 個` : '留意首領的下一次招式';
+  arena.querySelector('.arenaCaption small').textContent = spikes || goo ? `點擊擊破 · ${Math.ceil(remainingMs / 1000)} 秒` : boss?.storyBoss ? '岩刺將從右側襲來' : '黏液出現時，點擊清除';
 
   aliveMonsters().forEach(m => {
     const refs = gameState.monsterEls[m.id];
@@ -688,7 +700,10 @@ export function renderCombatView() {
     refs.card.classList.toggle('reflectShield', (m.reflectShieldMs || 0) > 0);
     refs.hpBar.style.width = clampPct(m.hp, m.maxHp) + '%';
     refs.hpText.textContent = `${Math.max(0, m.hp)}/${m.maxHp}`;
-    const atkPct = Math.round((1 - m.actionCountdown / m.atkInterval) * 100);
+    const channeling = m.storyBoss && m.pendingSpikeMs > 0;
+    refs.card.classList.toggle('channeling', !!channeling);
+    const atkPct = Math.round((channeling ? 1 - m.pendingSpikeMs / RUINS_LORD_SPIKE_TRAVEL_MS : 1 - m.actionCountdown / m.atkInterval) * 100);
+    refs.atkBar.parentElement.setAttribute('aria-label', channeling ? `岩刺處理中，剩餘 ${Math.ceil(m.pendingSpikeMs / 1000)} 秒` : `下次行動剩餘 ${Math.ceil(Math.max(0, m.actionCountdown) / 1000)} 秒`);
     refs.atkBar.style.width = Math.max(0, Math.min(100, atkPct)) + '%';
     if (refs.skillCdOverlayEl) {
       const skillCdPct = Math.round((m.skillCd / (m.skill.cd * 1000)) * 100);

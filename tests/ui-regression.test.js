@@ -296,6 +296,11 @@ async function testBossTransition(browser) {
       hp: boss.hp };
   });
   const beforeEntry = await entryTimers();
+  assert.equal(await page.locator('.bossCinemaScene').isVisible(), true, 'boss intro has its own scene layer');
+  assert.match(await page.locator('.bossCinemaScene').evaluate(el => getComputedStyle(el).backgroundImage), /slime_forest_battle/);
+  await page.locator('#bossIntroOverlay').click({ position: { x: 20, y: 20 } });
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#bossIntroOverlay').getAttribute('aria-hidden'), 'false', 'intro cannot be skipped');
   assert.deepEqual(beforeEntry.cooldowns, [0, 0, 0], 'uncast boss skills start ready');
   assert.deepEqual(beforeEntry.overlays, ['0%', '0%', '0%']);
   assert.deepEqual(beforeEntry.opening, [3000, 800]);
@@ -987,6 +992,19 @@ async function testCombatScene(browser) {
       (await import('./js/ui-main.js')).render();
     });
     assert.equal(await page.locator('#partySide .skillCdText').first().textContent(), '3');
+    const tooltipValues = await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const { CHAR_DEFS, STAT_LINE_MAX } = await import('./js/constants.js');
+      const ui = await import('./js/ui-loadout.js');
+      const c = gameState.roster.find(c => c.id === gameState.party[0]);
+      c.lineLevels.action = STAT_LINE_MAX;
+      const action = ui.characterActionTooltipHTML(CHAR_DEFS[c.id].action, c);
+      c.lineLevels.action = 0;
+      return action;
+    });
+    assert.match(tooltipValues, /目前效果/);
+    assert.match(tooltipValues, /30.0%/);
+    assert.match(tooltipValues, /60.0%/);
     assert.equal(await page.locator('#monsterSide .skillCdText').first().textContent(), '4');
     await page.locator('#partySide .skillIcon').first().focus();
     assert.equal(await page.locator('#tooltip').isVisible(), true, 'automatic skills support keyboard tooltips');
@@ -995,6 +1013,9 @@ async function testCombatScene(browser) {
       (await import('./js/goo.js')).spawnGooBatch();
     });
     assert.ok(await page.locator('#bossArena .goo').count() > 0);
+    await page.evaluate(async () => (await import('./js/ui-main.js')).render());
+    assert.equal(await page.locator('#bossArena').getAttribute('data-mechanic'), 'goo');
+    assert.match(await page.locator('.arenaCaption b').textContent(), /剩餘 3/);
     assert.equal(await page.locator('#bossArena').evaluate(arena => [...arena.querySelectorAll('.goo')].every(el =>
       el.offsetWidth >= 44 && el.offsetLeft >= 0 && el.offsetTop >= 0 &&
       el.offsetLeft + el.offsetWidth <= arena.clientWidth && el.offsetTop + el.offsetHeight <= arena.clientHeight)), true);
@@ -1064,6 +1085,20 @@ async function testCombatScene(browser) {
     assert.equal(await page.locator('#monsterSide .lvlTag').textContent(), 'Lv.XXX');
     assert.equal(await page.locator('#monsterSide .hpRow').evaluate(el => getComputedStyle(el).visibility), 'hidden');
     assert.equal(await page.locator('#monsterSide .actionRow').isVisible(), true);
+    const hiddenStats = await page.evaluate(async () => {
+      const { gameState } = await import('./js/state.js');
+      const ui = await import('./js/ui-loadout.js');
+      const boss = gameState.monsters[0];
+      const html = ui.monsterTooltipHTML(boss);
+      boss.pendingSpikeMs = 2500;
+      boss.pendingSpikes = [{ active: true }, { active: false }];
+      (await import('./js/ui-main.js')).render();
+      return html;
+    });
+    assert.ok(!hiddenStats.includes('12000') && !hiddenStats.includes('300'), 'unknown boss stats do not leak via tooltip');
+    assert.equal(await page.locator('#monsterSide .atkBar').evaluate(el => el.style.width), '50%');
+    assert.match(await page.locator('.arenaCaption b').textContent(), /剩餘 1 枚/);
+    assert.match(await page.locator('.arenaCaption small').textContent(), /3 秒/);
     if (width === 1440) await page.screenshot({ path: path.resolve(__dirname, '../test-results/combat-redesign-ruins.png'), fullPage: true });
     const beforeResult = await page.locator('#combatView').boundingBox();
     for (const phase of ['victory', 'defeat']) {
