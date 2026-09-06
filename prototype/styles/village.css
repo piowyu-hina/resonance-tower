@@ -70,7 +70,7 @@
   border: 0;
   border-radius: 0;
   isolation: isolate;
-  background: #776d50 url('../assets/backgrounds/village-square.png') center / 100% 100% no-repeat;
+  background: #776d50 url('../assets/backgrounds/village-square-home-matched.png') center / 100% 100% no-repeat;
 }
 #villageView::after {
   content: '';
