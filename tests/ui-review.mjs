@@ -26,7 +26,7 @@ try {
       const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1000 } });
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
-      await page.goto(`http://127.0.0.1:${server.address().port}/?debug&view=${view === 'detail' ? 'growth' : view}`, { waitUntil: 'load' });
+      await page.goto(`http://127.0.0.1:${server.address().port}/game.html?debug&view=${view === 'detail' ? 'growth' : view}`, { waitUntil: 'load' });
       if (view.startsWith('audit-')) {
         await page.evaluate(async view => {
           const { gameState } = await import('./js/state.js');
@@ -141,7 +141,7 @@ try {
   }
   for (const time of [1200, 2100, 2700]) {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-    await page.goto(`http://127.0.0.1:${server.address().port}/?debug&view=home`);
+    await page.goto(`http://127.0.0.1:${server.address().port}/game.html?debug&view=home`);
     await page.evaluate(async () => {
       const story = await import('./js/story.js');
       story.queueDialogue('chapter1_goddess', () => {});

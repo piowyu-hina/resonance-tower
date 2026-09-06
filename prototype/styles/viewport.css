@@ -1,0 +1,5 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #101514; }
+body { background: radial-gradient(ellipse, #243129, #101514 75%); }
+#viewportStage { position: fixed; inset: 0; overflow: hidden; }
+#gameFrame { position: absolute; left: 50%; top: 50%; width: 1440px; height: 1000px; border: 0; transform-origin: center; transform: translate(-50%, -50%) scale(var(--game-scale, 0)); display: block; }

@@ -36,10 +36,10 @@ assert.deepEqual(Object.keys(DIALOGUE_DEFS).filter(id => id.startsWith('xiaochu_
   ['xiaochu_encounter', 'xiaochu_home', 'xiaochu_choice', 'xiaochu_oath', 'xiaochu_after',
     'xiaochu_daily_practice', 'xiaochu_daily_chair', 'xiaochu_daily_departure'].sort());
 
-// Same idea as lineCount above: count index.html's own <link rel="stylesheet">
+// Count the logical game's own <link rel="stylesheet"> tags, not the host shell.
 // tags instead of hardcoding how many exist, so adding a new split stylesheet
 // doesn't silently leave this assertion checking a stale number.
-const expectedStylesheetCount = (fs.readFileSync(path.join(prototypeDir, 'index.html'), 'utf8').match(/<link[^>]*rel="stylesheet"/g) || []).length;
+const expectedStylesheetCount = (fs.readFileSync(path.join(prototypeDir, 'game.html'), 'utf8').match(/<link[^>]*rel="stylesheet"/g) || []).length;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css',
@@ -47,7 +47,7 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2',
 };
 
-// Real ES modules (see index.html's <script type="module">) can't load over
+// Real ES modules (see game.html's <script type="module">) can't load over
 // file:// - Chromium blocks it as a cross-origin request. Serve the
 // prototype directory over a throwaway local HTTP server for the duration
 // of this test run instead, same as the manual browser checks used all
@@ -946,6 +946,110 @@ async function testCombatAndGrowthAudit(browser) {
   }
 }
 
+async function testViewportFit(browser) {
+  const sizes = [[1280, 720], [1366, 768], [1440, 900], [1920, 1080]];
+  const views = [['village', '#villageView'], ['home', '#homeView'], ['regions', '#regionView'],
+    ['expedition', '#expeditionView'], ['boss', '#combatView'], ['growth', '#characterDetailCloseBtn'],
+    ['shop', '#shopOverlay'], ['inventory', '#inventoryOverlay'], ['journal', '#journalOverlay .journalPanel']];
+  for (const [view, selector] of views) {
+    const page = await browser.newPage();
+    page.runtimeErrors = [];
+    page.on('pageerror', error => page.runtimeErrors.push(error));
+    await page.goto(`${prototypeUrl.replace('game.html', 'index.html')}?debug&view=${view}`);
+    const frame = page.frames().find(frame => frame.url().includes('game.html'));
+    assert.ok(frame, 'host mounts the game frame');
+    await frame.locator(selector).waitFor({ state: 'visible' });
+    await page.waitForTimeout(600);
+    await frame.evaluate(() => { window.resizeAuditToken = Math.random(); });
+    const token = await frame.evaluate(() => window.resizeAuditToken);
+    for (const [width, height] of sizes) {
+      await page.setViewportSize({ width, height });
+      await page.waitForTimeout(80);
+      const bounds = await page.locator('#gameFrame').boundingBox();
+      assert.ok(bounds.x >= -.5 && bounds.y >= -.5 && bounds.x + bounds.width <= width + .5 && bounds.y + bounds.height <= height + .5, `${view}: whole canvas fits ${width}×${height}`);
+      near(bounds.width / bounds.height, 1.44, 'canvas keeps its aspect ratio');
+      assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [1440, 1000]);
+      assert.equal(await frame.evaluate(() => window.resizeAuditToken), token, 'resize must not reload the game');
+      for (const context of [page, frame]) {
+        assert.equal(await context.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.documentElement.scrollHeight <= innerHeight), true, `${view}: no document overflow`);
+      }
+      const fits = await frame.locator(selector).evaluate(el => {
+        const r = el.getBoundingClientRect();
+        return r.left >= -.5 && r.top >= -.5 && r.right <= innerWidth + .5 && r.bottom <= innerHeight + .5;
+      });
+      assert.equal(fits, true, `${view}: main surface/control remains inside the logical canvas`);
+      if (process.argv.includes('--resize-only') && ['village', 'boss', 'growth'].includes(view)) {
+        await page.screenshot({ path: path.resolve(__dirname, `../test-results/resize-${view}-${width}.png`) });
+      }
+    }
+    if (view === 'home') {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await frame.locator('#homeGrowthBtn b').click();
+      await frame.locator('#characterDetailOverlay.open').waitFor();
+      await frame.locator('#characterDetailCloseBtn').click();
+      assert.equal(await frame.locator('#characterDetailOverlay').getAttribute('aria-hidden'), 'true', 'scaled click opens and closes the real panel');
+    }
+    if (view === 'journal') {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await frame.evaluate(async () => {
+        (await import('./js/story.js')).openTravelJournal({ preview: true });
+        (await import('./js/story.js')).showJournalContents();
+        const list = document.getElementById('journalChapterList');
+        for (let i = 0; i < 20; i++) list.append(list.firstElementChild.cloneNode(true));
+      });
+      await frame.locator('#journalChapterList').hover();
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(200);
+      assert.ok(await frame.locator('#journalChapterList').evaluate(el => el.scrollTop) > 0, 'internal journal scrolling survives canvas scaling');
+      assert.equal(await page.evaluate(() => scrollY), 0);
+      assert.equal(await frame.evaluate(() => scrollY), 0);
+    }
+    if (view === 'inventory') {
+      await frame.evaluate(async () => {
+        (await import('./js/state.js')).gameState.inventory = [{ itemId: 'potion', qty: 1 }];
+        (await import('./js/ui-commerce.js')).renderInventory();
+      });
+      await frame.locator('#inventoryGrid').evaluate(grid => {
+        const entry = grid.firstElementChild;
+        for (let i = 0; i < 80; i++) grid.append(entry.cloneNode(true));
+      });
+      await frame.locator('#inventoryGrid').hover();
+      await page.mouse.wheel(0, 650);
+      await page.waitForTimeout(200);
+      assert.ok(await frame.locator('#inventoryModal').evaluate(el => el.scrollTop) > 0);
+      const close = await frame.locator('#inventoryCloseBtn').evaluate(el => el.getBoundingClientRect().top);
+      assert.ok(close >= 0 && close < 1000, 'inventory close button stays visible while content scrolls');
+    }
+    if (view === 'boss') {
+      await frame.locator('#combatLogToggleBtn').click();
+      assert.equal(await frame.locator('#combatLogToggleBtn').getAttribute('aria-expanded'), 'true');
+      await frame.locator('#combatLogToggleBtn').click();
+      await frame.locator('#partySide .skillIcon').first().hover();
+      assert.equal(await frame.locator('#tooltip').isVisible(), true, 'scaled hover keeps tooltip usable');
+      assert.equal(await frame.locator('#tooltip').evaluate(el => {
+        const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight;
+      }), true);
+      await frame.evaluate(async () => {
+        const state = (await import('./js/state.js')).gameState;
+        state.phase = 'prepBoss';
+        const ui = await import('./js/ui-overlays.js');
+        ui.prepareBossCombat();
+        ui.showBossIntro(ui.activatePreparedCombat);
+      });
+      for (const [width, height] of sizes) {
+        await page.setViewportSize({ width, height });
+        await page.waitForTimeout(100);
+        assert.equal(await frame.locator('#bossIntroOverlay').getAttribute('aria-hidden'), 'false');
+        assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [1440, 1000]);
+      }
+      await frame.waitForFunction(() => document.getElementById('bossIntroOverlay').getAttribute('aria-hidden') === 'true');
+      assert.equal(await frame.evaluate(async () => (await import('./js/state.js')).gameState.phase), 'combat');
+    }
+    assertNoRuntimeErrors(page, `scaled ${view}`);
+    await page.close();
+  }
+}
+
 async function testCombatScene(browser) {
   for (const width of [1440, 1280]) {
     const page = await openView(browser, 'boss');
@@ -1779,9 +1883,14 @@ async function testExpeditionDeparture(browser) {
 (async () => {
   const server = await startServer();
   const { port } = server.address();
-  prototypeUrl = `http://127.0.0.1:${port}/index.html`;
+  prototypeUrl = `http://127.0.0.1:${port}/game.html`;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
+    if (process.argv.includes('--resize-only')) {
+      await testViewportFit(browser);
+      console.log('ui-regression.test.js: viewport fit assertions passed');
+      return;
+    }
     if (process.argv.includes('--combat-ui-only')) {
       await testCombatScene(browser);
       console.log('ui-regression.test.js: combat scene assertions passed');
@@ -1836,6 +1945,7 @@ async function testExpeditionDeparture(browser) {
       return;
     }
     await testMajorViewsRender(browser);
+    await testViewportFit(browser);
     await testExpeditionDeparture(browser);
     await testJournalNavigation(browser);
     await testJournalLayout(browser);

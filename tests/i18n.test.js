@@ -54,7 +54,7 @@ assert.equal(documentMock.documentElement.lang, 'zh-Hant');
 assert.equal(translatedElement.textContent, '物品庫');
 assert.equal(translatedElement.attributes['aria-label'], '開啟物品庫');
 
-const html = fs.readFileSync(path.join(root, 'prototype/index.html'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'prototype/game.html'), 'utf8');
 const markerPattern = /data-i18n(?:-(?:aria-label|alt|placeholder))?="([^"]+)"/g;
 const markerKeys = [...html.matchAll(markerPattern)].map(match => match[1]);
 assert.deepEqual([...new Set(markerKeys.filter(key => !(key in zhHant)))], []);
